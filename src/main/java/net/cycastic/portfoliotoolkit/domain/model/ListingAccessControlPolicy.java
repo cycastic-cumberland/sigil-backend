@@ -3,10 +3,7 @@ package net.cycastic.portfoliotoolkit.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
 
 import java.util.Arrays;
@@ -16,7 +13,7 @@ import java.util.Arrays;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "listing_access_control_policies")
+@Table(name = "listing_access_control_policies", indexes = { @Index(name = "listing_access_control_policies_priority_project_id_uindex", columnList = "project_id,priority", unique = true) })
 public class ListingAccessControlPolicy {
     private static final byte[] highestSearchKey;
 
