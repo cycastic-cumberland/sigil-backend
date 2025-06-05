@@ -1,7 +1,6 @@
 package net.cycastic.portfoliotoolkit.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.exception.ExceptionResponse;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import org.slf4j.Logger;
@@ -15,12 +14,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class ApiExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
-    private final Environment environment;
+    private final Set<String> profiles;
+
+    public ApiExceptionHandler(Environment environment){
+        profiles = Arrays.stream(environment.getActiveProfiles()).collect(Collectors.toSet());
+    }
 
     private static String buildStackTrace(StackTraceElement[] elements){
         var sb = new StringBuilder();
@@ -45,7 +49,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleNotFound(RequestException ex, HttpServletRequest request) {
         logger.error("Exception occurred while resolving HTTP request", ex);
         var currentDateTime = OffsetDateTime.now(ZoneId.of("UTC"));
-        var includeStackTrace = Arrays.asList(environment.getActiveProfiles()).contains("dev");
+        var includeStackTrace = profiles.contains("dev") || profiles.contains("local");
         var errorBuilder = ExceptionResponse.builder()
                 .timestamp(currentDateTime)
                 .status(ex.getResponseCode())

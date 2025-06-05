@@ -51,6 +51,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private Set<Project> projects;
 
+    @OneToMany(mappedBy = "applyTo")
+    private Set<ListingAccessControlPolicy> accessControlPolicies;
+
     @Override
     public boolean isEnabled() {
         return !disabled;

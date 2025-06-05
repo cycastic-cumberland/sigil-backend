@@ -6,36 +6,33 @@ import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
 
 @Data
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "projects")
-public class Project {
+@Table(name = "listings", indexes = { @Index(name = "listings_searchKey_index", columnList = "search_key") })
+public class Listing {
     @Id
-    @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    @NotNull
-    private String projectName;
-
-    @Null
-    private String corsSettings;
+    public Integer id;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name="user_id", nullable=false)
-    private User user;
+    @JoinColumn(name="project_id", nullable=false)
+    private Project project;
 
-    @OneToMany(mappedBy = "project")
-    private Set<Listing> listings;
+    @NotNull
+    @Column(columnDefinition = "VARBINARY(255)")
+    private byte[] searchKey;
 
-    @OneToMany(mappedBy = "project")
-    private Set<ListingAccessControlPolicy> listingAccessControlPolicies;
+    @Null
+    private String standardValue;
+
+    @Null
+    @Column(columnDefinition = "TEXT")
+    private String longValue;
 
     @NotNull
     private OffsetDateTime createdAt = OffsetDateTime.now();

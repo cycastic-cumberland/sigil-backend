@@ -39,7 +39,7 @@ public class Pbkdf2PasswordHasher implements PasswordHasher{
     }
 
     private static byte[] pbkdf2(char[] password, byte[] salt) {
-        PKCS5S2ParametersGenerator gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
+        var gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
         gen.init(PKCS5S2ParametersGenerator.PKCS5PasswordToUTF8Bytes(password), salt, ITERATIONS);
         return ((KeyParameter) gen.generateDerivedParameters(KEY_LENGTH_BITS)).getKey();
     }
