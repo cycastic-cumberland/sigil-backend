@@ -1,9 +1,7 @@
 package net.cycastic.portfoliotoolkit.application.auth.refresh;
 
 import an.awesome.pipelinr.Command;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.JwtUtilities;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.dto.CredentialDto;

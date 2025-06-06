@@ -2,7 +2,6 @@ package net.cycastic.portfoliotoolkit.application.project.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
@@ -22,7 +21,7 @@ public class QueryProjectsCommandHandler implements Command.Handler<QueryProject
     @Override
     public PageResponseDto<ProjectDto> handle(QueryProjectsCommand queryProjectsCommand) {
         var userId = queryProjectsCommand.getUserId();
-        if (!loggedUserAccessor.getRoles().contains(ApplicationConstants.Roles.ADMIN) &&
+        if (!loggedUserAccessor.isAdmin() &&
                 userId != loggedUserAccessor.getUserId()){
             throw new ForbiddenException();
         }

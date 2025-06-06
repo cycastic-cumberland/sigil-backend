@@ -24,7 +24,7 @@ public class PageResponseDto<T> {
         var items = page.getContent().stream()
                 .map(r -> (U)converter.apply(r))
                 .toList();
-        return new PageResponseDto<U>(items, page.getNumber() + 1, page.getSize(), page.getTotalPages(), (int) page.getTotalElements());
+        return new PageResponseDto<>(items, page.getNumber() + 1, page.getSize(), page.getTotalPages(), (int) page.getTotalElements());
     }
 
     public static <T> PageResponseDto<T> fromDomain(Page<T> page){

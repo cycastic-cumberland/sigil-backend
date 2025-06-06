@@ -3,7 +3,6 @@ package net.cycastic.portfoliotoolkit.application.project.create;
 import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
@@ -46,7 +45,7 @@ public class CreateProjectCommandHandler implements Command.Handler<CreateProjec
     @Transactional
     public IdDto handle(CreateProjectCommand createProjectCommand) {
         var userId = createProjectCommand.getUserId();
-        if (!loggedUserAccessor.getRoles().contains(ApplicationConstants.Roles.ADMIN) &&
+        if (!loggedUserAccessor.isAdmin() &&
                 userId != loggedUserAccessor.getUserId()){
             throw new ForbiddenException();
         }

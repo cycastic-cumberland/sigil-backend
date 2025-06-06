@@ -2,6 +2,7 @@ package net.cycastic.portfoliotoolkit.service;
 
 import io.jsonwebtoken.Claims;
 import jakarta.validation.constraints.Null;
+import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 
 import java.util.Optional;
@@ -15,6 +16,10 @@ public interface LoggedUserAccessor {
     @Null Claims getClaims();
 
     Set<String> getRoles();
+
+    default boolean isAdmin(){
+        return getRoles().contains(ApplicationConstants.Roles.ADMIN);
+    }
 
     default int getProjectId(){
         return tryGetProjectId()

@@ -47,5 +47,5 @@ public class ListingAccessControlPolicy {
     @Null
     @ManyToOne
     @JoinColumn(name="apply_to_id")
-    private User applyTo; // null for everyone
+    private User applyTo; // `null` for everyone
 }

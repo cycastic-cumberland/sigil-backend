@@ -2,7 +2,6 @@ package net.cycastic.portfoliotoolkit.application.project.get;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
@@ -21,7 +20,7 @@ public class GetProjectCommandHandler implements Command.Handler<GetProjectComma
         var userId = loggedUserAccessor.getUserId();
         var project = projectRepository.findById(getProjectCommand.getProjectId())
                 .orElseThrow(() -> new RequestException(404, "Could not found project"));
-        if (!loggedUserAccessor.getRoles().contains(ApplicationConstants.Roles.ADMIN) &&
+        if (!loggedUserAccessor.isAdmin() &&
             !project.getUser().getId().equals(userId)){
             throw new ForbiddenException();
         }

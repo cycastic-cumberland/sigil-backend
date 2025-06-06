@@ -9,6 +9,7 @@ import net.cycastic.portfoliotoolkit.application.auth.extract.claims.ExtractClai
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.JwtUtilities;
+import net.cycastic.portfoliotoolkit.domain.SessionStorage;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.slf4j.Logger;
@@ -29,7 +30,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class LoggedUserAccessorImpl implements LoggedUserAccessor {
+    private record ClaimsWrapper(@Null Claims claims){}
+    private static final String CLAIMS_IDENTIFIER = "$__claims";
     private static final Logger logger = LoggerFactory.getLogger(LoggedUserAccessorImpl.class);
+
+    private final SessionStorage sessionStorage;
     private final Pipelinr pipelinr;
 
     private @NonNull ServletRequestAttributes getAttributes(){
@@ -50,7 +55,7 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
         return ApplicationUtilities.tryParseInt(header);
     }
 
-    public @Null Claims getClaims(){
+    private Claims createClaimsFromRequest(){
         var request = getAttributes().getRequest();
         final var authHeader = request.getHeader("Authorization");
         if (authHeader == null || (!authHeader.startsWith("Bearer ") && !authHeader.startsWith("bearer "))){
@@ -63,6 +68,17 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
             logger.error("RequestException caught while extracting claims", e);
             return null;
         }
+    }
+
+    public @Null Claims getClaims(){
+        var wrapper = sessionStorage.get(CLAIMS_IDENTIFIER, ClaimsWrapper.class);
+        if (wrapper != null){
+            return wrapper.claims;
+        }
+
+        var claims = createClaimsFromRequest();
+        sessionStorage.put(CLAIMS_IDENTIFIER, new ClaimsWrapper(claims));
+        return claims;
     }
 
     @Override

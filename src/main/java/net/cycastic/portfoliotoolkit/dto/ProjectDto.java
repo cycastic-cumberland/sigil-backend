@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
-import net.cycastic.portfoliotoolkit.domain.model.User;
 
 import java.time.OffsetDateTime;
 

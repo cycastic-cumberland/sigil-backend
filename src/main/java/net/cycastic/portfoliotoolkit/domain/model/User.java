@@ -6,7 +6,6 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.Authentication;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -78,9 +77,5 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
-    }
-
-    public static User fromAuthentication(@NotNull Authentication authentication){
-        return (User)authentication.getPrincipal();
     }
 }
