@@ -9,11 +9,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class Pbkdf2Tests {
+public class PasswordHasherTests {
     private final PasswordHasher passwordHasher;
 
     @Autowired
-    public Pbkdf2Tests(PasswordHasher passwordHasher) {
+    public PasswordHasherTests(PasswordHasher passwordHasher) {
         this.passwordHasher = passwordHasher;
     }
 

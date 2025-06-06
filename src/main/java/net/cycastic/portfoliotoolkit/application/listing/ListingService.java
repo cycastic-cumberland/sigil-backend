@@ -14,12 +14,18 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Lazy
 @Service
 @RequiredArgsConstructor
-public class ListingACPService {
+public class ListingService {
+    private static final Pattern SPECIAL_CHARACTERS_ESCAPE_PATTERN = Pattern.compile("[\\\\%_]");
+    private static final Pattern SPECIAL_CHARACTERS_UNESCAPE_PATTERN = Pattern.compile("\\\\\\\\|\\\\%|\\\\_");
+
     private final ListingACPRepository listingACPRepository;
     private final UserRepository userRepository;
     private final LoggedUserAccessor loggedUserAccessor;
@@ -44,7 +50,7 @@ public class ListingACPService {
         var policies = listingACPRepository.findListingAccessControlPoliciesByProject(project,
                 Sort.by("priority").ascending());
         for (var policy : policies){
-            if (!(policy.getApplyTo() == null || policy.getApplyTo().getId().equals(currentUser.getId()))){
+            if (!(policy.getApplyToId() == null || policy.getApplyToId().equals(currentUser.getId()))){
                 continue;
             }
 
@@ -71,5 +77,56 @@ public class ListingACPService {
 
         // Forbids if exhaust all policies
         throw new ForbiddenException();
+    }
+
+    public static byte[] encodeSearchKey(@NonNull String path){
+        var matcher = SPECIAL_CHARACTERS_ESCAPE_PATTERN.matcher(path);
+        var result = matcher.replaceAll(match -> switch (match.group()) {
+            case "\\" -> "\\\\\\\\";
+            case "%" -> "\\\\%";
+            case "_" -> "\\\\_";
+            default -> match.group();
+        });
+        var parts = result.split("/");
+        var buffer = ByteBuffer.allocate(NsoUtilities.KEY_LENGTH * NsoUtilities.SEPARATOR_SEQUENCE_LENGTH);
+
+        NsoUtilities.insertSeparator(buffer);
+        var first = true;
+        for (var part : parts){
+            if (part.isEmpty()){
+                continue;
+            }
+            if (first){
+                first = false;
+            } else {
+                NsoUtilities.insertSeparator(buffer);
+            }
+            buffer.put(part.getBytes(StandardCharsets.UTF_8));
+        }
+
+        var finalArray = new byte[buffer.position()];
+        System.arraycopy(buffer.array(), 0, finalArray, 0, buffer.position());
+        return finalArray;
+    }
+
+    public static String decodeSearchKey(byte @NonNull [] searchKey){
+        var sb = new StringBuilder();
+        var delimeterAsString = NsoUtilities.delimeterAsString();
+        for (var part : NsoUtilities.split(searchKey)){
+            if (part.length == 0){
+                continue;
+            }
+
+            var matcher = SPECIAL_CHARACTERS_UNESCAPE_PATTERN.matcher(new String(part, StandardCharsets.UTF_8));
+            var result = matcher.replaceAll(match -> switch (match.group()) {
+                case "\\\\\\\\" -> "\\";
+                case "\\\\%" -> "%";
+                case "\\\\_" -> "_";
+                default -> match.group().equals(delimeterAsString) ? "" : match.group();
+            });
+            sb.append('/').append(result);
+        }
+
+        return sb.toString();
     }
 }

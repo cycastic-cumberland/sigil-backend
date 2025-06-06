@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "listings", indexes = { @Index(name = "listings_searchKey_index", columnList = "search_key") })
+@Table(name = "listings", indexes = { @Index(name = "listings_project_id_searchKey_uindex", columnList = "project_id,search_key", unique = true) })
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

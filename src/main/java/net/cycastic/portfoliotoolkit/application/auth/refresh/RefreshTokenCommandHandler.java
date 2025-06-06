@@ -26,11 +26,8 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
             var claims = jwtVerifier.extractClaims(newToken);
             var subject = claims.getSubject();
             var userId = Integer.parseInt(subject);
-            var userOpt = userRepository.findById(userId);
-            if (userOpt.isEmpty()){
-                throw new IllegalStateException("Could not found user");
-            }
-            var user = userOpt.get();
+            var user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RequestException(404, "Could not found user"));
             return CredentialDto.builder()
                     .userId(userId)
                     .userEmail(user.getEmail())

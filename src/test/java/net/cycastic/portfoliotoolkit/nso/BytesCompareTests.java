@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-public class BytesCompareTest {
+public class BytesCompareTests {
     private static void sameLengthNonEqualTest(int length){
         var lhs = new byte[length];
         var rhs = new byte[length];
