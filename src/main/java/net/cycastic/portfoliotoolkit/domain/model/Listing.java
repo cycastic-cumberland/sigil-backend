@@ -27,12 +27,9 @@ public class Listing {
     @Column(columnDefinition = "VARBINARY(255)")
     private byte[] searchKey;
 
-    @Null
-    private String standardValue;
-
-    @Null
-    @Column(columnDefinition = "TEXT")
-    private String longValue;
+    @NotNull
+    @Enumerated(EnumType.ORDINAL)
+    private ListingType type;
 
     @NotNull
     private OffsetDateTime createdAt = OffsetDateTime.now();

@@ -3,11 +3,15 @@ package net.cycastic.portfoliotoolkit.service;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 
+@Lazy
+@Service
 public class Pbkdf2PasswordHasher implements PasswordHasher{
     private static final int ITERATIONS = 310_000;
     private static final int KEY_LENGTH_BITS = 256;

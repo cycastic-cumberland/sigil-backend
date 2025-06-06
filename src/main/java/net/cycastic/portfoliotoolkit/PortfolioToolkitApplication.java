@@ -2,6 +2,7 @@ package net.cycastic.portfoliotoolkit;
 
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.command.CreateUser;
+import net.cycastic.portfoliotoolkit.command.GenerateKeyPair;
 import net.cycastic.portfoliotoolkit.command.VerifyPassword;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +17,7 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
     private final Cli cliCommand;
 
     @Component
-    @CommandLine.Command(name = "tools", subcommands = {CreateUser.class, VerifyPassword.class})
+    @CommandLine.Command(name = "tools", subcommands = {CreateUser.class, VerifyPassword.class, GenerateKeyPair.class})
     public static class Cli{ }
 
     public static void main(String[] args) {
