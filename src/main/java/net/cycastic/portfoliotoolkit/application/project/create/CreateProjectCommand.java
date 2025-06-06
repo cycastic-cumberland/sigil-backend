@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.application.project.createproject;
+package net.cycastic.portfoliotoolkit.application.project.create;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;

@@ -1,6 +1,7 @@
 package net.cycastic.portfoliotoolkit.service.impl.auth;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.NonNull;
 import net.cycastic.portfoliotoolkit.configuration.auth.JwtConfiguration;
@@ -8,6 +9,8 @@ import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
 import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +22,11 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
-import java.util.function.Function;
 
 @Lazy
 @Service
 public class StandardJwtService implements JwtIssuer, JwtVerifier {
+    private static final Logger logger = LoggerFactory.getLogger(StandardJwtService.class);
     private final JwtConfiguration jwtConfiguration;
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
@@ -64,7 +67,11 @@ public class StandardJwtService implements JwtIssuer, JwtVerifier {
         var exp = new Date();
         exp.setTime(now.getTime() + jwtConfiguration.getValidForMillis());
 
-        var authTokenBuilder = Jwts.builder()
+        var authTokenBuilder = Jwts.builder();
+        if (extraClaims != null && !extraClaims.isEmpty()){
+            authTokenBuilder.setClaims(extraClaims);
+        }
+        authTokenBuilder = authTokenBuilder
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(exp)
@@ -72,44 +79,52 @@ public class StandardJwtService implements JwtIssuer, JwtVerifier {
         if (jwtConfiguration.getIssuer() != null){
             authTokenBuilder.setIssuer(jwtConfiguration.getIssuer());
         }
-        if (extraClaims != null){
-            authTokenBuilder.setClaims(extraClaims);
-        }
         return authTokenBuilder.compact();
     }
 
     @Override
     public @NonNull String refreshToken(@NonNull String authToken) {
-        var claims = extractClaimsInternal(authToken);
+        var claims = extractExpiredClaims(authToken);
+        var subject = claims.getSubject();
         var cutoff = new Date();
         cutoff.setTime(cutoff.getTime() + ApplicationConstants.REFRESH_TOKEN_TIME_MILLISECONDS);
-        if (!extractClaim(claims, Claims::getExpiration).before(cutoff)){
+        if (!claims.getExpiration().before(cutoff)){
             throw new RequestException(401, "Token is expired");
         }
 
-        var allClaims = extractClaimsInternal(authToken);
-        allClaims.remove(Claims.ISSUED_AT);
-        allClaims.remove(Claims.SUBJECT);
-        allClaims.remove(Claims.EXPIRATION);
+        claims.remove(Claims.ISSUED_AT);
+        claims.remove(Claims.SUBJECT);
+        claims.remove(Claims.EXPIRATION);
 
-        var subject = extractClaim(claims, Claims::getSubject);
-        return generateTokens(subject, allClaims);
+        return generateTokens(subject, claims);
     }
 
-    private Claims extractClaimsInternal(@NonNull String jwt){
-        return Jwts.parserBuilder()
-                .setSigningKey(publicKey)
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody();
-    }
-
-    private <T> @NonNull T extractClaim(@NonNull Claims claims, @NonNull Function<Claims, T> claimsResolver){
-        return claimsResolver.apply(claims);
+    private @NonNull Claims extractExpiredClaims(@NonNull String jwt) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(publicKey)
+                    .build()
+                    .parseClaimsJws(jwt)
+                    .getBody();
+        } catch (ExpiredJwtException e){
+            return e.getClaims();
+        } catch (Exception e){
+            logger.error("Exception caught while parsing token", e);
+            throw new RequestException(401, "Failed to authenticate request");
+        }
     }
 
     @Override
-    public @NonNull Map<String, Object> extractClaims(@NonNull String jwt) {
-        return extractClaimsInternal(jwt);
+    public @NonNull Claims extractClaims(@NonNull String jwt) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(publicKey)
+                    .build()
+                    .parseClaimsJws(jwt)
+                    .getBody();
+        } catch (Exception e){
+            logger.error("Exception caught while parsing token", e);
+            throw new RequestException(401, "Failed to authenticate request");
+        }
     }
 }

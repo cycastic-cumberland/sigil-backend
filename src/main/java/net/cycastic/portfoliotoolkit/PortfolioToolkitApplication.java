@@ -4,9 +4,17 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.command.CreateUser;
 import net.cycastic.portfoliotoolkit.command.GenerateKeyPair;
 import net.cycastic.portfoliotoolkit.command.VerifyPassword;
+import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
+import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
+import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
+import net.cycastic.portfoliotoolkit.service.PasswordHasher;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
@@ -19,6 +27,37 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
     @Component
     @CommandLine.Command(name = "tools", subcommands = {CreateUser.class, VerifyPassword.class, GenerateKeyPair.class})
     public static class Cli{ }
+
+    @Component
+    @RequiredArgsConstructor
+    public static class UserDetailsConfigurations {
+        private final UserRepository userRepository;
+
+        @Bean
+        public UserDetailsService userDetailsService(){
+            return username -> {
+                var id = ApplicationUtilities.tryParseInt(username)
+                        .orElseThrow(() -> new RequestException(404, "Could not found user"));
+                return userRepository.findById(id)
+                        .orElseThrow(() -> new RequestException(404, "Could not found user"));
+            };
+        }
+    }
+
+    @Component
+    @RequiredArgsConstructor
+    public static class AuthenticationProviderConfigurations{
+        private final PasswordHasher passwordHasher;
+        private final UserDetailsService userDetailsService;
+
+        @Bean
+        public AuthenticationProvider authenticationProvider(){
+            var authProvider = new DaoAuthenticationProvider();
+            authProvider.setUserDetailsService(userDetailsService);
+            authProvider.setPasswordEncoder(passwordHasher);
+            return authProvider;
+        }
+    }
 
     public static void main(String[] args) {
         if (args.length > 0){

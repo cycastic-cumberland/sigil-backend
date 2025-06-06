@@ -1,0 +1,90 @@
+package net.cycastic.portfoliotoolkit.configuration.auth;
+
+import an.awesome.pipelinr.Pipelinr;
+import lombok.RequiredArgsConstructor;
+import net.cycastic.portfoliotoolkit.application.project.get.GetProjectCommand;
+import net.cycastic.portfoliotoolkit.controller.filter.JwtAuthenticationFilter;
+import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
+import net.cycastic.portfoliotoolkit.dto.ProjectDto;
+import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfiguration {
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final AuthenticationProvider authenticationProvider;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.cors().and().csrf().disable()
+                .authorizeHttpRequests()
+                .requestMatchers(new RequestMatcher[]{
+                        new AntPathRequestMatcher("/api/auth/**"),
+                        new AntPathRequestMatcher("/v2/api-docs"),
+                        new AntPathRequestMatcher("/v3/api-docs"),
+                        new AntPathRequestMatcher("/v3/api-docs/**"),
+                        new AntPathRequestMatcher("/configuration/ui"),
+                        new AntPathRequestMatcher("/swagger-resources/**"),
+                        new AntPathRequestMatcher("/configuration/security"),
+                        new AntPathRequestMatcher("/swagger-ui/**"),
+                        new AntPathRequestMatcher("/webjars/**")
+                })
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    private static CorsConfiguration getDefaultCorsConfiguration(){
+        var config = new CorsConfiguration();
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        return config;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(LoggedUserAccessor loggedUserAccessor, Pipelinr pipelinr) {
+        return request -> {
+            var config = getDefaultCorsConfiguration();
+            if (!request.getRequestURI().startsWith("/api")){
+                return config;
+            }
+            var opt = loggedUserAccessor.tryGetProjectId();
+            if (opt.isEmpty()){
+                return config;
+            }
+
+            ProjectDto project;
+            try {
+                project = pipelinr.send(new GetProjectCommand(opt.get()));
+            } catch (RequestException e){
+                return config;
+            }
+
+            if (project.getCorsSettings() != null){
+                config.addAllowedOrigin(project.getCorsSettings());
+            }
+
+            return config;
+        };
+    }
+}

@@ -16,7 +16,6 @@ import java.util.Set;
 @Table(name = "projects")
 public class Project {
     @Id
-    @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 

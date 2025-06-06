@@ -19,5 +19,6 @@ public class ApplicationConstants {
     }
 
     public static final String PROJECT_ID_HEADER = "X-Project-Id";
+    public static final String ROLES_ENTRY = "roles";
     public static final long REFRESH_TOKEN_TIME_MILLISECONDS = 1_209_600_000;
 }
