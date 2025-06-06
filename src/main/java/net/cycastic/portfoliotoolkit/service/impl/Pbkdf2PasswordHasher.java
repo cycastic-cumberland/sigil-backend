@@ -1,5 +1,6 @@
-package net.cycastic.portfoliotoolkit.service;
+package net.cycastic.portfoliotoolkit.service.impl;
 
+import net.cycastic.portfoliotoolkit.service.PasswordHasher;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -12,7 +13,7 @@ import java.util.Base64;
 
 @Lazy
 @Service
-public class Pbkdf2PasswordHasher implements PasswordHasher{
+public class Pbkdf2PasswordHasher implements PasswordHasher {
     private static final int ITERATIONS = 310_000;
     private static final int KEY_LENGTH_BITS = 256;
     private static final int SALT_SIZE = 16;
