@@ -23,6 +23,7 @@ public class SpringDocConfiguration {
             scheme = "bearer",
             bearerFormat = "JWT"
     )
+    @Configuration
     public static class BearerAuthenticationConfiguration {
         @Bean
         public OpenAPI customOpenAPI() {
@@ -44,7 +45,8 @@ public class SpringDocConfiguration {
     public OperationCustomizer requireHeaderWhenAnnotated() {
         return (Operation operation, HandlerMethod handlerMethod) -> {
             Class<?> controllerClass = handlerMethod.getBeanType();
-            if (controllerClass.isAnnotationPresent(RequireProjectId.class)) {
+            if (controllerClass.isAnnotationPresent(RequireProjectId.class) ||
+                    handlerMethod.getBeanType().isAnnotationPresent(RequireProjectId.class)) {
                 Parameter header = new Parameter()
                         .in("header")
                         .name(ApplicationConstants.PROJECT_ID_HEADER)

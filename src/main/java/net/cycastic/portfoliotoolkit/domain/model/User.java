@@ -1,6 +1,7 @@
 package net.cycastic.portfoliotoolkit.domain.model;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,6 +45,9 @@ public class User implements UserDetails {
     private String roles;
 
     private boolean disabled;
+
+    @Null
+    private Integer projectLimit;
 
     @NotNull
     private OffsetDateTime joinedAt;
