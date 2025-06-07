@@ -19,7 +19,7 @@ public class GetProjectCommandHandler implements Command.Handler<GetProjectComma
     public ProjectDto handle(GetProjectCommand getProjectCommand) {
         var userId = loggedUserAccessor.getUserId();
         var project = projectRepository.findById(getProjectCommand.getProjectId())
-                .orElseThrow(() -> new RequestException(404, "Could not found project"));
+                .orElseThrow(() -> new RequestException(404, "Could not find project"));
         if (!loggedUserAccessor.isAdmin() &&
             !project.getUser().getId().equals(userId)){
             throw new ForbiddenException();

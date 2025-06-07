@@ -46,7 +46,7 @@ public class ListingService {
             return;
         }
         var currentUser = userRepository.findById(loggedUserAccessor.getUserId())
-                .orElseThrow(() -> new RequestException(404, "Could not found user"));
+                .orElseThrow(() -> new RequestException(404, "Could not find user"));
         var policies = listingACPRepository.findListingAccessControlPoliciesByProject(project,
                 Sort.by("priority").ascending());
         for (var policy : policies){

@@ -45,11 +45,15 @@ public class User implements UserDetails {
 
     private boolean disabled;
 
-    @Null
+    @Column(nullable = true)
     private Integer projectLimit;
 
     @NotNull
     private OffsetDateTime joinedAt;
+
+    @NotNull
+    @Column(columnDefinition = "BINARY(32)")
+    private byte[] securityStamp;
 
     @OneToMany(mappedBy = "user")
     private Set<Project> projects;

@@ -3,6 +3,7 @@ package net.cycastic.portfoliotoolkit.controller;
 import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.portfoliotoolkit.application.auth.invalidatesessions.InvalidateAllSessionsCommand;
 import net.cycastic.portfoliotoolkit.application.auth.refresh.RefreshTokenCommand;
 import net.cycastic.portfoliotoolkit.application.auth.signin.SignInCommand;
 import net.cycastic.portfoliotoolkit.dto.CredentialDto;
@@ -22,5 +23,10 @@ public class AuthController {
     @PutMapping
     public @NotNull CredentialDto refreshToken(@RequestBody @NotNull RefreshTokenCommand command){
         return pipelinr.send(command);
+    }
+
+    @PostMapping("invalidate")
+    public void invalidateAllSessions(@RequestBody @NotNull InvalidateAllSessionsCommand command){
+        pipelinr.send(command);
     }
 }

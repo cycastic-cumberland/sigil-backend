@@ -37,9 +37,9 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
         public UserDetailsService userDetailsService(){
             return username -> {
                 var id = ApplicationUtilities.tryParseInt(username)
-                        .orElseThrow(() -> new RequestException(404, "Could not found user"));
+                        .orElseThrow(() -> new RequestException(404, "Could not find user"));
                 return userRepository.findById(id)
-                        .orElseThrow(() -> new RequestException(404, "Could not found user"));
+                        .orElseThrow(() -> new RequestException(404, "Could not find user"));
             };
         }
     }

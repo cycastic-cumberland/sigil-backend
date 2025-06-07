@@ -27,7 +27,7 @@ public class QueryProjectsCommandHandler implements Command.Handler<QueryProject
         }
 
         var user = userRepository.findById(userId)
-                .orElseThrow(() -> new RequestException(404, "Could not found user"));
+                .orElseThrow(() -> new RequestException(404, "Could not find user"));
         var projects = projectRepository.findProjectsByUser(user, queryProjectsCommand.toPageable());
         return PageResponseDto.fromDomain(projects, ProjectDto::fromDomain);
     }

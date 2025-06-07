@@ -27,11 +27,9 @@ public class ListingAccessControlPolicy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Null
     @Column(columnDefinition = "VARBINARY(255)")
     private byte[] lowSearchKey;
 
-    @Null
     @Column(columnDefinition = "VARBINARY(255)")
     private byte[] highSearchKey = highestSearchKey.clone();
 
@@ -44,6 +42,6 @@ public class ListingAccessControlPolicy {
     @JoinColumn(name="project_id", nullable = false)
     private Project project;
 
-    @Null
+    @Column(nullable = true)
     private Integer applyToId; // `null` for everyone
 }

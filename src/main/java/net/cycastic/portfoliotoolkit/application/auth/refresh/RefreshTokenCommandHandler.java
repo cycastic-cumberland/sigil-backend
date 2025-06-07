@@ -1,8 +1,12 @@
 package net.cycastic.portfoliotoolkit.application.auth.refresh;
 
 import an.awesome.pipelinr.Command;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
+import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
+import net.cycastic.portfoliotoolkit.domain.model.User;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.dto.CredentialDto;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
@@ -10,6 +14,8 @@ import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +25,15 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
     private final JwtIssuer jwtIssuer;
     private final JwtVerifier jwtVerifier;
 
+    private static void verifyCurrentSecurityStamp(Claims claims, User user){
+        var currentStamp = Base64.getEncoder().encodeToString(user.getSecurityStamp());
+        if (!claims.containsKey(ApplicationConstants.SECURITY_STAMP_ENTRY) ||
+            !(claims.get(ApplicationConstants.SECURITY_STAMP_ENTRY) instanceof String claimedStamp) ||
+            !currentStamp.equals(claimedStamp)){
+            throw new ForbiddenException("Invalid security stamp");
+        }
+    }
+
     @Override
     public CredentialDto handle(RefreshTokenCommand refreshTokenCommand) {
         try {
@@ -27,7 +42,8 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
             var subject = claims.getSubject();
             var userId = Integer.parseInt(subject);
             var user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RequestException(404, "Could not found user"));
+                    .orElseThrow(() -> new RequestException(404, "Could not find user"));
+            verifyCurrentSecurityStamp(claims, user);
             return CredentialDto.builder()
                     .userId(userId)
                     .userEmail(user.getEmail())

@@ -22,7 +22,7 @@ public class Project {
     @NotNull
     private String projectName;
 
-    @Null
+    @Column(nullable = true)
     private String corsSettings;
 
     @NotNull

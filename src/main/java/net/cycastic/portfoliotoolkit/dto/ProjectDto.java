@@ -1,7 +1,7 @@
 package net.cycastic.portfoliotoolkit.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class ProjectDto {
     @NotNull
     private String projectName;
 
-    @Null
+    @Column(nullable = true)
     private String corsSettings;
 
     @NotNull

@@ -11,6 +11,7 @@ import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ public class SignInCommandHandler implements Command.Handler<SignInCommand, Cred
                 .collect(Collectors.toSet());
         var additionalClaims = new HashMap<String, Object>();
         additionalClaims.put(ApplicationConstants.ROLES_ENTRY, roles);
+        additionalClaims.put(ApplicationConstants.SECURITY_STAMP_ENTRY, Base64.getEncoder().encodeToString(user.getSecurityStamp()));
         var token = jwtIssuer.generateTokens(user.getId().toString(), additionalClaims);
         return CredentialDto.builder()
                 .userId(user.getId())
