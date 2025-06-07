@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.domain.repository;
+package net.cycastic.portfoliotoolkit.domain.repository.listing;
 
 import jakarta.validation.constraints.NotNull;
 import net.cycastic.portfoliotoolkit.domain.model.ListingAccessControlPolicy;

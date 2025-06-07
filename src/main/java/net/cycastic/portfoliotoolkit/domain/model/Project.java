@@ -2,8 +2,8 @@ package net.cycastic.portfoliotoolkit.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.*;
+import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 
 import java.time.OffsetDateTime;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class Project {
     private String corsSettings;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable=false)
     private User user;
 

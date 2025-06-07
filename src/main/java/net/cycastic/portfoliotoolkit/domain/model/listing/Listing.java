@@ -1,9 +1,10 @@
-package net.cycastic.portfoliotoolkit.domain.model;
+package net.cycastic.portfoliotoolkit.domain.model.listing;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.*;
+import net.cycastic.portfoliotoolkit.domain.model.ListingType;
+import net.cycastic.portfoliotoolkit.domain.model.Project;
 
 import java.time.OffsetDateTime;
 
@@ -16,10 +17,10 @@ import java.time.OffsetDateTime;
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Integer id;
+    private Integer id;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="project_id", nullable=false)
     private Project project;
 
@@ -30,6 +31,15 @@ public class Listing {
     @NotNull
     @Enumerated(EnumType.ORDINAL)
     private ListingType type;
+
+    @OneToOne(mappedBy = "listing")
+    private TextListing textListing;
+
+    @OneToOne(mappedBy = "listing")
+    private DecimalListing decimalListing;
+
+    @OneToOne(mappedBy = "listing")
+    private AttachmentListing attachmentListings;
 
     @NotNull
     private OffsetDateTime createdAt = OffsetDateTime.now();

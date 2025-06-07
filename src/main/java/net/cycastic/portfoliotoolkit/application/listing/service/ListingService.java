@@ -1,34 +1,41 @@
-package net.cycastic.portfoliotoolkit.application.listing;
+package net.cycastic.portfoliotoolkit.application.listing.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
-import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
-import net.cycastic.portfoliotoolkit.domain.model.Listing;
+import net.cycastic.portfoliotoolkit.domain.model.Project;
+import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.model.ListingAccessControlPolicy;
-import net.cycastic.portfoliotoolkit.domain.repository.ListingACPRepository;
-import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
+import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingACPRepository;
+import net.cycastic.portfoliotoolkit.dto.listing.ListingDto;
+import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Lazy
 @Service
 @RequiredArgsConstructor
 public class ListingService {
+    private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
     private static final Pattern SPECIAL_CHARACTERS_ESCAPE_PATTERN = Pattern.compile("[\\\\%_]");
     private static final Pattern SPECIAL_CHARACTERS_UNESCAPE_PATTERN = Pattern.compile("\\\\\\\\|\\\\%|\\\\_");
 
     private final ListingACPRepository listingACPRepository;
-    private final UserRepository userRepository;
     private final LoggedUserAccessor loggedUserAccessor;
+    private final List<ListingResolver> resolvers;
 
     public List<ListingAccessControlPolicy> getOrderedPolicies(@NonNull Listing listing){
         var project = listing.getProject();
@@ -36,34 +43,35 @@ public class ListingService {
                 Sort.by("priority").ascending());
     }
 
-    public void verifyAccess(@NonNull Listing listing){
+    private static boolean isRangeEncapsulated(byte @NonNull[] rangeLow, byte @NonNull[] rangeHigh, byte[] boundLow, byte[] boundHigh){
+        if (boundLow != null && NsoUtilities.compareByteArrays(rangeLow, boundLow) < 0){
+            return false;
+        }
+        if (boundHigh != null && NsoUtilities.compareByteArrays(rangeHigh, boundHigh) >= 0){
+            return false;
+        }
+        return true;
+    }
+
+    public void verifyAccess(@NonNull Project project, byte @NonNull[] lowSearchKey, byte @NonNull[] highSearchKey){
         if (loggedUserAccessor.isAdmin()){
             return;
         }
 
-        var project = listing.getProject();
         if (project.getUser().getId().equals(loggedUserAccessor.getUserId())){
             return;
         }
-        var currentUser = userRepository.findById(loggedUserAccessor.getUserId())
-                .orElseThrow(() -> new RequestException(404, "Could not find user"));
+        var currentUserId = loggedUserAccessor.tryGetUserId();
         var policies = listingACPRepository.findListingAccessControlPoliciesByProject(project,
                 Sort.by("priority").ascending());
         for (var policy : policies){
-            if (!(policy.getApplyToId() == null || policy.getApplyToId().equals(currentUser.getId()))){
+            if (!(policy.getApplyToId() == null ||
+                    (currentUserId.isPresent() && policy.getApplyToId().equals(currentUserId.get())))){
                 continue;
             }
 
-            // lowSearchKey <= listing.searchKey < highSearchKey
-            if (policy.getLowSearchKey() != null){
-                if (!(NsoUtilities.compareByteArrays(listing.getSearchKey(), policy.getLowSearchKey()) >= 0)){
-                    continue;
-                }
-            }
-            if (policy.getHighSearchKey() != null){
-                if (!(NsoUtilities.compareByteArrays(listing.getSearchKey(), policy.getHighSearchKey()) < 0)){
-                    continue;
-                }
+            if (!isRangeEncapsulated(lowSearchKey, highSearchKey, policy.getLowSearchKey(), policy.getHighSearchKey())){
+                continue;
             }
 
             if (policy.isAllowed()){
@@ -128,5 +136,34 @@ public class ListingService {
         }
 
         return sb.toString();
+    }
+
+    public PageResponseDto<ListingDto> toDto(Page<Listing> listings){
+        var domainMap = listings.getContent().stream()
+                .collect(Collectors.toMap(Listing::getId, l -> l));
+        HashMap<Integer, ListingDto> dtoMap = HashMap.newHashMap(domainMap.size());
+        for (var resolver : resolvers){
+            resolver.resolve(domainMap, dtoMap);
+            if (dtoMap.size() == domainMap.size()){
+                break;
+            }
+        }
+
+        if (dtoMap.size() != domainMap.size()){
+            // TODO: provide more details
+            logger.error("Listing are broken");
+        }
+
+        var items = listings.getContent().stream()
+                .map(l -> dtoMap.get(l.getId()))
+                .toList();
+        PageResponseDto.PageResponseDtoBuilder<ListingDto> builder = PageResponseDto.builder();
+        builder.items(items)
+                .page(listings.getNumber() + 1)
+                .pageSize(listings.getSize())
+                .totalPages(listings.getTotalPages())
+                .totalElements((int)listings.getTotalElements());
+
+        return builder.build();
     }
 }

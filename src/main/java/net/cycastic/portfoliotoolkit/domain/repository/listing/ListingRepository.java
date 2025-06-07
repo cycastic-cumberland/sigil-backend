@@ -1,6 +1,10 @@
-package net.cycastic.portfoliotoolkit.domain.repository;
+package net.cycastic.portfoliotoolkit.domain.repository.listing;
 
-import net.cycastic.portfoliotoolkit.domain.model.Listing;
+import jakarta.validation.constraints.NotNull;
+import net.cycastic.portfoliotoolkit.domain.model.Project;
+import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +28,6 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
             nativeQuery = true
     )
     List<byte[]> findDistinctFolders(@Param("projectId") int projectId, @Param("prefix") byte[] prefix);
+
+    Page<Listing> findListingsByProjectAndSearchKeyGreaterThanEqualAndSearchKeyLessThan(@NotNull Project project, @NotNull byte[] searchKeyIsGreaterThan, @NotNull byte[] searchKeyIsLessThan, Pageable pageable);
 }

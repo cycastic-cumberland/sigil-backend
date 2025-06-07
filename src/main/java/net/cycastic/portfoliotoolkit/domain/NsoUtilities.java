@@ -10,6 +10,7 @@ import java.util.List;
 
 public class NsoUtilities {
     public static final int KEY_LENGTH;
+    private static final byte[] HIGHEST_SEARCH_KEY;
     private static final byte[] SEPARATOR_SEQUENCE;
     public static final int SEPARATOR_SEQUENCE_LENGTH;
     private static final Unsafe U;
@@ -17,6 +18,9 @@ public class NsoUtilities {
 
     static {
         KEY_LENGTH = 255;
+        HIGHEST_SEARCH_KEY = new byte[KEY_LENGTH];
+        Arrays.fill(HIGHEST_SEARCH_KEY, (byte)1);
+
         SEPARATOR_SEQUENCE = new byte[3];
         // The last 2 bytes are null bytes;
         SEPARATOR_SEQUENCE[0] = '*';
@@ -160,5 +164,9 @@ public class NsoUtilities {
             }
         }
         return true;
+    }
+
+    public static byte[] getHighestSearchKey(){
+        return HIGHEST_SEARCH_KEY.clone();
     }
 }

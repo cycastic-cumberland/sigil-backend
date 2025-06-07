@@ -1,6 +1,6 @@
 package net.cycastic.portfoliotoolkit.nso;
 
-import net.cycastic.portfoliotoolkit.application.listing.ListingService;
+import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
 import org.junit.jupiter.api.Test;
 

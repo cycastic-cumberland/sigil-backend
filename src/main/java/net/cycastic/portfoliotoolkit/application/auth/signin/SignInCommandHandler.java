@@ -16,18 +16,37 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class SignInCommandHandler implements Command.Handler<SignInCommand, CredentialDto> {
+    private static final String DUMMY_TEXT = "Hello World!";
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final JwtIssuer jwtIssuer;
+    private final String dummyHash;
+
+    public SignInCommandHandler(UserRepository userRepository, PasswordHasher passwordHasher, JwtIssuer jwtIssuer) {
+        this.userRepository = userRepository;
+        this.passwordHasher = passwordHasher;
+        this.jwtIssuer = jwtIssuer;
+
+        dummyHash = passwordHasher.hash(DUMMY_TEXT);
+    }
+
+    private CredentialDto wasteComputePower(){
+        passwordHasher.verify(DUMMY_TEXT, dummyHash);
+        jwtIssuer.generateTokens("", null);
+        throw new RequestException(401, "Incorrect credential");
+    }
 
     @Override
     public CredentialDto handle(SignInCommand signInCommand) {
         var user = userRepository.getByEmail(signInCommand.email());
-        if (user == null ||
-            user.getPassword() == null ||
-            !passwordHasher.verify(signInCommand.password(), user.getPassword())){
+
+        if (user == null || user.isDisabled() || user.getPassword() == null){
+            return wasteComputePower();
+        }
+
+        if (!passwordHasher.verify(signInCommand.password(), user.getPassword())){
+            jwtIssuer.generateTokens("", null);
             throw new RequestException(401, "Incorrect credential");
         }
 

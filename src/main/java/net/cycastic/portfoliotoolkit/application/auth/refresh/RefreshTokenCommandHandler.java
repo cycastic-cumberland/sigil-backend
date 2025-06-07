@@ -43,6 +43,9 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
             var userId = Integer.parseInt(subject);
             var user = userRepository.findById(userId)
                     .orElseThrow(() -> new RequestException(404, "Could not find user"));
+            if (user.isDisabled()){
+                throw new ForbiddenException("User disabled");
+            }
             verifyCurrentSecurityStamp(claims, user);
             return CredentialDto.builder()
                     .userId(userId)
