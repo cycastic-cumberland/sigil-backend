@@ -15,13 +15,6 @@ import java.util.Arrays;
 @Entity
 @Table(name = "listing_access_control_policies", indexes = { @Index(name = "listing_access_control_policies_priority_project_id_uindex", columnList = "project_id,priority", unique = true) })
 public class ListingAccessControlPolicy {
-    private static final byte[] highestSearchKey;
-
-    static {
-        highestSearchKey = new byte[NsoUtilities.KEY_LENGTH];
-        Arrays.fill(highestSearchKey, (byte)1);
-    }
-
     @Id
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +24,7 @@ public class ListingAccessControlPolicy {
     private byte[] lowSearchKey;
 
     @Column(columnDefinition = "VARBINARY(255)")
-    private byte[] highSearchKey = highestSearchKey.clone();
+    private byte[] highSearchKey;
 
     private int priority;
 

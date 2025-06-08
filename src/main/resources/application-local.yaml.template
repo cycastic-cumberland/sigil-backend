@@ -36,3 +36,8 @@ application:
       valid-for-millis: 10_800_000
       public-key: MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEfAAV6D+rM3V4SxUZwEc8/2dvx2iQaRovWMmxT18KvAlqoUV88Br5Apnrhv807b+VCN/Y/nvFsAfcBXqgzX+Vgk3QH4TgmObqviikBlBG77Po4K4yYWF5tRJoIlbMqLUd
       private-key: ME4CAQAwEAYHKoZIzj0CAQYFK4EEACIENzA1AgEBBDC4K76p7bdIsiEtqj3ENjqT9bL7TNOoxqZmh50YvXukWU+gDhuf5WyJeBm16+nrvHs=
+  vault:
+    apiAddress:
+    token:
+    keyName:
+    apiVersion:

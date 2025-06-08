@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.model.listing.AttachmentListing;
-import net.cycastic.portfoliotoolkit.domain.model.listing.DecimalListing;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 
 @Data
