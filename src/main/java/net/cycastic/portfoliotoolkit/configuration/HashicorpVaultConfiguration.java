@@ -12,4 +12,11 @@ public class HashicorpVaultConfiguration {
     private String token;
     private String keyName;
     private int apiVersion = 1;
+
+    public boolean isValid(){
+        return (apiAddress != null && !apiAddress.isEmpty()) &&
+                (token != null && !token.isEmpty()) &&
+                (keyName != null && !keyName.isEmpty()) &&
+                apiVersion > 0;
+    }
 }

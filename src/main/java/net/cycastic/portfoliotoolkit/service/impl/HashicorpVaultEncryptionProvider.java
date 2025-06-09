@@ -2,6 +2,7 @@ package net.cycastic.portfoliotoolkit.service.impl;
 
 import com.bettercloud.vault.Vault;
 import com.bettercloud.vault.VaultConfig;
+import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.HashicorpVaultConfiguration;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
@@ -18,8 +19,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 
-@Lazy
-@Service
 public class HashicorpVaultEncryptionProvider implements EncryptionProvider, DecryptionProvider {
     private static final Logger logger = LoggerFactory.getLogger(HashicorpVaultEncryptionProvider.class);
     protected final Vault vault;
@@ -30,7 +29,6 @@ public class HashicorpVaultEncryptionProvider implements EncryptionProvider, Dec
         this.keyName = keyName;
     }
 
-    @Autowired
     public HashicorpVaultEncryptionProvider(HashicorpVaultConfiguration configuration){
         this(buildConfig(configuration), configuration.getKeyName());
     }
@@ -44,26 +42,9 @@ public class HashicorpVaultEncryptionProvider implements EncryptionProvider, Dec
                 .build();
     }
 
-    @Override
     @SneakyThrows
-    public String decrypt(String cipherText) {
-        Map<String, Object> decryptData = Collections.singletonMap("ciphertext", cipherText);
-        var decResp = vault.logical()
-                .write(String.format("transit/decrypt/%s", keyName), decryptData);
-        var b64Decoded = decResp.getData().get("plaintext");
-        if (b64Decoded == null){
-            logger.error("Failed to decrypt password. Rest response: {}",
-                    new String(decResp.getRestResponse().getBody(), StandardCharsets.UTF_8));
-            throw new RequestException(500, "Failed to decrypt cipher");
-        }
-        byte[] decoded = Base64.getDecoder().decode(b64Decoded);
-        return new String(decoded, StandardCharsets.UTF_8);
-    }
-
-    @Override
-    @SneakyThrows
-    public String encrypt(String plainText) {
-        var base64 = Base64.getEncoder().encodeToString(plainText.getBytes(StandardCharsets.UTF_8));
+    private @NotNull String encryptInternal(byte @NotNull [] unencryptedData){
+        var base64 = Base64.getEncoder().encodeToString(unencryptedData);
         Map<String, Object> encryptData = Collections.singletonMap("plaintext", base64);
         var encResp = vault.logical()
                 .write(String.format("transit/encrypt/%s", keyName), encryptData);
@@ -74,5 +55,41 @@ public class HashicorpVaultEncryptionProvider implements EncryptionProvider, Dec
             throw new RequestException(500, "Failed to encrypt text");
         }
         return cipherText;
+    }
+
+    @SneakyThrows
+    private byte @NotNull [] decryptInternal(@NotNull String encryptedData){
+        Map<String, Object> decryptData = Collections.singletonMap("ciphertext", encryptedData);
+        var decResp = vault.logical()
+                .write(String.format("transit/decrypt/%s", keyName), decryptData);
+        var b64Decoded = decResp.getData().get("plaintext");
+        if (b64Decoded == null){
+            logger.error("Failed to decrypt password. Rest response: {}",
+                    new String(decResp.getRestResponse().getBody(), StandardCharsets.UTF_8));
+            throw new RequestException(500, "Failed to decrypt cipher");
+        }
+        return Base64.getDecoder().decode(b64Decoded);
+    }
+
+    @Override
+    public byte @NotNull [] encrypt(byte @NotNull [] unencryptedData) {
+        return encryptInternal(unencryptedData).getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public String encrypt(String plainText) {
+        return encryptInternal(plainText.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public byte @NotNull [] decrypt(byte @NotNull [] encryptedData) {
+        return decryptInternal(new String(encryptedData, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    @SneakyThrows
+    public String decrypt(String cipherText) {
+        var decoded = decryptInternal(cipherText);
+        return new String(decoded, StandardCharsets.UTF_8);
     }
 }

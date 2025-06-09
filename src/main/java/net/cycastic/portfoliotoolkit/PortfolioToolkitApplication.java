@@ -4,14 +4,22 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.command.CreateUser;
 import net.cycastic.portfoliotoolkit.command.GenerateKeyPair;
 import net.cycastic.portfoliotoolkit.command.VerifyPassword;
+import net.cycastic.portfoliotoolkit.configuration.HashicorpVaultConfiguration;
+import net.cycastic.portfoliotoolkit.configuration.SymmetricEncryptionConfiguration;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
+import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
+import net.cycastic.portfoliotoolkit.service.EncryptionProvider;
 import net.cycastic.portfoliotoolkit.service.PasswordHasher;
+import net.cycastic.portfoliotoolkit.service.impl.HashicorpVaultEncryptionProvider;
+import net.cycastic.portfoliotoolkit.service.impl.SymmetricEncryptionProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.util.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -56,6 +64,72 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
             authProvider.setUserDetailsService(userDetailsService);
             authProvider.setPasswordEncoder(passwordHasher);
             return authProvider;
+        }
+    }
+
+    @Component
+    @org.springframework.context.annotation.Lazy
+    public static class EncryptionConfigurations{
+        private final Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider;
+        private final Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider;
+        private final Lazy<EncryptionProvider> encryptionProvider;
+        private final Lazy<DecryptionProvider> decryptionProvider;
+
+        @Autowired
+        public EncryptionConfigurations(HashicorpVaultConfiguration hashicorpVaultConfiguration,
+                                        SymmetricEncryptionConfiguration symmetricEncryptionConfiguration){
+            var vaultEnabled = false;
+            Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider = null;
+            Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider = null;
+            Lazy<EncryptionProvider> encryptionProvider = null;
+            Lazy<DecryptionProvider> decryptionProvider = null;
+            if (hashicorpVaultConfiguration.isValid()){
+                vaultEnabled = true;
+                hashicorpVaultEncryptionProvider = Lazy.of(() -> new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration));
+                encryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
+                decryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
+            }
+            if (symmetricEncryptionConfiguration.isValid()){
+                symmetricEncryptionProvider = Lazy.of(() -> new SymmetricEncryptionProvider(symmetricEncryptionConfiguration));
+                if (!vaultEnabled){
+                    encryptionProvider = Lazy.of(symmetricEncryptionProvider);
+                    decryptionProvider = Lazy.of(symmetricEncryptionProvider);
+                }
+            }
+
+            if (encryptionProvider == null || decryptionProvider == null){
+                throw new IllegalStateException("No encryption setting configured");
+            }
+
+            this.encryptionProvider = encryptionProvider;
+            this.decryptionProvider = decryptionProvider;
+            this.hashicorpVaultEncryptionProvider = hashicorpVaultEncryptionProvider == null
+                    ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
+                    : hashicorpVaultEncryptionProvider;
+
+            this.symmetricEncryptionProvider = symmetricEncryptionProvider == null
+                    ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
+                    : symmetricEncryptionProvider;
+        }
+
+        @Bean
+        public synchronized EncryptionProvider encryptionProvider(){
+            return encryptionProvider.get();
+        }
+
+        @Bean
+        public synchronized DecryptionProvider decryptionProvider(){
+            return decryptionProvider.get();
+        }
+
+        @Bean
+        public synchronized HashicorpVaultEncryptionProvider hashicorpVaultEncryptionProvider(){
+            return hashicorpVaultEncryptionProvider.get();
+        }
+
+        @Bean
+        public synchronized SymmetricEncryptionProvider symmetricEncryptionProvider(){
+            return symmetricEncryptionProvider.get();
         }
     }
 
