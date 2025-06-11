@@ -1,6 +1,8 @@
 package net.cycastic.portfoliotoolkit.application.listing.service;
 
-import lombok.NonNull;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
@@ -18,32 +20,33 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Lazy
 @Service
 @RequiredArgsConstructor
 public class ListingService {
+    private static final Cache<String, Pattern> PATTERN_CACHE = Caffeine.newBuilder()
+            .maximumSize(512) // TODO: Ways to override this
+            .build();
+    private static final Pattern MATCH_ALL = Pattern.compile(".*");
     private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
-    private static final Pattern SPECIAL_CHARACTERS_ESCAPE_PATTERN = Pattern.compile("[\\\\%_]");
-    private static final Pattern SPECIAL_CHARACTERS_UNESCAPE_PATTERN = Pattern.compile("\\\\\\\\|\\\\%|\\\\_");
 
     private final ListingACPRepository listingACPRepository;
     private final LoggedUserAccessor loggedUserAccessor;
     private final List<ListingResolver> resolvers;
 
-    public List<ListingAccessControlPolicy> getOrderedPolicies(@NonNull Listing listing){
+    public List<ListingAccessControlPolicy> getOrderedPolicies(@NotNull Listing listing){
         var project = listing.getProject();
         return listingACPRepository.findListingAccessControlPoliciesByProject(project,
                 Sort.by("priority").ascending());
     }
 
-    private static boolean isRangeEncapsulated(byte @NonNull[] rangeLow, byte @NonNull[] rangeHigh, byte[] boundLow, byte[] boundHigh){
+    private static boolean isRangeEncapsulated(byte @NotNull[] rangeLow, byte @NotNull[] rangeHigh, byte[] boundLow, byte[] boundHigh){
         if (boundLow != null && NsoUtilities.compareByteArrays(rangeLow, boundLow) < 0){
             return false;
         }
@@ -53,7 +56,48 @@ public class ListingService {
         return true;
     }
 
-    public void verifyAccess(@NonNull Project project, byte @NonNull[] lowSearchKey, byte @NonNull[] highSearchKey){
+    private static Pattern buildRegexFromGlob(@NotNull String glob){
+        var regex = new StringBuilder("^");
+        var i = 0;
+        while (i < glob.length()) {
+            var c = glob.charAt(i);
+            if (c == '*') {
+                if (i + 1 < glob.length() && glob.charAt(i + 1) == '*') {
+                    regex.append(".*");
+                    i += 2;
+                } else {
+                    regex.append("[^/]*");
+                    i++;
+                }
+            } else if ("\\.[]{}()+-^$|".indexOf(c) >= 0) {
+                regex.append("\\").append(c);
+                i++;
+            } else {
+                regex.append(c);
+                i++;
+            }
+        }
+        return Pattern.compile(regex.append('$').toString());
+    }
+
+    private static Pattern getRegex(@NotNull ListingAccessControlPolicy policy){
+        if (policy.getGlobPath() == null){
+            return MATCH_ALL;
+        }
+        return PATTERN_CACHE.get(policy.getGlobPath(), ListingService::buildRegexFromGlob);
+    }
+
+    private static Pattern joinPatterns(@NotNull Stream<Pattern> stream){
+        var combined = stream.map(Pattern::pattern)
+                .map(s -> "(?:" + s + ")")
+                .collect(Collectors.joining("|"));
+        var pattern = Pattern.compile(combined);
+        PATTERN_CACHE.put(combined, pattern);
+        return pattern;
+    }
+
+    public void verifyAccess(@NotNull Project project,
+                             @NotNull Stream<Listing> listings){
         if (loggedUserAccessor.isAdmin()){
             return;
         }
@@ -64,78 +108,28 @@ public class ListingService {
         var currentUserId = loggedUserAccessor.tryGetUserId();
         var policies = listingACPRepository.findListingAccessControlPoliciesByProject(project,
                 Sort.by("priority").ascending());
-        for (var policy : policies){
-            if (!(policy.getApplyToId() == null ||
-                    (currentUserId.isPresent() && policy.getApplyToId().equals(currentUserId.get())))){
-                continue;
-            }
+        var baseFilter = policies.stream()
+                .filter(policy -> policy.getApplyToId() == null ||
+                        (currentUserId.isPresent() && policy.getApplyToId().equals(currentUserId.get())));
+        var allowPattern = joinPatterns(baseFilter.filter(ListingAccessControlPolicy::isAllowed)
+                .map(ListingService::getRegex));
 
-            if (!isRangeEncapsulated(lowSearchKey, highSearchKey, policy.getLowSearchKey(), policy.getHighSearchKey())){
-                continue;
-            }
+        var it = listings.iterator();
+        var allowed = 0;
+        var iterated = 0;
+        while (it.hasNext()){
+           var listing = it.next();
+           iterated++;
+           if (allowPattern.matcher(listing.getListingPath()).matches()){
+               allowed++;
+               continue;
+           }
 
-            if (policy.isAllowed()){
-                // Returns to allow
-                return;
-            }
-
-            // Breaks to throw
-            break;
+           break;
         }
-
-        // Forbids if exhaust all policies
-        throw new ForbiddenException();
-    }
-
-    public static byte[] encodeSearchKey(@NonNull String path){
-        var matcher = SPECIAL_CHARACTERS_ESCAPE_PATTERN.matcher(path);
-        var result = matcher.replaceAll(match -> switch (match.group()) {
-            case "\\" -> "\\\\\\\\";
-            case "%" -> "\\\\%";
-            case "_" -> "\\\\_";
-            default -> match.group();
-        });
-        var parts = result.split("/");
-        var buffer = ByteBuffer.allocate(NsoUtilities.KEY_LENGTH * NsoUtilities.SEPARATOR_SEQUENCE_LENGTH);
-
-        NsoUtilities.insertSeparator(buffer);
-        var first = true;
-        for (var part : parts){
-            if (part.isEmpty()){
-                continue;
-            }
-            if (first){
-                first = false;
-            } else {
-                NsoUtilities.insertSeparator(buffer);
-            }
-            buffer.put(part.getBytes(StandardCharsets.UTF_8));
+        if (allowed != iterated){
+            throw new ForbiddenException();
         }
-
-        var finalArray = new byte[buffer.position()];
-        System.arraycopy(buffer.array(), 0, finalArray, 0, buffer.position());
-        return finalArray;
-    }
-
-    public static String decodeSearchKey(byte @NonNull [] searchKey){
-        var sb = new StringBuilder();
-        var delimeterAsString = NsoUtilities.delimeterAsString();
-        for (var part : NsoUtilities.split(searchKey)){
-            if (part.length == 0){
-                continue;
-            }
-
-            var matcher = SPECIAL_CHARACTERS_UNESCAPE_PATTERN.matcher(new String(part, StandardCharsets.UTF_8));
-            var result = matcher.replaceAll(match -> switch (match.group()) {
-                case "\\\\\\\\" -> "\\";
-                case "\\\\%" -> "%";
-                case "\\\\_" -> "_";
-                default -> match.group().equals(delimeterAsString) ? "" : match.group();
-            });
-            sb.append('/').append(result);
-        }
-
-        return sb.toString();
     }
 
     public PageResponseDto<ListingDto> toDto(Page<Listing> listings){

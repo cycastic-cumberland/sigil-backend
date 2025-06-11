@@ -14,6 +14,5 @@ import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class QueryListingCommand extends PageRequestDto implements Command<PageResponseDto<ListingDto>> {
-    private String searchPathLow;
-    private String searchPathHigh;
+    private String prefix;
 }

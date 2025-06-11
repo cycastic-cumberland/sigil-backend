@@ -1,7 +1,6 @@
 package net.cycastic.portfoliotoolkit.dto.listing;
 
 import lombok.*;
-import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 
@@ -21,7 +20,7 @@ public class ListingDto {
 
     protected void fromListing(Listing listing){
         id = listing.getId();
-        path = ListingService.decodeSearchKey(listing.getSearchKey());
+        path = listing.getListingPath();
         type = listing.getType();
         createdAt = listing.getCreatedAt();
         updatedAt = listing.getUpdatedAt();

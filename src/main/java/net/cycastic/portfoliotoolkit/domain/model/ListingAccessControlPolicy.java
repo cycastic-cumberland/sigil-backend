@@ -2,11 +2,7 @@ package net.cycastic.portfoliotoolkit.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.*;
-import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
-
-import java.util.Arrays;
 
 @Data
 @Builder
@@ -21,10 +17,7 @@ public class ListingAccessControlPolicy {
     private Integer id;
 
     @Column(columnDefinition = "VARBINARY(255)")
-    private byte[] lowSearchKey;
-
-    @Column(columnDefinition = "VARBINARY(255)")
-    private byte[] highSearchKey;
+    private String globPath;
 
     private int priority;
 

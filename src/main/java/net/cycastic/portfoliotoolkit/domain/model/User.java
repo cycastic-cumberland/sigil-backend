@@ -48,6 +48,9 @@ public class User implements UserDetails {
     @Column(nullable = true)
     private Integer projectLimit;
 
+    @Column(nullable = true)
+    private Integer lacpLimit;
+
     @NotNull
     private OffsetDateTime joinedAt;
 

@@ -1,6 +1,5 @@
 package net.cycastic.portfoliotoolkit.nso;
 
-import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +14,5 @@ public class NaturalSortOrderTests {
 
         assert NsoUtilities.compareByteArrays(NsoUtilities.toNaturalSearchOrder(39670.129),
                 NsoUtilities.toNaturalSearchOrder(14.3)) > 0;
-    }
-
-    @Test
-    public void simpleEncodingTest(){
-        final var path = "/this/__is__/a\\/test%%%%%%%";
-        var encoded = ListingService.encodeSearchKey(path);
-        var decoded = ListingService.decodeSearchKey(encoded);
-        assert path.equals(decoded);
     }
 }

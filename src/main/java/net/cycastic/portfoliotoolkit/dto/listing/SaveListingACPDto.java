@@ -11,10 +11,7 @@ import org.springframework.lang.Nullable;
 @AllArgsConstructor
 public class SaveListingACPDto {
     @Nullable
-    private String lowSearchPath;
-
-    @Nullable
-    private String highSearchPath;
+    private String globPath;
 
     private boolean isAllowed;
 

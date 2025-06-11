@@ -36,6 +36,9 @@ public class Project {
     @OneToMany(mappedBy = "project")
     private Set<ListingAccessControlPolicy> listingAccessControlPolicies;
 
+    @OneToMany(mappedBy = "project")
+    private Set<EncryptedSmtpCredential> encryptedSmtpCredentials;
+
     @NotNull
     private OffsetDateTime createdAt = OffsetDateTime.now();
 

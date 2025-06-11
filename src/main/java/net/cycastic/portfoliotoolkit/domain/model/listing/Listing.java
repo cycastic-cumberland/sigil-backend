@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "listings", indexes = { @Index(name = "listings_project_id_searchKey_uindex", columnList = "project_id,search_key", unique = true) })
+@Table(name = "listings", indexes = { @Index(name = "listings_project_id_listing_path_uindex", columnList = "project_id,listing_path", unique = true) })
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,7 @@ public class Listing {
 
     @NotNull
     @Column(columnDefinition = "VARBINARY(255)")
-    private byte[] searchKey;
+    private String listingPath;
 
     @NotNull
     @Enumerated(EnumType.ORDINAL)

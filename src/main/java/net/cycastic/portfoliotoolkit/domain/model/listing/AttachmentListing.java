@@ -32,4 +32,6 @@ public class AttachmentListing {
 
     @Column(columnDefinition = "VARCHAR(255)")
     private String mimeType;
+
+    private boolean uploadCompleted;
 }

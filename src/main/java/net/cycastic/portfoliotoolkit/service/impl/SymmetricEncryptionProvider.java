@@ -21,10 +21,11 @@ public class SymmetricEncryptionProvider implements EncryptionProvider, Decrypti
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final int NONCE_LENGTH = 12; // 96-bit
     private static final int KEY_LENGTH = 32; // 256-bit
-    private final byte[] symmetricKey;
+    private final SecretKeySpec key;
 
     public SymmetricEncryptionProvider(SymmetricEncryptionConfiguration configuration){
-        symmetricKey = extractOkm(configuration.getIkm(), configuration.getSalt());
+        var okm = extractOkm(configuration.getIkm(), configuration.getSalt());
+        key = new SecretKeySpec(okm, "AES");
     }
 
     protected byte[] extractOkm(@NotNull byte[] ikm, @Nullable byte[] salt){
@@ -39,7 +40,6 @@ public class SymmetricEncryptionProvider implements EncryptionProvider, Decrypti
     private String encryptInternal(byte @NotNull [] unencryptedData){
         var iv = new byte[NONCE_LENGTH];
         RANDOM.nextBytes(iv);
-        var key =  new SecretKeySpec(symmetricKey, "AES");
         var gcmSpec = new GCMParameterSpec(128, iv);
         var cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
@@ -62,7 +62,6 @@ public class SymmetricEncryptionProvider implements EncryptionProvider, Decrypti
         }
         var iv = Base64.getDecoder().decode(fragment[1].getBytes(StandardCharsets.UTF_8));
         var cipherText = Base64.getDecoder().decode(fragment[2].getBytes(StandardCharsets.UTF_8));
-        var key =  new SecretKeySpec(symmetricKey, "AES");
         var gcmSpec = new GCMParameterSpec(128, iv);
         var cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
