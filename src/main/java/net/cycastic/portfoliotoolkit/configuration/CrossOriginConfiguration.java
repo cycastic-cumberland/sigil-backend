@@ -6,10 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "application.s3")
-public class S3Configurations {
-    private String regionName;
-    private String accessKey;
-    private String secretKey;
-    private String attachmentBucketName;
+@ConfigurationProperties(prefix = "application.cors")
+public class CrossOriginConfiguration {
+    private String allowOrigins;
 }

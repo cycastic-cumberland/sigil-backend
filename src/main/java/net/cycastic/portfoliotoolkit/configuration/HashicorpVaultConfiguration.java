@@ -10,13 +10,16 @@ import org.springframework.context.annotation.Configuration;
 public class HashicorpVaultConfiguration {
     private String apiAddress;
     private String token;
-    private String keyName;
+    private String encryptionKeyName;
+    private String signingKeyName;
+    private String signingPrivateKeyWrapped;
+    private String signingPublicKey;
     private int apiVersion = 1;
 
     public boolean isValid(){
         return (apiAddress != null && !apiAddress.isEmpty()) &&
                 (token != null && !token.isEmpty()) &&
-                (keyName != null && !keyName.isEmpty()) &&
+                (encryptionKeyName != null && !encryptionKeyName.isEmpty()) &&
                 apiVersion > 0;
     }
 }

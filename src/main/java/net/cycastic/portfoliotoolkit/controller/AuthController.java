@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.auth.invalidatesessions.InvalidateAllSessionsCommand;
 import net.cycastic.portfoliotoolkit.application.auth.refresh.RefreshTokenCommand;
+import net.cycastic.portfoliotoolkit.application.auth.self.GetSelfCommand;
 import net.cycastic.portfoliotoolkit.application.auth.signin.SignInCommand;
 import net.cycastic.portfoliotoolkit.dto.CredentialDto;
+import net.cycastic.portfoliotoolkit.dto.UserDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,5 +30,10 @@ public class AuthController {
     @PostMapping("invalidate")
     public void invalidateAllSessions(@RequestBody @NotNull InvalidateAllSessionsCommand command){
         pipelinr.send(command);
+    }
+
+    @GetMapping("self")
+    public UserDto getSelf(){
+        return pipelinr.send(GetSelfCommand.INSTANCE);
     }
 }

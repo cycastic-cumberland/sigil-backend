@@ -4,12 +4,16 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
+import net.cycastic.portfoliotoolkit.configuration.S3Configurations;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
+import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
+import net.cycastic.portfoliotoolkit.domain.model.listing.AttachmentListing;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.model.ListingAccessControlPolicy;
+import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingACPRepository;
+import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository;
 import net.cycastic.portfoliotoolkit.dto.listing.ListingDto;
 import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
@@ -20,8 +24,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,21 +46,9 @@ public class ListingService {
     private final LoggedUserAccessor loggedUserAccessor;
     private final List<ListingResolver> resolvers;
 
-    public List<ListingAccessControlPolicy> getOrderedPolicies(@NotNull Listing listing){
-        var project = listing.getProject();
-        return listingACPRepository.findListingAccessControlPoliciesByProject(project,
-                Sort.by("priority").ascending());
-    }
-
-    private static boolean isRangeEncapsulated(byte @NotNull[] rangeLow, byte @NotNull[] rangeHigh, byte[] boundLow, byte[] boundHigh){
-        if (boundLow != null && NsoUtilities.compareByteArrays(rangeLow, boundLow) < 0){
-            return false;
-        }
-        if (boundHigh != null && NsoUtilities.compareByteArrays(rangeHigh, boundHigh) >= 0){
-            return false;
-        }
-        return true;
-    }
+    private final AttachmentListingRepository attachmentListingRepository;
+    private final ListingRepository listingRepository;
+    private final S3Configurations s3Configurations;
 
     private static Pattern buildRegexFromGlob(@NotNull String glob){
         var regex = new StringBuilder("^");
@@ -114,21 +108,23 @@ public class ListingService {
         var allowPattern = joinPatterns(baseFilter.filter(ListingAccessControlPolicy::isAllowed)
                 .map(ListingService::getRegex));
 
-        var it = listings.iterator();
-        var allowed = 0;
-        var iterated = 0;
-        while (it.hasNext()){
-           var listing = it.next();
-           iterated++;
-           if (allowPattern.matcher(listing.getListingPath()).matches()){
-               allowed++;
-               continue;
-           }
+        try (listings){
+            var it = listings.iterator();
+            var allowed = 0;
+            var iterated = 0;
+            while (it.hasNext()){
+               var listing = it.next();
+               iterated++;
+               if (allowPattern.matcher(listing.getListingPath()).matches()){
+                   allowed++;
+                   continue;
+               }
 
-           break;
-        }
-        if (allowed != iterated){
-            throw new ForbiddenException();
+               break;
+            }
+            if (allowed != iterated){
+                throw new ForbiddenException();
+            }
         }
     }
 
@@ -159,5 +155,24 @@ public class ListingService {
                 .totalElements((int)listings.getTotalElements());
 
         return builder.build();
+    }
+
+    public AttachmentListing saveAttachment(@NotNull Project project, @NotNull String path, String mimeType){
+        var listing = Listing.builder()
+                .project(project)
+                .listingPath(path)
+                .type(ListingType.ATTACHMENT)
+                .createdAt(OffsetDateTime.now())
+                .build();
+        var attachmentListing = AttachmentListing.builder()
+                .listing(listing)
+                .bucketName(s3Configurations.getAttachmentBucketName())
+                .bucketRegion(s3Configurations.getRegionName())
+                .objectKey(UUID.randomUUID().toString())
+                .mimeType(mimeType)
+                .build();
+        listingRepository.save(listing);
+        attachmentListingRepository.save(attachmentListing);
+        return attachmentListing;
     }
 }

@@ -6,18 +6,23 @@ import net.cycastic.portfoliotoolkit.command.GenerateKeyPair;
 import net.cycastic.portfoliotoolkit.command.VerifyPassword;
 import net.cycastic.portfoliotoolkit.configuration.HashicorpVaultConfiguration;
 import net.cycastic.portfoliotoolkit.configuration.SymmetricEncryptionConfiguration;
+import net.cycastic.portfoliotoolkit.configuration.auth.JwtConfiguration;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
 import net.cycastic.portfoliotoolkit.service.EncryptionProvider;
 import net.cycastic.portfoliotoolkit.service.PasswordHasher;
+import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
+import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import net.cycastic.portfoliotoolkit.service.impl.HashicorpVaultEncryptionProvider;
 import net.cycastic.portfoliotoolkit.service.impl.SymmetricEncryptionProvider;
+import net.cycastic.portfoliotoolkit.service.impl.auth.StandardJwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.util.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -74,20 +79,34 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
         private final Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider;
         private final Lazy<EncryptionProvider> encryptionProvider;
         private final Lazy<DecryptionProvider> decryptionProvider;
+        private final Lazy<StandardJwtService> jwtService;
 
         @Autowired
         public EncryptionConfigurations(HashicorpVaultConfiguration hashicorpVaultConfiguration,
-                                        SymmetricEncryptionConfiguration symmetricEncryptionConfiguration){
+                                        SymmetricEncryptionConfiguration symmetricEncryptionConfiguration,
+                                        JwtConfiguration jwtConfiguration){
             var vaultEnabled = false;
             Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider = null;
             Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider = null;
             Lazy<EncryptionProvider> encryptionProvider = null;
             Lazy<DecryptionProvider> decryptionProvider = null;
+            Lazy<StandardJwtService> jwtService = null;
             if (hashicorpVaultConfiguration.isValid()){
                 vaultEnabled = true;
                 hashicorpVaultEncryptionProvider = Lazy.of(() -> new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration));
                 encryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
                 decryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
+
+                if (hashicorpVaultConfiguration.getSigningPrivateKeyWrapped() != null &&
+                        hashicorpVaultConfiguration.getSigningPublicKey() != null){
+                    jwtService = Lazy.of(() -> {
+                        var privateKeyEncrypted = hashicorpVaultConfiguration.getSigningPrivateKeyWrapped();
+                        var privateKeyBase64 = new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration).decrypt(privateKeyEncrypted);
+                        var privateKey = StandardJwtService.decodePrivateKey(privateKeyBase64);
+                        var publicKey = StandardJwtService.decodePublicKey(hashicorpVaultConfiguration.getSigningPublicKey());
+                        return new StandardJwtService(jwtConfiguration, privateKey, publicKey);
+                    });
+                }
             }
             if (symmetricEncryptionConfiguration.isValid()){
                 symmetricEncryptionProvider = Lazy.of(() -> new SymmetricEncryptionProvider(symmetricEncryptionConfiguration));
@@ -110,6 +129,10 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
             this.symmetricEncryptionProvider = symmetricEncryptionProvider == null
                     ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
                     : symmetricEncryptionProvider;
+
+            this.jwtService = jwtService == null
+                    ? Lazy.of(() -> new StandardJwtService(jwtConfiguration))
+                    : jwtService;
         }
 
         @Bean
@@ -131,13 +154,25 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
         public synchronized SymmetricEncryptionProvider symmetricEncryptionProvider(){
             return symmetricEncryptionProvider.get();
         }
+
+        @Bean
+        public synchronized JwtIssuer jwtIssuer(){
+            return jwtService.get();
+        }
+
+        @Bean
+        public synchronized JwtVerifier jwtVerifier(){
+            return jwtService.get();
+        }
     }
 
     public static void main(String[] args) {
+        var builder = new SpringApplicationBuilder(PortfolioToolkitApplication.class);
         if (args.length > 0){
             System.setProperty("spring.main.web-application-type", "none");
+            builder = builder.web(WebApplicationType.NONE);
         }
-        SpringApplication.run(PortfolioToolkitApplication.class, args);
+        builder.run(args);
     }
 
     @Override
@@ -146,7 +181,7 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
             int exitCode = new CommandLine(cliCommand, picocliFactory)
                     .setCaseInsensitiveEnumValuesAllowed(true)
                     .execute(args);
-            System.exit(exitCode); // Exit JVM after command execution
+            System.exit(exitCode);
         }
     }
 }

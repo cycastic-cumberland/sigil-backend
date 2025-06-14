@@ -21,11 +21,15 @@ public class QueryProjectsCommandHandler implements Command.Handler<QueryProject
     @Override
     public PageResponseDto<ProjectDto> handle(QueryProjectsCommand queryProjectsCommand) {
         var userId = queryProjectsCommand.getUserId();
-        if (!loggedUserAccessor.isAdmin() &&
-                userId != loggedUserAccessor.getUserId()){
+        if (userId != null &&
+                !loggedUserAccessor.isAdmin() &&
+                !userId.equals(loggedUserAccessor.getUserId())){
             throw new ForbiddenException();
         }
 
+        if (userId == null){
+            userId = loggedUserAccessor.getUserId();
+        }
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RequestException(404, "Could not find user"));
         var projects = projectRepository.findProjectsByUser(user, queryProjectsCommand.toPageable());

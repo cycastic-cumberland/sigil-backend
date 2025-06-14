@@ -5,13 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.portfoliotoolkit.domain.model.EmailTemplate;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.springframework.lang.Nullable;
+
+import java.nio.ByteBuffer;
+import java.util.UUID;
 
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "attachment_listings")
+@Table(name = "attachment_listings", indexes = { @Index(name = "attachment_listings_attachment_key_uindex", columnList = "attachment_key", unique = true) })
 public class AttachmentListing {
     @Id
     private Integer id;
@@ -34,4 +41,11 @@ public class AttachmentListing {
     private String mimeType;
 
     private boolean uploadCompleted;
+
+    @Column(columnDefinition = "CHAR(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private String uuid;
+
+//    @OneToOne(mappedBy = "attachmentListing")
+//    private EmailTemplate emailTemplate;
 }

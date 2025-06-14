@@ -81,6 +81,16 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
         return claims;
     }
 
+    public boolean hasInvalidClaims(){
+        var wrapper = sessionStorage.get(CLAIMS_IDENTIFIER, ClaimsWrapper.class);
+        if (wrapper != null){
+            return wrapper.claims == null;
+        }
+        var claims = createClaimsFromRequest();
+        sessionStorage.put(CLAIMS_IDENTIFIER, new ClaimsWrapper(claims));
+        return claims == null;
+    }
+
     @Override
     public Optional<Integer> tryGetUserId() {
         var claims = getClaims();

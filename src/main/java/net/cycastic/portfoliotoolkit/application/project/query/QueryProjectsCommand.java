@@ -11,5 +11,5 @@ import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class QueryProjectsCommand extends PageRequestDto implements Command<PageResponseDto<ProjectDto>> {
-    private int userId;
+    private Integer userId;
 }

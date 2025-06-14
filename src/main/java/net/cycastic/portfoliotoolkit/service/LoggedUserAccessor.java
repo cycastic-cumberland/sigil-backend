@@ -15,6 +15,8 @@ public interface LoggedUserAccessor {
 
     @Null Claims getClaims();
 
+    boolean hasInvalidClaims();
+
     Set<String> getRoles();
 
     default boolean isAdmin(){

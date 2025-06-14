@@ -2,8 +2,6 @@ package net.cycastic.portfoliotoolkit.dto.listing;
 
 
 import lombok.*;
-import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
-import net.cycastic.portfoliotoolkit.domain.NsoUtilities;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.model.listing.TextListing;
 

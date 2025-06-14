@@ -27,7 +27,7 @@ public class HashicorpVaultEncryptionProvider implements EncryptionProvider, Dec
     }
 
     public HashicorpVaultEncryptionProvider(HashicorpVaultConfiguration configuration){
-        this(buildConfig(configuration), configuration.getKeyName());
+        this(buildConfig(configuration), configuration.getEncryptionKeyName());
     }
 
     @SneakyThrows

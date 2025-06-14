@@ -3,7 +3,9 @@ package net.cycastic.portfoliotoolkit.service.impl.auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
+import net.cycastic.portfoliotoolkit.configuration.BaseJwtConfiguration;
 import net.cycastic.portfoliotoolkit.configuration.auth.JwtConfiguration;
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
@@ -11,8 +13,6 @@ import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
 import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
 
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -23,23 +23,27 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 
-@Lazy
-@Service
 public class StandardJwtService implements JwtIssuer, JwtVerifier {
     private static final Logger logger = LoggerFactory.getLogger(StandardJwtService.class);
-    private final JwtConfiguration jwtConfiguration;
+    private final BaseJwtConfiguration jwtConfiguration;
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
 
     public StandardJwtService(JwtConfiguration jwtConfiguration){
         this.jwtConfiguration = jwtConfiguration;
-        privateKey = getPrivateKey();
-        publicKey = getPublicKey();
+        privateKey = decodePrivateKey(jwtConfiguration.getPrivateKey());
+        publicKey = decodePublicKey(jwtConfiguration.getPublicKey());
     }
 
-    private @NonNull PrivateKey getPrivateKey() {
+    public StandardJwtService(BaseJwtConfiguration jwtConfiguration, PrivateKey privateKey, PublicKey publicKey){
+
+        this.jwtConfiguration = jwtConfiguration;
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+    }
+
+    public static @NonNull PrivateKey decodePrivateKey(@NotNull String base64Private) {
         try {
-            var base64Private = jwtConfiguration.getPrivateKey();
             var keyBytes = Base64.getDecoder().decode(base64Private);
             var keySpec = new PKCS8EncodedKeySpec(keyBytes);
             var kf = KeyFactory.getInstance("EC");
@@ -49,9 +53,8 @@ public class StandardJwtService implements JwtIssuer, JwtVerifier {
         }
     }
 
-    private @NonNull PublicKey getPublicKey() {
+    public static @NonNull PublicKey decodePublicKey(@NotNull String base64Public) {
         try {
-            var base64Public = jwtConfiguration.getPublicKey();
             var keyBytes = Base64.getDecoder().decode(base64Public);
             var keySpec = new X509EncodedKeySpec(keyBytes);
             var kf = KeyFactory.getInstance("EC");
