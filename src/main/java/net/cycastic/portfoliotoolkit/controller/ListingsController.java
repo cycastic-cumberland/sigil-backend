@@ -18,8 +18,6 @@ public class ListingsController {
 
     @PostMapping("acp")
     public void saveLACP(@RequestBody SaveLACPCommand command){
-        // TODO: refine approach
-        throw new UnsupportedOperationException();
-//        pipelinr.send(command);
+        pipelinr.send(command);
     }
 }
