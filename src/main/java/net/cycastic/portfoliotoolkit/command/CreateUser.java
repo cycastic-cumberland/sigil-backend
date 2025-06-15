@@ -1,5 +1,6 @@
 package net.cycastic.portfoliotoolkit.command;
 
+import net.cycastic.portfoliotoolkit.application.auth.UserService;
 import net.cycastic.portfoliotoolkit.domain.model.User;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.service.PasswordHasher;
@@ -51,7 +52,9 @@ public class CreateUser implements Callable<Integer> {
                 .roles(String.join(",", roles))
                 .disabled(false)
                 .joinedAt(OffsetDateTime.now())
+                .securityStamp(new byte[32])
                 .build();
+        UserService.refreshSecurityStamp(user);
         userRepository.save(user);
         logger.info("User created.");
         return 0;

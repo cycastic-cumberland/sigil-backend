@@ -1,7 +1,6 @@
 package net.cycastic.portfoliotoolkit.application.auth.signin;
 
 import an.awesome.pipelinr.Command;
-import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
