@@ -4,9 +4,9 @@ import an.awesome.pipelinr.Command;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.BaseSmtpCredentialDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageRequestDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.BaseSmtpCredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageRequestDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 
 @Data
 @NoArgsConstructor

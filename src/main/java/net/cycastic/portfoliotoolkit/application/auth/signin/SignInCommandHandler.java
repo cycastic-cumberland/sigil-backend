@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
-import net.cycastic.portfoliotoolkit.dto.CredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.CredentialDto;
 import net.cycastic.portfoliotoolkit.service.PasswordHasher;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
 import org.springframework.security.core.GrantedAuthority;

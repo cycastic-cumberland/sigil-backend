@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
-import net.cycastic.portfoliotoolkit.dto.UserDto;
+import net.cycastic.portfoliotoolkit.domain.dto.UserDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

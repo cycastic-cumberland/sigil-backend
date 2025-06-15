@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.project.create.CreateProjectCommand;
 import net.cycastic.portfoliotoolkit.application.project.get.GetProjectCommand;
 import net.cycastic.portfoliotoolkit.application.project.query.QueryProjectsCommand;
-import net.cycastic.portfoliotoolkit.dto.IdDto;
-import net.cycastic.portfoliotoolkit.dto.ProjectDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
+import net.cycastic.portfoliotoolkit.domain.dto.ProjectDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

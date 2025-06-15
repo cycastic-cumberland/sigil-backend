@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.IdDto;
+import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
 
 @Data
 @NoArgsConstructor

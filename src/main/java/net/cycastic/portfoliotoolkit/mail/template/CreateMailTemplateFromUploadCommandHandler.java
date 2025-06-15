@@ -6,7 +6,7 @@ import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
-import net.cycastic.portfoliotoolkit.dto.AttachmentPresignedUploadDto;
+import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedUploadDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import net.cycastic.portfoliotoolkit.service.StorageProvider;
 import org.springframework.stereotype.Component;

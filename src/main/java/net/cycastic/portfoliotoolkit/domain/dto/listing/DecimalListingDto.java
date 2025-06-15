@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.dto.listing;
+package net.cycastic.portfoliotoolkit.domain.dto.listing;
 
 
 import lombok.AllArgsConstructor;

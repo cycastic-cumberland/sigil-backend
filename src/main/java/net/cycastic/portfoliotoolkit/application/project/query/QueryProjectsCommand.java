@@ -2,9 +2,9 @@ package net.cycastic.portfoliotoolkit.application.project.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.*;
-import net.cycastic.portfoliotoolkit.dto.ProjectDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageRequestDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.ProjectDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageRequestDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 
 @Data
 @NoArgsConstructor

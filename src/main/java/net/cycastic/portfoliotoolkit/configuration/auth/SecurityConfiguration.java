@@ -6,7 +6,7 @@ import net.cycastic.portfoliotoolkit.application.project.get.GetProjectCommand;
 import net.cycastic.portfoliotoolkit.configuration.CrossOriginConfiguration;
 import net.cycastic.portfoliotoolkit.controller.filter.JwtAuthenticationFilter;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
-import net.cycastic.portfoliotoolkit.dto.ProjectDto;
+import net.cycastic.portfoliotoolkit.domain.dto.ProjectDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

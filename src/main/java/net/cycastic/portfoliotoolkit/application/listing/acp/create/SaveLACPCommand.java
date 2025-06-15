@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.listing.SaveListingACPDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.SaveListingACPDto;
 
 import java.util.List;
 

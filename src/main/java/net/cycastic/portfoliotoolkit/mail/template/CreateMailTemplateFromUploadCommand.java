@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.AttachmentPresignedUploadDto;
+import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedUploadDto;
 
 @Data
 @NoArgsConstructor

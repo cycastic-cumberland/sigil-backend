@@ -7,8 +7,8 @@ import net.cycastic.portfoliotoolkit.application.auth.invalidatesessions.Invalid
 import net.cycastic.portfoliotoolkit.application.auth.refresh.RefreshTokenCommand;
 import net.cycastic.portfoliotoolkit.application.auth.self.GetSelfCommand;
 import net.cycastic.portfoliotoolkit.application.auth.signin.SignInCommand;
-import net.cycastic.portfoliotoolkit.dto.CredentialDto;
-import net.cycastic.portfoliotoolkit.dto.UserDto;
+import net.cycastic.portfoliotoolkit.domain.dto.CredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.UserDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.listing.ListingDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageRequestDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageRequestDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 
 @Data
 @NoArgsConstructor

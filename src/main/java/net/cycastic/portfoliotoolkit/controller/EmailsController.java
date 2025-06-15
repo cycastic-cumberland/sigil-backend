@@ -7,10 +7,10 @@ import net.cycastic.portfoliotoolkit.application.email.smtp.get.GetSmtpCredentia
 import net.cycastic.portfoliotoolkit.application.email.smtp.query.QuerySmtpCredentialsCommand;
 import net.cycastic.portfoliotoolkit.application.email.smtp.save.SaveSmtpCredentialCommand;
 import net.cycastic.portfoliotoolkit.controller.annotation.RequireProjectId;
-import net.cycastic.portfoliotoolkit.dto.BaseSmtpCredentialDto;
-import net.cycastic.portfoliotoolkit.dto.DecryptedSmtpCredentialDto;
-import net.cycastic.portfoliotoolkit.dto.IdDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.BaseSmtpCredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.DecryptedSmtpCredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

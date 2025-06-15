@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.IdDto;
+import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
 import org.springframework.lang.Nullable;
 
 @Data

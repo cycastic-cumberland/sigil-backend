@@ -6,8 +6,8 @@ import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository;
-import net.cycastic.portfoliotoolkit.dto.listing.ListingDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

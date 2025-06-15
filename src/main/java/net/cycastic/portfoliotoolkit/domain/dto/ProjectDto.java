@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.dto;
+package net.cycastic.portfoliotoolkit.domain.dto;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;

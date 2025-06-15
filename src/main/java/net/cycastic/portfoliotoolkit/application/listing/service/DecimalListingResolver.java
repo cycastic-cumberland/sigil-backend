@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.DecimalListingRepository;
-import net.cycastic.portfoliotoolkit.dto.listing.DecimalListingDto;
-import net.cycastic.portfoliotoolkit.dto.listing.ListingDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.DecimalListingDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 

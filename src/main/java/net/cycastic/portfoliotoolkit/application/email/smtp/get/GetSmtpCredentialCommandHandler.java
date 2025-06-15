@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.repository.EncryptedSmtpCredentialRepository;
-import net.cycastic.portfoliotoolkit.dto.DecryptedSmtpCredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.DecryptedSmtpCredentialDto;
 import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;

@@ -8,7 +8,7 @@ import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
-import net.cycastic.portfoliotoolkit.dto.IdDto;
+import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

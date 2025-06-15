@@ -8,7 +8,7 @@ import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.User;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
-import net.cycastic.portfoliotoolkit.dto.CredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.CredentialDto;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
 import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import org.slf4j.Logger;

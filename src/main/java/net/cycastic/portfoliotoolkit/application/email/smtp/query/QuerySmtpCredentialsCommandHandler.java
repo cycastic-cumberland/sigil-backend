@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.repository.EncryptedSmtpCredentialRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
-import net.cycastic.portfoliotoolkit.dto.BaseSmtpCredentialDto;
-import net.cycastic.portfoliotoolkit.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.domain.dto.BaseSmtpCredentialDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

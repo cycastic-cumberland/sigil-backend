@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.dto.paging;
+package net.cycastic.portfoliotoolkit.domain.dto.paging;
 
 import jakarta.validation.constraints.Null;
 import lombok.*;

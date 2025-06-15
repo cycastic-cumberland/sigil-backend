@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.dto.ProjectDto;
+import net.cycastic.portfoliotoolkit.domain.dto.ProjectDto;
 
 @Data
 @NoArgsConstructor
