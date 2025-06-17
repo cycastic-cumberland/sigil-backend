@@ -26,7 +26,7 @@ public class EmailsController {
     }
 
     @PostMapping("credential")
-    public IdDto saveCredential(SaveSmtpCredentialCommand command){
+    public IdDto saveCredential(@RequestBody SaveSmtpCredentialCommand command){
         return pipelinr.send(command);
     }
 

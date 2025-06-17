@@ -10,7 +10,7 @@ import java.security.KeyPairGenerator;
 
 @Lazy
 @Service
-public class Ed25519AsymmetricKeyGenerator implements AsymmetricKeyGenerator {
+public class ECAsymmetricKeyGenerator implements AsymmetricKeyGenerator {
     @Override
     @SneakyThrows
     public @NonNull KeyPair generate() {

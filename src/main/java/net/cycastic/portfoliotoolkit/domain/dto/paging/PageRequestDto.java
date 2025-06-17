@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -38,7 +39,7 @@ public class PageRequestDto {
                 })
                 .toList();
         if (selectors.isEmpty()){
-            return null;
+            return Sort.by("id").ascending();
         }
 
         return selectors.stream().reduce(Sort::and).orElse(null);

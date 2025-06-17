@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.project.get.GetProjectCommand;
 import net.cycastic.portfoliotoolkit.configuration.CrossOriginConfiguration;
 import net.cycastic.portfoliotoolkit.controller.filter.JwtAuthenticationFilter;
+import net.cycastic.portfoliotoolkit.controller.filter.PerfFilter;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.dto.ProjectDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
@@ -24,12 +25,15 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Objects;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final PerfFilter perfFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
@@ -58,7 +62,8 @@ public class SecurityConfiguration {
                         new AntPathRequestMatcher("/swagger-resources/**"),
                         new AntPathRequestMatcher("/configuration/security"),
                         new AntPathRequestMatcher("/swagger-ui/**"),
-                        new AntPathRequestMatcher("/webjars/**")
+                        new AntPathRequestMatcher("/webjars/**"),
+                        new AntPathRequestMatcher("/actuator/**"),
                 })
                 .permitAll()
                 .anyRequest()
@@ -68,7 +73,8 @@ public class SecurityConfiguration {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(perfFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, PerfFilter.class);
         return http.build();
     }
 
@@ -83,7 +89,8 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource(LoggedUserAccessor loggedUserAccessor,
                                                            Pipelinr pipelinr,
                                                            CrossOriginConfiguration crossOriginConfiguration) {
-        var allowedOrigins = crossOriginConfiguration.getAllowOrigins().split(";");
+        var allowedOrigins = Objects.requireNonNullElse(crossOriginConfiguration.getAllowOrigins(), "")
+                .split(";");
         return request -> {
             var config = getDefaultCorsConfiguration();
             for (var origin : allowedOrigins) {
