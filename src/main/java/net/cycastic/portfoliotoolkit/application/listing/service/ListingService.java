@@ -91,7 +91,7 @@ public class ListingService {
     }
 
     public void verifyAccess(@NotNull Project project,
-                             @NotNull Stream<Listing> listings){
+                             @NotNull Stream<String> listingPaths){
         if (loggedUserAccessor.isAdmin()){
             return;
         }
@@ -108,14 +108,14 @@ public class ListingService {
         var allowPattern = joinPatterns(baseFilter.filter(ListingAccessControlPolicy::isAllowed)
                 .map(ListingService::getRegex));
 
-        try (listings){
-            var it = listings.iterator();
+        try (listingPaths){
+            var it = listingPaths.iterator();
             var allowed = 0;
             var iterated = 0;
             while (it.hasNext()){
-               var listing = it.next();
+               var listingPath = it.next();
                iterated++;
-               if (allowPattern.matcher(listing.getListingPath()).matches()){
+               if (allowPattern.matcher(listingPath).matches()){
                    allowed++;
                    continue;
                }

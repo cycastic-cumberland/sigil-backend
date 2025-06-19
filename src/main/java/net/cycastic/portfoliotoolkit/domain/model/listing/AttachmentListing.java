@@ -5,13 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.model.EmailTemplate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.lang.Nullable;
-
-import java.nio.ByteBuffer;
-import java.util.UUID;
 
 @Data
 @Entity

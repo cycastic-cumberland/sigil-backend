@@ -21,9 +21,6 @@ public class EmailTemplate{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
-    private String name;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "email_template", referencedColumnName = "id", nullable = false)
     private AttachmentListing emailTemplate;

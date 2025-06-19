@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -28,28 +27,23 @@ public class PageRequestDto {
         return new Selector(split[0], split[1].equalsIgnoreCase("desc"));
     }
 
+    private static Sort toSort(Selector selector){
+        var sort = Sort.by(selector.key());
+        return selector.isDescending() ? sort.descending() : sort.ascending();
+    }
+
     private static @Null Sort getOrders(@NonNull String orderBy){
-        var selectors = Arrays.stream(orderBy.split(","))
+        return Arrays.stream(orderBy.split(","))
                 .map(String::trim)
                 .map(PageRequestDto::toSelector)
                 .filter(Objects::nonNull)
-                .map(s -> {
-                    var sort = Sort.by(s.key());
-                    return s.isDescending() ? sort.descending() : sort.ascending();
-                })
-                .toList();
-        if (selectors.isEmpty()){
-            return Sort.by("id").ascending();
-        }
-
-        return selectors.stream().reduce(Sort::and).orElse(null);
+                .map(PageRequestDto::toSort)
+                .reduce(Sort::and)
+                .orElse(Sort.by("id").ascending());
     }
 
     public Pageable toPageable(){
-        Sort sort = null;
-        if (orderBy != null){
-            sort = getOrders(orderBy);
-        }
+        Sort sort = getOrders(orderBy == null ? "" : orderBy);
 
         if (sort != null){
             return PageRequest.of(page - 1, pageSize, sort);

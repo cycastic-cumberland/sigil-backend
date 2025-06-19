@@ -12,8 +12,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.io.OutputStream;
@@ -73,6 +72,22 @@ public class S3StorageProvider implements StorageProvider {
                                     .key(fileKey),
                     ResponseTransformer.toInputStream());
             responseStream.transferTo(stream);
+        }
+
+        @Override
+        public boolean exists(String fileKey) {
+            try {
+                provider.s3Client.headObject(HeadObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileKey)
+                        .build());
+                return true;
+            } catch (S3Exception e) {
+                if (e.statusCode() == 404) {
+                    return false;
+                }
+                throw e;
+            }
         }
     }
 

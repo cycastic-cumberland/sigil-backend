@@ -26,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+        // TODO: Issuer check
        final var claims = loggedUserAccessor.getClaims();
        if (claims != null && SecurityContextHolder.getContext().getAuthentication() == null){
             var authToken = new UsernamePasswordAuthenticationToken(

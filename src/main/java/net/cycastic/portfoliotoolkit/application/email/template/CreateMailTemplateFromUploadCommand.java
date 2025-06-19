@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.mail.template;
+package net.cycastic.portfoliotoolkit.application.email.template;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;

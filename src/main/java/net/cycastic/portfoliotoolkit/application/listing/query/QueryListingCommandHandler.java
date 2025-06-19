@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
+import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository;
 import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
@@ -21,8 +22,6 @@ public class QueryListingCommandHandler implements Command.Handler<QueryListingC
 
     @Override
     public PageResponseDto<ListingDto> handle(QueryListingCommand command) {
-        command.setOrderBy("path");
-
         var projectId = loggedUserAccessor.getProjectId();
         var project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RequestException(404, "Project not found"));
@@ -36,7 +35,7 @@ public class QueryListingCommandHandler implements Command.Handler<QueryListingC
             return listingService.toDto(page);
         }
 
-        listingService.verifyAccess(project, page.getContent().stream());
+        listingService.verifyAccess(project, page.getContent().stream().map(Listing::getListingPath));
         return listingService.toDto(page);
     }
 }
