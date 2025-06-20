@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.application.listing.attachment.create;
+package net.cycastic.portfoliotoolkit.application.listing.delete;
 
 import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class DeleteCommandHandler implements Command.Handler<DeleteListingCommand, @Null Object> {
-    private static final Logger logger = LoggerFactory.getLogger(DeleteCommandHandler.class);
+public class DeleteListingCommandHandler implements Command.Handler<DeleteListingCommand, @Null Object> {
+    private static final Logger logger = LoggerFactory.getLogger(DeleteListingCommandHandler.class);
 
     private final LoggedUserAccessor loggedUserAccessor;
     private final ListingRepository listingRepository;
@@ -53,7 +53,7 @@ public class DeleteCommandHandler implements Command.Handler<DeleteListingComman
             case ATTACHMENT -> {
                 var attachment = listing.getAttachmentListing();
                 try {
-                    storageProvider.getBucket(attachment.getBucketName());
+                    storageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
                 } catch (Exception e){
                     logger.error("Failed to delete attachment", e);
                     throw new RequestException(500, "Failed to delete attachment");

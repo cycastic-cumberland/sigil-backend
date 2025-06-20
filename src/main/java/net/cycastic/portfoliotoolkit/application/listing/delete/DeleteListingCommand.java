@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.application.listing.attachment.create;
+package net.cycastic.portfoliotoolkit.application.listing.delete;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;

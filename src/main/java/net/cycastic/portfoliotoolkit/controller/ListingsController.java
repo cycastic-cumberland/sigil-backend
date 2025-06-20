@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.listing.acp.create.SaveLACPCommand;
 import net.cycastic.portfoliotoolkit.application.listing.attachment.create.CompleteAttachmentUploadCommand;
 import net.cycastic.portfoliotoolkit.application.listing.attachment.create.CreateAttachmentListingCommand;
-import net.cycastic.portfoliotoolkit.application.listing.attachment.create.DeleteListingCommand;
+import net.cycastic.portfoliotoolkit.application.listing.delete.DeleteListingCommand;
 import net.cycastic.portfoliotoolkit.application.listing.attachment.download.GenerateAttachmentPresignedDownloadCommand;
 import net.cycastic.portfoliotoolkit.application.listing.get.GetListingCommand;
 import net.cycastic.portfoliotoolkit.application.listing.query.QuerySingleLevelCommand;
