@@ -11,6 +11,7 @@ public interface StorageProvider {
         @NotNull String generatePresignedDownloadPath(@NotNull String fileKey, @NotNull String fileName, @NotNull OffsetDateTime expiration);
         void downloadFile(@NotNull String fileKey, OutputStream stream);
         boolean exists(@NotNull String fileKey);
+        void deleteFile(@NotNull String fileKey);
     }
 
     BucketProvider getBucket(@NotNull String bucketName);

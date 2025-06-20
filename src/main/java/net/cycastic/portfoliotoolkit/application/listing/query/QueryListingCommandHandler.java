@@ -1,6 +1,7 @@
 package net.cycastic.portfoliotoolkit.application.listing.query;
 
 import an.awesome.pipelinr.Command;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
@@ -20,9 +21,7 @@ public class QueryListingCommandHandler implements Command.Handler<QueryListingC
     private final ListingRepository listingRepository;
     private final ProjectRepository projectRepository;
 
-    @Override
-    public PageResponseDto<ListingDto> handle(QueryListingCommand command) {
-        var projectId = loggedUserAccessor.getProjectId();
+    private PageResponseDto<ListingDto> handle(QueryListingCommand command, @NotNull Integer projectId, boolean verifyAccess){
         var project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RequestException(404, "Project not found"));
         var page = listingRepository.findListingsByProjectAndListingPathStartingWith(project,
@@ -31,11 +30,22 @@ public class QueryListingCommandHandler implements Command.Handler<QueryListingC
         var currentUserId = loggedUserAccessor.tryGetUserId();
         if (loggedUserAccessor.isAdmin() ||
                 (currentUserId.isPresent() &&
-                    project.getUser().getId().equals(currentUserId.get()))){
+                        project.getUser().getId().equals(currentUserId.get()))){
             return listingService.toDto(page);
         }
 
-        listingService.verifyAccess(project, page.getContent().stream().map(Listing::getListingPath));
+        if (verifyAccess) {
+            listingService.verifyAccess(project, page.getContent().stream().map(Listing::getListingPath));
+        }
         return listingService.toDto(page);
+    }
+
+    @Override
+    public PageResponseDto<ListingDto> handle(QueryListingCommand command) {
+        if (command.getProjectId() != null){
+            return handle(command, command.getProjectId(), true);
+        }
+
+        return handle(command, loggedUserAccessor.getProjectId(), false);
     }
 }

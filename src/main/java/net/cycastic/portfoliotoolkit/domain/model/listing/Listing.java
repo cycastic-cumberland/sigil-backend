@@ -39,7 +39,7 @@ public class Listing {
     private DecimalListing decimalListing;
 
     @OneToOne(mappedBy = "listing")
-    private AttachmentListing attachmentListings;
+    private AttachmentListing attachmentListing;
 
     @NotNull
     private OffsetDateTime createdAt = OffsetDateTime.now();

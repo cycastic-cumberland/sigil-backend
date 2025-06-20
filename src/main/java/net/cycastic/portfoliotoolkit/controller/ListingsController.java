@@ -3,12 +3,16 @@ package net.cycastic.portfoliotoolkit.controller;
 import an.awesome.pipelinr.Pipelinr;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.listing.acp.create.SaveLACPCommand;
-import net.cycastic.portfoliotoolkit.application.listing.create.attachment.CompleteAttachmentUploadCommand;
-import net.cycastic.portfoliotoolkit.application.listing.create.attachment.CreateAttachmentListingCommand;
-import net.cycastic.portfoliotoolkit.application.listing.query.QuerySubfoldersCommand;
+import net.cycastic.portfoliotoolkit.application.listing.attachment.create.CompleteAttachmentUploadCommand;
+import net.cycastic.portfoliotoolkit.application.listing.attachment.create.CreateAttachmentListingCommand;
+import net.cycastic.portfoliotoolkit.application.listing.attachment.create.DeleteListingCommand;
+import net.cycastic.portfoliotoolkit.application.listing.attachment.download.GenerateAttachmentPresignedDownloadCommand;
+import net.cycastic.portfoliotoolkit.application.listing.get.GetListingCommand;
+import net.cycastic.portfoliotoolkit.application.listing.query.QuerySingleLevelCommand;
 import net.cycastic.portfoliotoolkit.controller.annotation.RequireProjectId;
-import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedUploadDto;
-import net.cycastic.portfoliotoolkit.domain.dto.SubfoldersDto;
+import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
+import net.cycastic.portfoliotoolkit.domain.dto.FolderItemsDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,8 +27,13 @@ public class ListingsController {
     }
 
     @PostMapping("attachment")
-    public AttachmentPresignedUploadDto uploadAttachment(@RequestBody CreateAttachmentListingCommand command){
+    public AttachmentPresignedDto uploadAttachment(@RequestBody CreateAttachmentListingCommand command){
         return pipelinr.send(command);
+    }
+
+    @DeleteMapping
+    public void deleteListing(DeleteListingCommand command){
+        pipelinr.send(command);
     }
 
     @PostMapping("attachment/complete")
@@ -32,8 +41,18 @@ public class ListingsController {
         pipelinr.send(command);
     }
 
+    @GetMapping("attachment/download")
+    public AttachmentPresignedDto downloadAttachment(GenerateAttachmentPresignedDownloadCommand command){
+        return pipelinr.send(command);
+    }
+
     @GetMapping("subfolders")
-    public SubfoldersDto getSubfolders(QuerySubfoldersCommand command){
+    public FolderItemsDto getSubfolders(QuerySingleLevelCommand command){
+        return pipelinr.send(command);
+    }
+
+    @GetMapping("listing")
+    public ListingDto getListing(GetListingCommand command){
         return pipelinr.send(command);
     }
 }

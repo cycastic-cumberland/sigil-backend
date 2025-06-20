@@ -1,6 +1,6 @@
 package net.cycastic.portfoliotoolkit.domain;
 
-import net.cycastic.portfoliotoolkit.service.Closable;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -33,16 +33,17 @@ public class SessionStorage implements DisposableBean {
     }
 
     @Override
+    @SneakyThrows
     public void destroy() {
         if (data.isEmpty()){
             return;
         }
         for (var keyPair : data.entrySet()){
-            if (!(keyPair.getValue() instanceof Closable)){
+            if (!(keyPair.getValue() instanceof AutoCloseable)){
                 continue;
             }
 
-            ((Closable)keyPair.getValue()).close();
+            ((AutoCloseable)keyPair.getValue()).close();
         }
 
         data.clear();

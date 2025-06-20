@@ -5,13 +5,13 @@ import io.jsonwebtoken.Claims;
 import jakarta.validation.constraints.Null;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.application.auth.extract.claims.ExtractClaimsCommand;
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.JwtUtilities;
 import net.cycastic.portfoliotoolkit.domain.SessionStorage;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
+import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -36,6 +36,7 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
 
     private final SessionStorage sessionStorage;
     private final Pipelinr pipelinr;
+    private final JwtVerifier jwtVerifier;
 
     private @NonNull ServletRequestAttributes getAttributes(){
         var attr = (ServletRequestAttributes)RequestContextHolder.currentRequestAttributes();
@@ -63,7 +64,7 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
         }
         final var jwt = authHeader.substring("Bearer ".length());
         try {
-            return pipelinr.send(new ExtractClaimsCommand(jwt));
+            return jwtVerifier.extractClaims(jwt);
         } catch (RequestException e){
             logger.error("RequestException caught while extracting claims", e);
             return null;

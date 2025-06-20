@@ -12,4 +12,5 @@ public class S3Configurations {
     private String accessKey;
     private String secretKey;
     private String attachmentBucketName;
+    private String serviceUrl;
 }

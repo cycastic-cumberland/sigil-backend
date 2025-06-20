@@ -12,10 +12,12 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.io.OutputStream;
+import java.net.URI;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,20 +91,53 @@ public class S3StorageProvider implements StorageProvider {
                 throw e;
             }
         }
+
+        public void deleteFile(String fileKey){
+            provider.s3Client.deleteObject(DeleteObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(fileKey)
+                            .build());
+        }
+    }
+
+    private static S3Client buildClient(S3Configurations configurations){
+        var builder = S3Client.builder()
+                .region(Region.of(configurations.getRegionName()));
+        if (configurations.getAccessKey() != null){
+            var credentials = AwsBasicCredentials.create(configurations.getAccessKey(),
+                    configurations.getSecretKey());
+            builder = builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
+        }
+        if (configurations.getServiceUrl() != null){
+            builder = builder.endpointOverride(URI.create(configurations.getServiceUrl()))
+                    .forcePathStyle(true);
+        }
+
+        return builder.build();
+    }
+
+    private static S3Presigner buildPresigner(S3Configurations configurations){
+        var builder = S3Presigner.builder()
+                .region(Region.of(configurations.getRegionName()));
+        if (configurations.getAccessKey() != null){
+            var credentials = AwsBasicCredentials.create(configurations.getAccessKey(),
+                    configurations.getSecretKey());
+            builder = builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
+        }
+        if (configurations.getServiceUrl() != null){
+            builder = builder.endpointOverride(URI.create(configurations.getServiceUrl()))
+                    .serviceConfiguration(S3Configuration.builder()
+                            .pathStyleAccessEnabled(true)
+                            .build());
+        }
+
+        return builder.build();
     }
 
     @Autowired
     public S3StorageProvider(S3Configurations s3Configurations){
-        var credentials = AwsBasicCredentials.create(s3Configurations.getAccessKey(),
-                s3Configurations.getSecretKey());
-        s3Client = S3Client.builder()
-                .region(Region.of(s3Configurations.getRegionName()))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .build();
-        s3Presigner = S3Presigner.builder()
-                .region(Region.of(s3Configurations.getRegionName()))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .build();
+        s3Client = buildClient(s3Configurations);
+        s3Presigner = buildPresigner(s3Configurations);
     }
 
     @Override

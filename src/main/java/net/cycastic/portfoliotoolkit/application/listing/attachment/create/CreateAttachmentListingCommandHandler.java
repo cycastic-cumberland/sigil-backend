@@ -1,11 +1,10 @@
-package net.cycastic.portfoliotoolkit.application.listing.create.attachment;
+package net.cycastic.portfoliotoolkit.application.listing.attachment.create;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.listing.service.ListingService;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
-import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedUploadDto;
-import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
+import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
@@ -17,7 +16,7 @@ import java.time.OffsetDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class CreateAttachmentListingCommandHandler implements Command.Handler<CreateAttachmentListingCommand, AttachmentPresignedUploadDto> {
+public class CreateAttachmentListingCommandHandler implements Command.Handler<CreateAttachmentListingCommand, AttachmentPresignedDto> {
     private final ListingService listingService;
     private final StorageProvider storageProvider;
     private final ProjectRepository projectRepository;
@@ -25,12 +24,10 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
     private final AttachmentListingRepository attachmentListingRepository;
 
     @Override
-    public AttachmentPresignedUploadDto handle(CreateAttachmentListingCommand command) {
+    public AttachmentPresignedDto handle(CreateAttachmentListingCommand command) {
         var project = projectRepository.findById(loggedUserAccessor.getProjectId())
                 .orElseThrow(() -> new RequestException(404, "Project not found"));
-        if (!loggedUserAccessor.isAdmin() && !project.getUser().getId().equals(loggedUserAccessor.getUserId())){
-            throw new ForbiddenException();
-        }
+
         var path = command.getPath();
         if (attachmentListingRepository.existsByListing_Project_AndUploadCompleted(project, false)){
             throw new RequestException(400, "There are incomplete attachment uploads");
@@ -44,7 +41,7 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
                 .generatePresignedUploadPath(incompleteAttachment.getObjectKey(),
                         path,
                         OffsetDateTime.now().plusHours(6)); // TODO: Override this
-        return AttachmentPresignedUploadDto.builder()
+        return AttachmentPresignedDto.builder()
                 .id(incompleteAttachment.getId())
                 .url(uploadUrl)
                 .build();

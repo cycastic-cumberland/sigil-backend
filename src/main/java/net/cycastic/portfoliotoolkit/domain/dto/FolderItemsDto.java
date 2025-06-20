@@ -9,6 +9,6 @@ import java.util.Collection;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubfoldersDto {
-    private Collection<String> subfolders;
+public class FolderItemsDto {
+    private Collection<FolderItemDto> items;
 }

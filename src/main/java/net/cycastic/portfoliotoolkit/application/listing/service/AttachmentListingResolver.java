@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Lazy
 @Component
@@ -20,12 +21,21 @@ public class AttachmentListingResolver implements ListingResolver {
     @Override
     public void resolve(Map<Integer, Listing> listings, Map<Integer, ListingDto> collector) {
         var ids = listings.values().stream()
-                .filter(l -> l.getType() == ListingType.TEXT)
+                .filter(l -> l.getType() == ListingType.ATTACHMENT)
                 .map(Listing::getId)
                 .toList();
         var filteredListings = repository.findAllById(ids);
         for (var l : filteredListings){
             collector.put(l.getId(), AttachmentDto.fromDomain(l, listings.get(l.getId())));
         }
+    }
+
+    @Override
+    public Optional<ListingDto> resolve(Listing listing) {
+        if (listing.getType() != ListingType.ATTACHMENT){
+            return Optional.empty();
+        }
+
+        return Optional.of(AttachmentDto.fromDomain(listing.getAttachmentListing(), listing));
     }
 }

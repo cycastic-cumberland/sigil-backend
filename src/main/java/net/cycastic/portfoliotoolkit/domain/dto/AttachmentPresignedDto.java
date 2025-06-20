@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttachmentPresignedUploadDto {
+public class AttachmentPresignedDto {
     private Integer id;
 
     private String url;

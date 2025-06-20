@@ -12,7 +12,14 @@ public class ValidationMiddleware implements Command.Middleware {
 
     @Override
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
-        validators.stream().filter(v -> v.matches(command)).findFirst().ifPresent(v -> v.validate(command));
+        var validValidators = validators.stream().filter(v -> v.matches(command));
+        try (validValidators){
+            var it = validValidators.iterator();
+            while (it.hasNext()){
+                var validator = it.next();
+                validator.validate(command);
+            }
+        }
         return next.invoke();
     }
 }

@@ -37,9 +37,9 @@ public class AttachmentListing {
 
     private boolean uploadCompleted;
 
-    @Column(columnDefinition = "CHAR(36)")
-    @JdbcTypeCode(SqlTypes.CHAR)
-    private String uuid;
+//    @Column(columnDefinition = "CHAR(36)")
+//    @JdbcTypeCode(SqlTypes.CHAR)
+//    private String uuid;
 
 //    @OneToOne(mappedBy = "attachmentListing")
 //    private EmailTemplate emailTemplate;

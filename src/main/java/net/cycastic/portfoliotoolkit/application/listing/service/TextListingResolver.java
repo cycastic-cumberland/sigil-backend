@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Lazy
 @Component
@@ -27,5 +28,14 @@ public class TextListingResolver implements ListingResolver {
         for (var l : filteredListings){
             collector.put(l.getId(), TextListingDto.fromDomain(l, listings.get(l.getId())));
         }
+    }
+
+    @Override
+    public Optional<ListingDto> resolve(Listing listing) {
+        if (listing.getType() != ListingType.TEXT){
+            return Optional.empty();
+        }
+
+        return Optional.of(TextListingDto.fromDomain(listing.getTextListing(), listing));
     }
 }

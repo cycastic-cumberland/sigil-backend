@@ -2,10 +2,12 @@ package net.cycastic.portfoliotoolkit.application.listing.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.configuration.S3Configurations;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
+import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
 import net.cycastic.portfoliotoolkit.domain.model.listing.AttachmentListing;
@@ -17,6 +19,7 @@ import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository
 import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
 import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -128,6 +131,18 @@ public class ListingService {
         }
     }
 
+    public ListingDto toDto(Listing listing){
+        for (var resolver : resolvers){
+            var opt = resolver.resolve(listing);
+            if (opt.isPresent()){
+                return opt.get();
+            }
+        }
+
+        // TODO: provide more details
+        throw new RequestException(400, "Listing is broken");
+    }
+
     public PageResponseDto<ListingDto> toDto(Page<Listing> listings){
         var domainMap = listings.getContent().stream()
                 .collect(Collectors.toMap(Listing::getId, l -> l));
@@ -157,6 +172,7 @@ public class ListingService {
         return builder.build();
     }
 
+    @Transactional
     public AttachmentListing saveAttachment(@NotNull Project project, @NotNull String path, String mimeType){
         var listing = Listing.builder()
                 .project(project)
@@ -164,11 +180,12 @@ public class ListingService {
                 .type(ListingType.ATTACHMENT)
                 .createdAt(OffsetDateTime.now())
                 .build();
+        var fileExt = FilenameUtils.getExtension(path);
         var attachmentListing = AttachmentListing.builder()
                 .listing(listing)
                 .bucketName(s3Configurations.getAttachmentBucketName())
                 .bucketRegion(s3Configurations.getRegionName())
-                .objectKey(UUID.randomUUID().toString())
+                .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s.%s", UUID.randomUUID(), fileExt))
                 .mimeType(mimeType)
                 .build();
         listingRepository.save(listing);

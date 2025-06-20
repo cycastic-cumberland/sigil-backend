@@ -5,12 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedUploadDto;
+import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateMailTemplateFromUploadCommand implements Command<AttachmentPresignedUploadDto> {
+public class CreateMailTemplateFromUploadCommand implements Command<AttachmentPresignedDto> {
     @NotNull
     private String templateName;
 

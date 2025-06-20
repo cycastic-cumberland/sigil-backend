@@ -1,5 +1,8 @@
 package net.cycastic.portfoliotoolkit.domain;
 
+import net.cycastic.portfoliotoolkit.domain.dto.FolderItemType;
+import net.cycastic.portfoliotoolkit.domain.model.ListingType;
+
 import java.net.URLConnection;
 import java.util.Optional;
 
@@ -14,5 +17,13 @@ public class ApplicationUtilities {
         } catch (NumberFormatException e){
             return Optional.empty();
         }
+    }
+
+    public static FolderItemType fromListingType(ListingType t){
+        return switch (t){
+            case TEXT -> FolderItemType.TEXT;
+            case DECIMAL -> FolderItemType.DECIMAL;
+            case ATTACHMENT -> FolderItemType.ATTACHMENT;
+        };
     }
 }
