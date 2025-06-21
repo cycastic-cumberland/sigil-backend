@@ -23,51 +23,22 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
 
     Optional<Listing> findByProjectAndListingPath(@NotNull Project project, @NotNull String listingPath);
 
-    @Query(value =
-            "SELECT DISTINCT " +
-                    "  CASE " +
-                    "    WHEN :folder = '/' THEN " +
-                    "      CASE WHEN LOCATE('/', e.listingPath, 2) > 0 " +
-                    "           THEN SUBSTRING(e.listingPath, 2, LOCATE('/', e.listingPath, 2) - 2) " +
-                    "           ELSE SUBSTRING(e.listingPath, 2) " +
-                    "      END " +
-                    "    ELSE " +
-                    "      CASE WHEN LOCATE('/', e.listingPath, LENGTH(:folder) + 1) > 0 " +
-                    "           THEN SUBSTRING(e.listingPath, LENGTH(:folder) + 1, " +
-                    "                         LOCATE('/', e.listingPath, LENGTH(:folder) + 1) - LENGTH(:folder) - 1) " +
-                    "           ELSE SUBSTRING(e.listingPath, LENGTH(:folder) + 1) " +
-                    "      END " +
-                    "  END AS listingPath, " +
-                    "  CASE " +
-                    "    WHEN " +
-                    "      (CASE " +
-                    "         WHEN :folder = '/' THEN " +
-                    "           CASE WHEN LOCATE('/', e.listingPath, 2) > 0 " +
-                    "                THEN SUBSTRING(e.listingPath, 2, LOCATE('/', e.listingPath, 2) - 2) " +
-                    "                ELSE SUBSTRING(e.listingPath, 2) " +
-                    "           END " +
-                    "         ELSE " +
-                    "           CASE WHEN LOCATE('/', e.listingPath, LENGTH(:folder) + 1) > 0 " +
-                    "                THEN SUBSTRING(e.listingPath, LENGTH(:folder) + 1, " +
-                    "                              LOCATE('/', e.listingPath, LENGTH(:folder) + 1) - LENGTH(:folder) - 1) " +
-                    "                ELSE SUBSTRING(e.listingPath, LENGTH(:folder) + 1) " +
-                    "           END " +
-                    "       END) LIKE '%.%' " +
-                    "    THEN e.type " +
-                    "    ELSE null " +
-                    "  END AS type " +
-                    "FROM Listing e " +
-                    "WHERE e.project = :project AND (( " +
-                    "         :folder = '/' " +
-                    "         AND e.listingPath LIKE '/%' " +
-                    "         AND e.listingPath <> '/' " +
-                    "      ) " +
-                    "   OR ( " +
-                    "         :folder <> '/' " +
-                    "         AND e.listingPath LIKE CONCAT(:folder, '%') " +
-                    "         AND e.listingPath <> :folder " +
-                    "      )) " +
-                    "ORDER BY e.listingPath")
+    @Query("SELECT DISTINCT " +
+            "CASE " +
+            "   WHEN LOCATE('/', l.listingPath, LENGTH(:folder) + 1) = 0 " +
+            "       THEN SUBSTRING(l.listingPath, LENGTH(:folder) + 1) " +
+            "   ELSE SUBSTRING(l.listingPath, LENGTH(:folder) + 1, LOCATE('/', l.listingPath, LENGTH(:folder) + 1) - LENGTH(:folder) - 1) " +
+            "END AS listingPath, " +
+            "CASE " +
+            "   WHEN LOCATE('/', l.listingPath, LENGTH(:folder) + 1) = 0 " +
+            "       THEN l.type " +
+            "   ELSE NULL " +
+            "END AS type " +
+            "FROM Listing l " +
+            "WHERE l.project = :project " +
+            "   AND l.listingPath LIKE CONCAT(:folder, '%') " +
+            "   AND LENGTH(l.listingPath) > LENGTH(:folder) " +
+            "   AND l.removedAt IS NULL")
     List<FileItem> findItems(@Param("project") Project project, @Param("folder") String folder);
 
 }

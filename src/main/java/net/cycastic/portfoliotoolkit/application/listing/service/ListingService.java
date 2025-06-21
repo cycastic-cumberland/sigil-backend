@@ -174,6 +174,13 @@ public class ListingService {
 
     @Transactional
     public AttachmentListing saveAttachment(@NotNull Project project, @NotNull String path, String mimeType){
+        if (!path.startsWith("/")){
+            throw new RequestException(400, "Listing path must start with a forward slash");
+        }
+        if (path.endsWith("/")){
+            throw new RequestException(400, "Listing path must not end with a forward slash");
+        }
+
         var listing = Listing.builder()
                 .project(project)
                 .listingPath(path)
