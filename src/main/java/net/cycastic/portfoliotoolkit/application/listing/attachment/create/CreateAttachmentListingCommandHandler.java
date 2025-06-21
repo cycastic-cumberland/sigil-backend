@@ -35,7 +35,7 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
 
         var incompleteAttachment = listingService.saveAttachment(project,
                 path,
-                command.getMimeType() == null ? null : ApplicationUtilities.getMimeType(command.getMimeType()));
+                command.getMimeType() == null ? null : ApplicationUtilities.getMimeType(command.getPath()));
 
         var uploadUrl = storageProvider.getBucket(incompleteAttachment.getBucketName())
                 .generatePresignedUploadPath(incompleteAttachment.getObjectKey(),
