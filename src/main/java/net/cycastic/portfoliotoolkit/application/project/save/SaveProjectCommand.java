@@ -1,4 +1,4 @@
-package net.cycastic.portfoliotoolkit.application.project.create;
+package net.cycastic.portfoliotoolkit.application.project.save;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;
@@ -7,12 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
+import org.springframework.lang.Nullable;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateProjectCommand implements Command<IdDto> {
-    private int userId;
+public class SaveProjectCommand implements Command<IdDto> {
+    private @Nullable Integer id;
+    private @Nullable Integer userId;
     private @NotNull String projectName;
     private @Null String corsSettings;
 }

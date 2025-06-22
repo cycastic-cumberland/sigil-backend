@@ -1,12 +1,12 @@
 package net.cycastic.portfoliotoolkit.domain.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
+import org.springframework.lang.Nullable;
 
 import java.time.OffsetDateTime;
 
@@ -21,7 +21,7 @@ public class ProjectDto {
     @NotNull
     private String projectName;
 
-    @Column(nullable = true)
+    @Nullable
     private String corsSettings;
 
     @NotNull

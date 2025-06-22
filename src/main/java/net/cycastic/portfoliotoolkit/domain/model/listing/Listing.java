@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
+import org.hibernate.annotations.Formula;
 
 import java.time.OffsetDateTime;
 

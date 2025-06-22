@@ -43,6 +43,8 @@ public class ListingService {
             .maximumSize(512) // TODO: Ways to override this
             .build();
     private static final Pattern MATCH_ALL = Pattern.compile(".*");
+    private static final Pattern INVALID_PATH = Pattern.compile("/{2}|\\p{Cntrl}");
+
     private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
 
     private final ListingACPRepository listingACPRepository;
@@ -179,6 +181,9 @@ public class ListingService {
         }
         if (path.endsWith("/")){
             throw new RequestException(400, "Listing path must not end with a forward slash");
+        }
+        if (INVALID_PATH.matcher(path).find()) {
+            throw new RequestException(400, "Path must not contain //, _ or %");
         }
 
         var listing = Listing.builder()

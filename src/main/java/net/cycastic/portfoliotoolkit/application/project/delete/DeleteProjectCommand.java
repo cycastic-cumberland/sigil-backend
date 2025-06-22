@@ -1,14 +1,14 @@
-package net.cycastic.portfoliotoolkit.application.project.get;
+package net.cycastic.portfoliotoolkit.application.project.delete;
 
 import an.awesome.pipelinr.Command;
+import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.portfoliotoolkit.domain.dto.ProjectDto;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetProjectCommand implements Command<ProjectDto> {
+public class DeleteProjectCommand implements Command<@Null Object> {
     private int id;
 }

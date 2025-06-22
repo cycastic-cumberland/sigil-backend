@@ -25,20 +25,19 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
 
     @Query("SELECT DISTINCT " +
             "CASE " +
-            "   WHEN LOCATE('/', l.listingPath, LENGTH(:folder) + 1) = 0 " +
-            "       THEN SUBSTRING(l.listingPath, LENGTH(:folder) + 1) " +
-            "   ELSE SUBSTRING(l.listingPath, LENGTH(:folder) + 1, LOCATE('/', l.listingPath, LENGTH(:folder) + 1) - LENGTH(:folder) - 1) " +
+            "   WHEN LOCATE('/', l.listingPath, BYTELENGTH(:folder) + 1) = 0 " +
+            "       THEN SUBSTRING(l.listingPath, BYTELENGTH(:folder) + 1) " +
+            "   ELSE SUBSTRING(l.listingPath, BYTELENGTH(:folder) + 1, LOCATE('/', l.listingPath, BYTELENGTH(:folder) + 1) - BYTELENGTH(:folder) - 1) " +
             "END AS listingPath, " +
             "CASE " +
-            "   WHEN LOCATE('/', l.listingPath, LENGTH(:folder) + 1) = 0 " +
+            "   WHEN LOCATE('/', l.listingPath, BYTELENGTH(:folder) + 1) = 0 " +
             "       THEN l.type " +
             "   ELSE NULL " +
             "END AS type " +
             "FROM Listing l " +
             "WHERE l.project = :project " +
             "   AND l.listingPath LIKE CONCAT(:folder, '%') " +
-            "   AND LENGTH(l.listingPath) > LENGTH(:folder) " +
+            "   AND BYTELENGTH(l.listingPath) > BYTELENGTH(:folder) " +
             "   AND l.removedAt IS NULL")
     List<FileItem> findItems(@Param("project") Project project, @Param("folder") String folder);
-
 }

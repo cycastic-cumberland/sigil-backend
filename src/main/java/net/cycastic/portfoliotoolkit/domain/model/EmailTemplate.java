@@ -1,34 +1,47 @@
 package net.cycastic.portfoliotoolkit.domain.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.cycastic.portfoliotoolkit.domain.model.listing.AttachmentListing;
+import org.springframework.lang.Nullable;
 
-import java.time.OffsetDateTime;
-
-@Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "email_templates")
 public class EmailTemplate{
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
+    @Setter
     private Integer id;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "email_template", referencedColumnName = "id", nullable = false)
-    private AttachmentListing emailTemplate;
+    @MapsId
+    @JoinColumn(name = "id", referencedColumnName = "id")
+    private AttachmentListing attachmentListing;
 
-    @NotNull
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private String parameterString;
 
-    private OffsetDateTime updatedAt;
+    @SneakyThrows
+    public @Nullable EmailParameters getParameters(){
+        if (parameterString == null){
+            return null;
+        }
 
-    private OffsetDateTime removedAt;
+        return MAPPER.readValue(parameterString, EmailParameters.class);
+    }
+
+    @SneakyThrows
+    public void setParameters(@Nullable EmailParameters emailParameters){
+        if (emailParameters == null){
+            parameterString = null;
+            return;
+        }
+
+        parameterString = MAPPER.writeValueAsString(emailParameters);
+    }
 }

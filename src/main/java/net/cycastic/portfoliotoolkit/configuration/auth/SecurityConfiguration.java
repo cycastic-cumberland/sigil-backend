@@ -112,7 +112,9 @@ public class SecurityConfiguration {
             }
 
             if (project.getCorsSettings() != null){
-                config.addAllowedOrigin(project.getCorsSettings());
+                for (var origin : project.getCorsSettings().split(";")){
+                    config.addAllowedOrigin(origin);
+                }
             }
 
             return config;

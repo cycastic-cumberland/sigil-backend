@@ -5,15 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import net.cycastic.portfoliotoolkit.domain.model.EmailTemplate;
 
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "attachment_listings", indexes = { @Index(name = "attachment_listings_attachment_key_uindex", columnList = "attachment_key", unique = true) })
+@Table(name = "attachment_listings")
 public class AttachmentListing {
     @Id
     private Integer id;
@@ -37,10 +36,6 @@ public class AttachmentListing {
 
     private boolean uploadCompleted;
 
-//    @Column(columnDefinition = "CHAR(36)")
-//    @JdbcTypeCode(SqlTypes.CHAR)
-//    private String uuid;
-
-//    @OneToOne(mappedBy = "attachmentListing")
-//    private EmailTemplate emailTemplate;
+    @OneToOne(mappedBy = "attachmentListing")
+    private EmailTemplate emailTemplate;
 }
