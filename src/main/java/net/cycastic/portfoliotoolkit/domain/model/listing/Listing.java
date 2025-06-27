@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
-import org.hibernate.annotations.Formula;
 
 import java.time.OffsetDateTime;
 
@@ -26,7 +25,7 @@ public class Listing {
     private Project project;
 
     @NotNull
-    @Column(columnDefinition = "VARBINARY(255)")
+    @Column(columnDefinition = "VARCHAR(512)")
     private String listingPath;
 
     @NotNull

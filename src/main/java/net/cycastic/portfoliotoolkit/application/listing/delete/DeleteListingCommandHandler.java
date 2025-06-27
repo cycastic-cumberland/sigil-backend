@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
+import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.DecimalListingRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository;
@@ -29,6 +30,7 @@ public class DeleteListingCommandHandler implements Command.Handler<DeleteListin
     private final DecimalListingRepository decimalListingRepository;
     private final ProjectRepository projectRepository;
     private final StorageProvider storageProvider;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -52,11 +54,20 @@ public class DeleteListingCommandHandler implements Command.Handler<DeleteListin
             }
             case ATTACHMENT -> {
                 var attachment = listing.getAttachmentListing();
-                try {
-                    storageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
-                } catch (Exception e){
-                    logger.error("Failed to delete attachment", e);
-                    throw new RequestException(500, "Failed to delete attachment");
+                if (attachment.isUploadCompleted()){
+                    try {
+                        var bucket = storageProvider.getBucket(attachment.getBucketName());
+                        var size = bucket.getObjectSize(attachment.getObjectKey());
+                        var user = userRepository.findById(loggedUserAccessor.getUserId())
+                                .orElseThrow(() -> new RequestException(404, "User not found"));
+                        user.setAccumulatedAttachmentStorageUsage(user.getAccumulatedAttachmentStorageUsage() - size);
+                        userRepository.save(user);
+
+                        bucket.deleteFile(attachment.getObjectKey());
+                    } catch (Exception e){
+                        logger.error("Failed to delete attachment", e);
+                        throw new RequestException(500, e, "Failed to delete attachment");
+                    }
                 }
                 attachmentListingRepository.delete(attachment);
             }

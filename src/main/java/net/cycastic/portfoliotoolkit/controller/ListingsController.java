@@ -11,8 +11,9 @@ import net.cycastic.portfoliotoolkit.application.listing.get.GetListingCommand;
 import net.cycastic.portfoliotoolkit.application.listing.query.QuerySingleLevelCommand;
 import net.cycastic.portfoliotoolkit.controller.annotation.RequireProjectId;
 import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
-import net.cycastic.portfoliotoolkit.domain.dto.FolderItemsDto;
+import net.cycastic.portfoliotoolkit.domain.dto.FolderItemDto;
 import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -47,7 +48,7 @@ public class ListingsController {
     }
 
     @GetMapping("subfolders")
-    public FolderItemsDto getSubfolders(QuerySingleLevelCommand command){
+    public PageResponseDto<FolderItemDto> getSubfolders(QuerySingleLevelCommand command){
         return pipelinr.send(command);
     }
 

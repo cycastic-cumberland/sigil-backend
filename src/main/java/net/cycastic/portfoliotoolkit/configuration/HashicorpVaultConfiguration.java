@@ -11,6 +11,7 @@ public class HashicorpVaultConfiguration {
     private String apiAddress;
     private String token;
     private String encryptionKeyName;
+    private String presignKeyName;
     private String signingKeyName;
     private String signingPrivateKeyWrapped;
     private String signingPublicKey;

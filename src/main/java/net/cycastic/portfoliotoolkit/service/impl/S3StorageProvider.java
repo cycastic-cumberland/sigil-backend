@@ -3,9 +3,13 @@ package net.cycastic.portfoliotoolkit.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.S3Configurations;
+import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.service.StorageProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -29,35 +33,40 @@ public class S3StorageProvider implements StorageProvider {
     private final ConcurrentHashMap<String, S3BucketProvider> cachedProviders = new ConcurrentHashMap<>();
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final ApplicationContext ctx;
 
+    @Component
     @RequiredArgsConstructor
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public static class S3BucketProvider implements BucketProvider {
         private final S3StorageProvider provider;
         private final String bucketName;
 
         @Override
-        public String generatePresignedUploadPath(String fileKey, String fileName, OffsetDateTime expiration) {
+        @HandleS3Exception
+        public String generatePresignedUploadPath(String fileKey, String fileName, OffsetDateTime expiration, long objectLength) {
             var ttl = Duration.between(OffsetDateTime.now(), expiration);
-            var putReq = PutObjectRequest.builder()
+            var requestBuilder = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileKey)
                     .contentType("application/octet-stream")
-                    .build();
+                    .contentLength(objectLength);
 
             var presignedPut = provider.s3Presigner.presignPutObject(r ->
                     r.signatureDuration(ttl)
-                            .putObjectRequest(putReq)
+                            .putObjectRequest(requestBuilder.build())
             );
             return presignedPut.url().toString();
         }
 
         @Override
+        @HandleS3Exception
         public String generatePresignedDownloadPath(String fileKey, String fileName, OffsetDateTime expiration) {
             var ttl = Duration.between(OffsetDateTime.now(), expiration);
             var getReq = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileKey)
-                    .responseContentDisposition("attachment; filename=\"" + fileName + "\"")
+                    .responseContentDisposition("attachment; filename=\"" + ApplicationUtilities.encodeURIComponent(fileName) + "\"")
                     .build();
 
             var presignedGet = provider.s3Presigner.presignGetObject(r ->
@@ -68,6 +77,7 @@ public class S3StorageProvider implements StorageProvider {
 
         @Override
         @SneakyThrows
+        @HandleS3Exception
         public void downloadFile(String fileKey, OutputStream stream) {
             var responseStream = provider.s3Client.getObject(request -> request
                                     .bucket(bucketName)
@@ -76,13 +86,17 @@ public class S3StorageProvider implements StorageProvider {
             responseStream.transferTo(stream);
         }
 
+        private HeadObjectResponse headObject(String fileKey){
+            return provider.s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .build());
+        }
+
         @Override
         public boolean exists(String fileKey) {
             try {
-                provider.s3Client.headObject(HeadObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(fileKey)
-                        .build());
+                headObject(fileKey);
                 return true;
             } catch (S3Exception e) {
                 if (e.statusCode() == 404) {
@@ -92,11 +106,31 @@ public class S3StorageProvider implements StorageProvider {
             }
         }
 
+        @Override
+        @HandleS3Exception
+        public long getObjectSize(String fileKey){
+            return headObject(fileKey).contentLength();
+        }
+
+        @HandleS3Exception
         public void deleteFile(String fileKey){
             provider.s3Client.deleteObject(DeleteObjectRequest.builder()
                             .bucket(bucketName)
                             .key(fileKey)
                             .build());
+        }
+
+        @Override
+        @HandleS3Exception
+        public void copyFile(String sourceFileKey, String destinationFileKey) {
+            var copyRequest = CopyObjectRequest.builder()
+                    .sourceBucket(bucketName)
+                    .sourceKey(sourceFileKey)
+                    .destinationBucket(bucketName)
+                    .destinationKey(destinationFileKey)
+                    .build();
+
+            provider.s3Client.copyObject(copyRequest);
         }
     }
 
@@ -135,14 +169,15 @@ public class S3StorageProvider implements StorageProvider {
     }
 
     @Autowired
-    public S3StorageProvider(S3Configurations s3Configurations){
+    public S3StorageProvider(S3Configurations s3Configurations, ApplicationContext ctx){
         s3Client = buildClient(s3Configurations);
         s3Presigner = buildPresigner(s3Configurations);
+        this.ctx = ctx;
     }
 
     @Override
     public BucketProvider getBucket(String bucketName) {
         return cachedProviders.computeIfAbsent(bucketName,
-                k -> new S3BucketProvider(this, k));
+                k -> ctx.getBean(S3BucketProvider.class, this, k));
     }
 }

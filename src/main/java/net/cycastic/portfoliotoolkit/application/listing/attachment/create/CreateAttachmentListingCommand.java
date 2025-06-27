@@ -9,4 +9,6 @@ public class CreateAttachmentListingCommand implements Command<AttachmentPresign
     private String path;
 
     private String mimeType;
+
+    private long contentLength;
 }

@@ -9,6 +9,7 @@ import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.Project;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
+import net.cycastic.portfoliotoolkit.service.LimitProvider;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
@@ -20,13 +21,15 @@ public class SaveProjectCommandHandler implements Command.Handler<SaveProjectCom
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final LimitProvider limitProvider;
 
     private Integer createProject(SaveProjectCommand command){
         var user = userRepository.findByIdForUpdate(command.getUserId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
-        if (user.getProjectLimit() != null){
+        var limit = limitProvider.extractUsageDetails(user);
+        if (limit.getProjectCount() != null){
             var currentProjectCount = projectRepository.countByUser(user);
-            if (currentProjectCount >= user.getProjectLimit()){
+            if (currentProjectCount >= limit.getProjectCount()){
                 throw new ForbiddenException("Current user has reached project limit");
             }
         }

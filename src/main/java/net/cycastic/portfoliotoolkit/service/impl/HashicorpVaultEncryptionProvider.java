@@ -5,6 +5,7 @@ import com.bettercloud.vault.VaultConfig;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.HashicorpVaultConfiguration;
+import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
 import net.cycastic.portfoliotoolkit.service.EncryptionProvider;
@@ -16,27 +17,11 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 
-public class HashicorpVaultEncryptionProvider implements EncryptionProvider, DecryptionProvider {
+public class HashicorpVaultEncryptionProvider extends HashicorpVaultService implements EncryptionProvider, DecryptionProvider {
     private static final Logger logger = LoggerFactory.getLogger(HashicorpVaultEncryptionProvider.class);
-    protected final Vault vault;
-    private final String keyName;
-
-    protected HashicorpVaultEncryptionProvider(VaultConfig vaultConfig, String keyName){
-        this.vault = new Vault(vaultConfig);
-        this.keyName = keyName;
-    }
 
     public HashicorpVaultEncryptionProvider(HashicorpVaultConfiguration configuration){
-        this(buildConfig(configuration), configuration.getEncryptionKeyName());
-    }
-
-    @SneakyThrows
-    protected static VaultConfig buildConfig(HashicorpVaultConfiguration configuration){
-        return new VaultConfig()
-                .address(configuration.getApiAddress())
-                .token(configuration.getToken())
-                .engineVersion(configuration.getApiVersion())
-                .build();
+        super(buildConfig(configuration), configuration.getEncryptionKeyName());
     }
 
     @SneakyThrows
@@ -44,7 +29,7 @@ public class HashicorpVaultEncryptionProvider implements EncryptionProvider, Dec
         var base64 = Base64.getEncoder().encodeToString(unencryptedData);
         Map<String, Object> encryptData = Collections.singletonMap("plaintext", base64);
         var encResp = vault.logical()
-                .write(String.format("transit/encrypt/%s", keyName), encryptData);
+                .write(String.format("transit/encrypt/%s", ApplicationUtilities.encodeURIComponent(keyName)), encryptData);
         var cipherText = encResp.getData().get("ciphertext");
         if (cipherText == null){
             logger.error("Failed to encrypt password. Rest response: {}",
@@ -58,7 +43,7 @@ public class HashicorpVaultEncryptionProvider implements EncryptionProvider, Dec
     private byte @NotNull [] decryptInternal(@NotNull String encryptedData){
         Map<String, Object> decryptData = Collections.singletonMap("ciphertext", encryptedData);
         var decResp = vault.logical()
-                .write(String.format("transit/decrypt/%s", keyName), decryptData);
+                .write(String.format("transit/decrypt/%s", ApplicationUtilities.encodeURIComponent(keyName)), decryptData);
         var b64Decoded = decResp.getData().get("plaintext");
         if (b64Decoded == null){
             logger.error("Failed to decrypt password. Rest response: {}",

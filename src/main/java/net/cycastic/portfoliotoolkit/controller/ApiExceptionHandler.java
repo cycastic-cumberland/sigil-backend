@@ -1,5 +1,6 @@
 package net.cycastic.portfoliotoolkit.controller;
 
+import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.configuration.ExceptionHandlerConfigurations;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -68,6 +70,16 @@ public class ApiExceptionHandler {
         } else {
             return handleGeneric(new RequestException(409, "Data conflict detected"), request);
         }
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleNoResourceFoundException(NoResourceFoundException ex, HttpServletRequest request) {
+        return handleGeneric(new RequestException(404, ex, "Resource not found"), request);
+    }
+
+    @ExceptionHandler(UnavailableException.class)
+    public ResponseEntity<ExceptionResponse> handleUnavailableException(UnavailableException ex, HttpServletRequest request) {
+        return handleGeneric(new RequestException(503, ex, "Service unavailable"), request);
     }
 
     @ExceptionHandler(Exception.class)

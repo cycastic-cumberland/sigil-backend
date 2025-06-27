@@ -45,11 +45,8 @@ public class User implements UserDetails {
 
     private boolean disabled;
 
-    @Column(nullable = true)
-    private Integer projectLimit;
-
-    @Column(nullable = true)
-    private Integer lacpLimit;
+    @Column(nullable = false)
+    private UsageType usageType;
 
     @NotNull
     private OffsetDateTime joinedAt;
@@ -57,6 +54,12 @@ public class User implements UserDetails {
     @NotNull
     @Column(columnDefinition = "BINARY(32)")
     private byte[] securityStamp;
+
+    @Version
+    private long version;
+
+    @Getter
+    private long accumulatedAttachmentStorageUsage;
 
     @OneToMany(mappedBy = "user")
     private Set<Project> projects;
@@ -81,5 +84,9 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public void setAccumulatedAttachmentStorageUsage(long accumulatedAttachmentStorageUsage){
+        this.accumulatedAttachmentStorageUsage = accumulatedAttachmentStorageUsage < 0 ? 0 : accumulatedAttachmentStorageUsage;
     }
 }

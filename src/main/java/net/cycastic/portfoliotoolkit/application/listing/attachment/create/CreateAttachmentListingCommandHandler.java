@@ -7,7 +7,6 @@ import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
-import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import net.cycastic.portfoliotoolkit.service.StorageProvider;
 import org.springframework.stereotype.Component;
@@ -21,7 +20,6 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
     private final StorageProvider storageProvider;
     private final ProjectRepository projectRepository;
     private final LoggedUserAccessor loggedUserAccessor;
-    private final AttachmentListingRepository attachmentListingRepository;
 
     @Override
     public AttachmentPresignedDto handle(CreateAttachmentListingCommand command) {
@@ -29,18 +27,15 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
                 .orElseThrow(() -> new RequestException(404, "Project not found"));
 
         var path = command.getPath();
-        if (attachmentListingRepository.existsByListing_Project_AndUploadCompleted(project, false)){
-            throw new RequestException(400, "There are incomplete attachment uploads");
-        }
-
-        var incompleteAttachment = listingService.saveAttachment(project,
+        var incompleteAttachment = listingService.saveTemporaryAttachment(project,
                 path,
                 command.getMimeType() == null ? null : ApplicationUtilities.getMimeType(command.getPath()));
 
         var uploadUrl = storageProvider.getBucket(incompleteAttachment.getBucketName())
                 .generatePresignedUploadPath(incompleteAttachment.getObjectKey(),
                         path,
-                        OffsetDateTime.now().plusHours(6)); // TODO: Override this
+                        OffsetDateTime.now().plusMinutes(2), // TODO: Override this
+                        command.getContentLength());
         return AttachmentPresignedDto.builder()
                 .id(incompleteAttachment.getId())
                 .url(uploadUrl)

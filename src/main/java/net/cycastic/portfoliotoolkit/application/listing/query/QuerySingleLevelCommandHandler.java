@@ -5,25 +5,22 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.dto.FolderItemDto;
 import net.cycastic.portfoliotoolkit.domain.dto.FolderItemType;
-import net.cycastic.portfoliotoolkit.domain.dto.FolderItemsDto;
-import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
+import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Stream;
-
 @Component
 @RequiredArgsConstructor
-public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySingleLevelCommand, FolderItemsDto> {
+public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySingleLevelCommand, PageResponseDto<FolderItemDto>> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final ProjectRepository projectRepository;
     private final ListingRepository listingRepository;
 
     @Override
-    public FolderItemsDto handle(QuerySingleLevelCommand command) {
+    public PageResponseDto<FolderItemDto> handle(QuerySingleLevelCommand command) {
         var folder = command.getFolder();
         if (!folder.startsWith("/")){
             folder = '/' + folder;
@@ -34,13 +31,12 @@ public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySing
         var project = projectRepository.findById(loggedUserAccessor.getProjectId())
                 .orElseThrow(() -> new RequestException(404, "Project not found"));
 
-        var items = listingRepository.findItems(project, folder);
-        return new FolderItemsDto(Stream.concat(items.stream()
-                .filter(f -> f.getType() == null)
-                .map(f -> new FolderItemDto(f.getListingPath(), FolderItemType.FOLDER)),
-                items.stream()
-                        .filter(f -> f.getType() != null)
-                        .map(f -> new FolderItemDto(f.getListingPath(), ApplicationUtilities.fromListingType(f.getType()))))
-                .toList());
+        var page = listingRepository.findItems(project, folder, command.toPageable());
+
+        return PageResponseDto.fromDomain(page,
+                f -> new FolderItemDto(f.getName(),
+                        f.getModifiedAt(),
+                        f.getType() == null ? FolderItemType.FOLDER : ApplicationUtilities.fromListingType(f.getType()),
+                        f.getAttachmentUploadCompleted()));
     }
 }

@@ -3,6 +3,7 @@ package net.cycastic.portfoliotoolkit.service.impl;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.SymmetricEncryptionConfiguration;
+import net.cycastic.portfoliotoolkit.domain.CryptographicUtilities;
 import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
 import net.cycastic.portfoliotoolkit.service.EncryptionProvider;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -24,16 +25,8 @@ public class SymmetricEncryptionProvider implements EncryptionProvider, Decrypti
     private final SecretKeySpec key;
 
     public SymmetricEncryptionProvider(SymmetricEncryptionConfiguration configuration){
-        var okm = extractOkm(configuration.getIkm(), configuration.getSalt());
+        var okm = CryptographicUtilities.deriveKey(KEY_LENGTH, configuration.getIkm(), configuration.getSalt());
         key = new SecretKeySpec(okm, "AES");
-    }
-
-    protected byte[] extractOkm(@NotNull byte[] ikm, @Nullable byte[] salt){
-        var okm = new byte[KEY_LENGTH];
-        var hkdf = new HKDFBytesGenerator(new SHA256Digest());
-        hkdf.init(new HKDFParameters(ikm, salt, null));
-        hkdf.generateBytes(okm, 0, okm.length);
-        return okm;
     }
 
     @SneakyThrows

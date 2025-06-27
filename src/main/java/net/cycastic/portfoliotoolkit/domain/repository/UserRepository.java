@@ -20,10 +20,6 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     @Query("SELECT u FROM User u WHERE u.id = :id")
     Optional<User> findByIdForUpdate(@Param("id") Integer id);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT u FROM User u WHERE u.normalizedEmail = UPPER(:email)")
-    Optional<User> findByEmailForUpdate(@Param("email") String email);
-
     default @Nullable User getByEmail(@NotNull String email){
         return findByNormalizedEmail(email.toUpperCase(Locale.ROOT));
     }

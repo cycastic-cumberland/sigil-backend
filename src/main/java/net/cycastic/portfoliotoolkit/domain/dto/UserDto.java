@@ -19,9 +19,8 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String[] roles;
-    private Integer projectLimit;
-    private Integer lacpLimit;
     private OffsetDateTime joinedAt;
+    private UsageDetailsDto usageDetails;
 
     public static UserDto fromDomain(@NotNull User user){
         return UserDto.builder()
@@ -30,8 +29,6 @@ public class UserDto {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .roles(user.getRoles().split(","))
-                .projectLimit(user.getProjectLimit())
-                .lacpLimit(user.getLacpLimit())
                 .joinedAt(user.getJoinedAt())
                 .build();
     }

@@ -1,9 +1,7 @@
 package net.cycastic.portfoliotoolkit;
 
 import lombok.RequiredArgsConstructor;
-import net.cycastic.portfoliotoolkit.command.CreateUser;
-import net.cycastic.portfoliotoolkit.command.GenerateKeyPair;
-import net.cycastic.portfoliotoolkit.command.VerifyPassword;
+import net.cycastic.portfoliotoolkit.command.*;
 import net.cycastic.portfoliotoolkit.configuration.HashicorpVaultConfiguration;
 import net.cycastic.portfoliotoolkit.configuration.SymmetricEncryptionConfiguration;
 import net.cycastic.portfoliotoolkit.configuration.auth.JwtConfiguration;
@@ -24,6 +22,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.util.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -32,13 +31,16 @@ import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 @SpringBootApplication
+@EnableAspectJAutoProxy
 @RequiredArgsConstructor
 public class PortfolioToolkitApplication implements CommandLineRunner {
     private final CommandLine.IFactory picocliFactory;
     private final Cli cliCommand;
 
     @Component
-    @CommandLine.Command(name = "tools", subcommands = {CreateUser.class, VerifyPassword.class, GenerateKeyPair.class})
+    @CommandLine.Command(name = "tools",
+            subcommands = {CreateUser.class, VerifyPassword.class, GenerateKeyPair.class, Cleanup.class,
+                    CalculateAccumulatedStorage.class})
     public static class Cli{ }
 
     @Component
@@ -69,100 +71,6 @@ public class PortfolioToolkitApplication implements CommandLineRunner {
             authProvider.setUserDetailsService(userDetailsService);
             authProvider.setPasswordEncoder(passwordHasher);
             return authProvider;
-        }
-    }
-
-    @Component
-    @org.springframework.context.annotation.Lazy
-    public static class EncryptionConfigurations{
-        private final Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider;
-        private final Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider;
-        private final Lazy<EncryptionProvider> encryptionProvider;
-        private final Lazy<DecryptionProvider> decryptionProvider;
-        private final Lazy<StandardJwtService> jwtService;
-
-        @Autowired
-        public EncryptionConfigurations(HashicorpVaultConfiguration hashicorpVaultConfiguration,
-                                        SymmetricEncryptionConfiguration symmetricEncryptionConfiguration,
-                                        JwtConfiguration jwtConfiguration){
-            var vaultEnabled = false;
-            Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider = null;
-            Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider = null;
-            Lazy<EncryptionProvider> encryptionProvider = null;
-            Lazy<DecryptionProvider> decryptionProvider = null;
-            Lazy<StandardJwtService> jwtService = null;
-            if (hashicorpVaultConfiguration.isValid()){
-                vaultEnabled = true;
-                hashicorpVaultEncryptionProvider = Lazy.of(() -> new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration));
-                encryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
-                decryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
-
-                if (hashicorpVaultConfiguration.getSigningPrivateKeyWrapped() != null &&
-                        hashicorpVaultConfiguration.getSigningPublicKey() != null){
-                    jwtService = Lazy.of(() -> {
-                        var privateKeyEncrypted = hashicorpVaultConfiguration.getSigningPrivateKeyWrapped();
-                        var privateKeyBase64 = new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration).decrypt(privateKeyEncrypted);
-                        var privateKey = StandardJwtService.decodePrivateKey(privateKeyBase64);
-                        var publicKey = StandardJwtService.decodePublicKey(hashicorpVaultConfiguration.getSigningPublicKey());
-                        return new StandardJwtService(jwtConfiguration, privateKey, publicKey);
-                    });
-                }
-            }
-            if (symmetricEncryptionConfiguration.isValid()){
-                symmetricEncryptionProvider = Lazy.of(() -> new SymmetricEncryptionProvider(symmetricEncryptionConfiguration));
-                if (!vaultEnabled){
-                    encryptionProvider = Lazy.of(symmetricEncryptionProvider);
-                    decryptionProvider = Lazy.of(symmetricEncryptionProvider);
-                }
-            }
-
-            if (encryptionProvider == null || decryptionProvider == null){
-                throw new IllegalStateException("No encryption setting configured");
-            }
-
-            this.encryptionProvider = encryptionProvider;
-            this.decryptionProvider = decryptionProvider;
-            this.hashicorpVaultEncryptionProvider = hashicorpVaultEncryptionProvider == null
-                    ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
-                    : hashicorpVaultEncryptionProvider;
-
-            this.symmetricEncryptionProvider = symmetricEncryptionProvider == null
-                    ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
-                    : symmetricEncryptionProvider;
-
-            this.jwtService = jwtService == null
-                    ? Lazy.of(() -> new StandardJwtService(jwtConfiguration))
-                    : jwtService;
-        }
-
-        @Bean
-        public synchronized EncryptionProvider encryptionProvider(){
-            return encryptionProvider.get();
-        }
-
-        @Bean
-        public synchronized DecryptionProvider decryptionProvider(){
-            return decryptionProvider.get();
-        }
-
-        @Bean
-        public synchronized HashicorpVaultEncryptionProvider hashicorpVaultEncryptionProvider(){
-            return hashicorpVaultEncryptionProvider.get();
-        }
-
-        @Bean
-        public synchronized SymmetricEncryptionProvider symmetricEncryptionProvider(){
-            return symmetricEncryptionProvider.get();
-        }
-
-        @Bean
-        public synchronized JwtIssuer jwtIssuer(){
-            return jwtService.get();
-        }
-
-        @Bean
-        public synchronized JwtVerifier jwtVerifier(){
-            return jwtService.get();
         }
     }
 

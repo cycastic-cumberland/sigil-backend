@@ -39,6 +39,8 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ListingService {
+    public static final String TEMP_FILE_PREFIX = "tmp/";
+
     private static final Cache<String, Pattern> PATTERN_CACHE = Caffeine.newBuilder()
             .maximumSize(512) // TODO: Ways to override this
             .build();
@@ -175,17 +177,7 @@ public class ListingService {
     }
 
     @Transactional
-    public AttachmentListing saveAttachment(@NotNull Project project, @NotNull String path, String mimeType){
-        if (!path.startsWith("/")){
-            throw new RequestException(400, "Listing path must start with a forward slash");
-        }
-        if (path.endsWith("/")){
-            throw new RequestException(400, "Listing path must not end with a forward slash");
-        }
-        if (INVALID_PATH.matcher(path).find()) {
-            throw new RequestException(400, "Path must not contain //, _ or %");
-        }
-
+    public AttachmentListing saveTemporaryAttachment(@NotNull Project project, @NotNull String path, String mimeType){
         var listing = Listing.builder()
                 .project(project)
                 .listingPath(path)
@@ -197,7 +189,7 @@ public class ListingService {
                 .listing(listing)
                 .bucketName(s3Configurations.getAttachmentBucketName())
                 .bucketRegion(s3Configurations.getRegionName())
-                .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s.%s", UUID.randomUUID(), fileExt))
+                .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s%s.%s", TEMP_FILE_PREFIX, UUID.randomUUID(), fileExt))
                 .mimeType(mimeType)
                 .build();
         listingRepository.save(listing);

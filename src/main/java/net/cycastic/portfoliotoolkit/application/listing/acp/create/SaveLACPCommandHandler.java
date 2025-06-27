@@ -10,6 +10,7 @@ import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.ListingAccessControlPolicy;
 import net.cycastic.portfoliotoolkit.domain.repository.ProjectRepository;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingACPRepository;
+import net.cycastic.portfoliotoolkit.service.LimitProvider;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,7 @@ public class SaveLACPCommandHandler implements Command.Handler<SaveLACPCommand, 
     private final ProjectRepository projectRepository;
     private final ListingACPRepository listingACPRepository;
     private final LoggedUserAccessor loggedUserAccessor;
+    private final LimitProvider limitProvider;
 
     @Override
     @Transactional
@@ -38,8 +40,9 @@ public class SaveLACPCommandHandler implements Command.Handler<SaveLACPCommand, 
         if (!loggedUserAccessor.isAdmin() && user.getId() != loggedUserAccessor.getUserId()){
             throw new ForbiddenException();
         }
-        if (user.getLacpLimit() != null && command.getPolicies().size() > user.getLacpLimit()){
-            throw new RequestException(400, "Can not save any more than %d policies", user.getLacpLimit());
+        var limit = limitProvider.extractUsageDetails(user);
+        if (limit.getLacpCount() != null && command.getPolicies().size() > limit.getLacpCount()){
+            throw new RequestException(400, "Can not save any more than %d policies", limit.getLacpCount());
         }
         var accumulator = new AtomicInteger(0);
         var newPolicies = command.getPolicies().stream()

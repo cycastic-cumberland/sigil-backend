@@ -1,6 +1,7 @@
 package net.cycastic.portfoliotoolkit.command;
 
 import net.cycastic.portfoliotoolkit.application.auth.UserService;
+import net.cycastic.portfoliotoolkit.domain.model.UsageType;
 import net.cycastic.portfoliotoolkit.domain.model.User;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.service.PasswordHasher;
@@ -12,6 +13,7 @@ import picocli.CommandLine;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 @Component
@@ -33,6 +35,9 @@ public class CreateUser implements Callable<Integer> {
     @CommandLine.Option(names = "--roles", required = true, split = ",")
     private List<String> roles;
 
+    @CommandLine.Option(names = "--usage-type")
+    private UsageType usageType;
+
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
 
@@ -53,6 +58,7 @@ public class CreateUser implements Callable<Integer> {
                 .disabled(false)
                 .joinedAt(OffsetDateTime.now())
                 .securityStamp(new byte[32])
+                .usageType(Objects.requireNonNullElse(usageType, UsageType.STANDARD))
                 .build();
         UserService.refreshSecurityStamp(user);
         userRepository.save(user);
