@@ -3,12 +3,10 @@ package net.cycastic.portfoliotoolkit.service.impl;
 import jakarta.transaction.NotSupportedException;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
+import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.service.Presigner;
 
 import java.net.URI;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,10 +25,28 @@ public class UriPresigner {
         this.presigners = presigners;
     }
 
+    private static URI buildUri(String scheme, String rawAuthority, String rawPath, String rawQuery, String rawFragment){
+        var sb = new StringBuilder()
+                .append(scheme)
+                .append("://")
+                .append(rawAuthority)
+                .append(rawPath);
+        if (rawQuery != null){
+            sb.append('?').append(rawQuery);
+        }
+        if (rawFragment != null){
+            sb.append('#').append(rawFragment);
+        }
+
+        return URI.create(sb.toString());
+    }
+
     @SneakyThrows
     public URI signUri(URI uri){
-        var query = uri.getQuery();
+        var query = uri.getRawQuery();
+        var queryParts = new ArrayList<String>();
         if (query != null) {
+            // TODO: Regex?
             for (var param : query.split("&")) {
                 if (param.startsWith(ApplicationConstants.PresignSignatureEntry + "=")) {
                     throw new IllegalStateException("URI already contains a signature parameter");
@@ -38,27 +54,30 @@ public class UriPresigner {
                 if (param.startsWith(ApplicationConstants.PresignSignatureAlgorithmEntry + "=")) {
                     throw new IllegalStateException("URI already contains a signature algorithm parameter");
                 }
+
+                queryParts.add(param);
             }
         }
 
-        var baseUri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, null);
+        var baseUri = buildUri(uri.getScheme(),
+                uri.getRawAuthority(),
+                uri.getRawPath(),
+                query,
+                uri.getRawFragment());
         var dataToSign = baseUri.toString();
         var presigner = presigners.getFirst();
         var signature = presigner.getSignature(dataToSign, presigner.getDefaultAlgorithm());
-        var encodedSignature = URLEncoder.encode(signature, StandardCharsets.UTF_8);
-        var encodedAlgorithm = URLEncoder.encode(presigner.getDefaultAlgorithm(), StandardCharsets.UTF_8);
 
-        var newQuery = ((query == null || query.isEmpty()) ?
-                ApplicationConstants.PresignSignatureEntry + "=" + encodedSignature :
-                query + "&"+ ApplicationConstants.PresignSignatureEntry + "=" + encodedSignature)
-                + "&" + ApplicationConstants.PresignSignatureAlgorithmEntry + "=" + encodedAlgorithm;
+        queryParts.add(ApplicationConstants.PresignSignatureEntry + "=" + ApplicationUtilities.encodeURIComponent(signature));
+        queryParts.add(ApplicationConstants.PresignSignatureAlgorithmEntry + "=" + ApplicationUtilities.encodeURIComponent(presigner.getDefaultAlgorithm()));
 
-        return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), newQuery, uri.getFragment());
+        query = String.join("&", queryParts);
+        return buildUri(uri.getScheme(), uri.getRawAuthority(), uri.getRawPath(), query, uri.getFragment());
     }
 
     @SneakyThrows
     public boolean verifyUri(URI uri){
-        String query = uri.getQuery();
+        var query = uri.getRawQuery();
         if (query == null) {
             return false;
         }
@@ -70,14 +89,12 @@ public class UriPresigner {
             if (param.startsWith(ApplicationConstants.PresignSignatureEntry + "=")) {
                 var parts = param.split("=", 2);
                 if (parts.length == 2) {
-                    var decodedSig = URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
-                    signatures.add(decodedSig);
+                    signatures.add(ApplicationUtilities.decodeURIComponent(parts[1]));
                 }
             } else if (param.startsWith(ApplicationConstants.PresignSignatureAlgorithmEntry + "=")){
                 var parts = param.split("=", 2);
                 if (parts.length == 2) {
-                    var decodedAlgo = URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
-                    algorithms.add(decodedAlgo);
+                    algorithms.add(ApplicationUtilities.decodeURIComponent(parts[1]));
                 }
             } else {
                 otherParams.add(param);
@@ -94,7 +111,7 @@ public class UriPresigner {
         var foundAlgo = algorithms.getFirst();
 
         var newQuery = otherParams.isEmpty() ? null : String.join("&", otherParams);
-        var baseUri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), newQuery, null);
+        var baseUri = buildUri(uri.getScheme(), uri.getRawAuthority(), uri.getRawPath(), newQuery, uri.getRawFragment());
         var dataToVerify = baseUri.toString();
 
         var presigner = presigners.stream()

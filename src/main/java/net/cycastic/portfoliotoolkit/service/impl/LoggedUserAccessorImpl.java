@@ -1,6 +1,5 @@
 package net.cycastic.portfoliotoolkit.service.impl;
 
-import an.awesome.pipelinr.Pipelinr;
 import io.jsonwebtoken.Claims;
 import jakarta.validation.constraints.Null;
 import lombok.NonNull;
@@ -14,10 +13,7 @@ import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -28,14 +24,12 @@ import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class LoggedUserAccessorImpl implements LoggedUserAccessor {
     private record ClaimsWrapper(@Null Claims claims){}
     private static final String CLAIMS_IDENTIFIER = "$__claims";
     private static final Logger logger = LoggerFactory.getLogger(LoggedUserAccessorImpl.class);
 
     private final SessionStorage sessionStorage;
-    private final Pipelinr pipelinr;
     private final JwtVerifier jwtVerifier;
 
     private @NonNull ServletRequestAttributes getAttributes(){

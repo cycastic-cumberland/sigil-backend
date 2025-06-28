@@ -36,7 +36,7 @@ public class PresignerTests {
 
     private void testPresignerSimpleInternal(UriPresigner presigner){
         final var url1 = "https://example.com/someData";
-        final var url2 = "https://example.com/someData?q1=hello";
+        final var url2 = "http://localhost:8080/api/storage?projectId=1&userId=1&shareToken=67883b4a-51c5-11f0-8381-0242ac140002&path=%2Fcat.gif#somestuff";
 
         signAndAssert(presigner, url1);
         signAndAssert(presigner, url2);

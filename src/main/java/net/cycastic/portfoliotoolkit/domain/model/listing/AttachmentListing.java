@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.model.EmailTemplate;
 
+import java.util.UUID;
+
 @Data
 @Entity
 @Builder
@@ -35,6 +37,12 @@ public class AttachmentListing {
     private String mimeType;
 
     private boolean uploadCompleted;
+
+    @Column(nullable = false)
+    private UUID shareToken;
+
+    @Version
+    private long version;
 
     @OneToOne(mappedBy = "attachmentListing")
     private EmailTemplate emailTemplate;

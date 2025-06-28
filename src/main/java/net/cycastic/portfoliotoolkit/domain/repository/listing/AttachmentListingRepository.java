@@ -24,6 +24,8 @@ public interface AttachmentListingRepository extends JpaRepository<AttachmentLis
 
     Optional<AttachmentListing> findByListing_ProjectAndListing_ListingPath(@NotNull Project listingProject, @NotNull String listingListingPath);
 
+    Optional<AttachmentListing> findByListing_Project_IdAndListing_ListingPath(@NotNull Integer listingProjectId, @NotNull String listingListingPath);
+
     @Query(value = """
                    SELECT l.id AS id, l.objectKey AS key, l.bucketName AS bucket
                    FROM AttachmentListing l

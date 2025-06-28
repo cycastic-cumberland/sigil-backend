@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class EmailParameter {
     private String name;
     private EmailParameterType type;
+    private String value;
 }

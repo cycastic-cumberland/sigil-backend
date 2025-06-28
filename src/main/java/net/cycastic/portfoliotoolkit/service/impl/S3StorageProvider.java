@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
@@ -76,14 +77,12 @@ public class S3StorageProvider implements StorageProvider {
         }
 
         @Override
-        @SneakyThrows
         @HandleS3Exception
-        public void downloadFile(String fileKey, OutputStream stream) {
-            var responseStream = provider.s3Client.getObject(request -> request
-                                    .bucket(bucketName)
-                                    .key(fileKey),
+        public InputStream openDownloadStream(String fileKey) {
+            return provider.s3Client.getObject(request -> request
+                            .bucket(bucketName)
+                            .key(fileKey),
                     ResponseTransformer.toInputStream());
-            responseStream.transferTo(stream);
         }
 
         private HeadObjectResponse headObject(String fileKey){

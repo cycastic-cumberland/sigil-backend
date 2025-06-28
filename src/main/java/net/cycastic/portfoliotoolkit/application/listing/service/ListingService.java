@@ -191,6 +191,7 @@ public class ListingService {
                 .bucketRegion(s3Configurations.getRegionName())
                 .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s%s.%s", TEMP_FILE_PREFIX, UUID.randomUUID(), fileExt))
                 .mimeType(mimeType)
+                .shareToken(UUID.randomUUID())
                 .build();
         listingRepository.save(listing);
         attachmentListingRepository.save(attachmentListing);
