@@ -3,12 +3,7 @@ package net.cycastic.portfoliotoolkit.application.listing.attachment.create;
 import an.awesome.pipelinr.Command;
 import lombok.Data;
 import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.AttachmentUploadDto;
 
-@Data
-public class CreateAttachmentListingCommand implements Command<AttachmentPresignedDto> {
-    private String path;
-
-    private String mimeType;
-
-    private long contentLength;
+public class CreateAttachmentListingCommand extends AttachmentUploadDto implements Command<AttachmentPresignedDto> {
 }

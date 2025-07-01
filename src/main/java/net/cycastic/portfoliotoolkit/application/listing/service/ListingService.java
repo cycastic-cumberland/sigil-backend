@@ -13,12 +13,13 @@ import net.cycastic.portfoliotoolkit.domain.model.Project;
 import net.cycastic.portfoliotoolkit.domain.model.listing.AttachmentListing;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.model.ListingAccessControlPolicy;
-import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
-import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingACPRepository;
-import net.cycastic.portfoliotoolkit.domain.repository.listing.ListingRepository;
+import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
+import net.cycastic.portfoliotoolkit.domain.repository.listing.*;
 import net.cycastic.portfoliotoolkit.domain.dto.listing.ListingDto;
 import net.cycastic.portfoliotoolkit.domain.dto.paging.PageResponseDto;
+import net.cycastic.portfoliotoolkit.service.DeferrableStorageProvider;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
+import net.cycastic.portfoliotoolkit.service.StorageProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,14 +46,18 @@ public class ListingService {
             .maximumSize(512) // TODO: Ways to override this
             .build();
     private static final Pattern MATCH_ALL = Pattern.compile(".*");
-    private static final Pattern INVALID_PATH = Pattern.compile("/{2}|\\p{Cntrl}");
 
     private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
 
     private final ListingACPRepository listingACPRepository;
     private final LoggedUserAccessor loggedUserAccessor;
     private final List<ListingResolver> resolvers;
+    private final StorageProvider storageProvider;
+    private final DeferrableStorageProvider deferrableStorageProvider;
+    private final UserRepository userRepository;
 
+    private final TextListingRepository textListingRepository;
+    private final DecimalListingRepository decimalListingRepository;
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final S3Configurations s3Configurations;
@@ -196,5 +201,47 @@ public class ListingService {
         listingRepository.save(listing);
         attachmentListingRepository.save(attachmentListing);
         return attachmentListing;
+    }
+
+    private void deleteListingNoTransaction(Listing listing, AttachmentListing attachment){
+        if (attachment.isUploadCompleted()){
+            attachment.setUploadCompleted(false);
+            attachmentListingRepository.save(attachment);
+
+            var size = storageProvider.getBucket(attachment.getBucketName()).getObjectSize(attachment.getObjectKey());
+            var user = userRepository.findByListing(listing)
+                    .orElseThrow(() -> new RequestException(404, "User not found"));
+            user.setAccumulatedAttachmentStorageUsage(user.getAccumulatedAttachmentStorageUsage() - size);
+            deferrableStorageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
+            userRepository.save(user);
+        }
+
+        attachmentListingRepository.delete(attachment);
+        listingRepository.delete(listing);
+    }
+
+    public void deleteListingNoTransaction(int projectId, String path){
+        var listing = listingRepository.findByProject_IdAndListingPath(projectId, path)
+                .orElseThrow(() -> new RequestException(404, "Listing not found"));
+
+        if (!listing.getProject().getId().equals(loggedUserAccessor.getProjectId())){
+            throw new ForbiddenException();
+        }
+
+        switch (listing.getType()){
+            case TEXT -> {
+                textListingRepository.removeByListing(listing);
+                listingRepository.delete(listing);
+            }
+            case DECIMAL -> {
+                decimalListingRepository.removeByListing(listing);
+                listingRepository.delete(listing);
+            }
+            case ATTACHMENT -> {
+                var attachment = attachmentListingRepository.findAttachmentListingForUpdate(listing)
+                        .orElseThrow(() -> new IllegalStateException("unreachable"));
+                deleteListingNoTransaction(listing, attachment);
+            }
+        }
     }
 }

@@ -43,4 +43,7 @@ public class EncryptedSmtpCredential {
 
     @NotNull
     private String fromName;
+
+    @Version
+    private long version;
 }

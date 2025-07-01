@@ -17,10 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -108,5 +105,25 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
         }
 
         return JwtUtilities.extractRoles(claims);
+    }
+
+    @Override
+    public String getRequestPath() {
+        var attrs = getAttributes();
+        var request = attrs.getRequest();
+
+        var url = request.getRequestURL();
+        var query = request.getQueryString();
+
+        if (query != null) {
+            url.append('?').append(query);
+        }
+
+        return url.toString();
+    }
+
+    @Override
+    public Locale getRequestLocale() {
+        return getAttributes().getRequest().getLocale();
     }
 }

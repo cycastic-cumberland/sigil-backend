@@ -90,12 +90,13 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource(LoggedUserAccessor loggedUserAccessor,
                                                            Pipelinr pipelinr,
                                                            CrossOriginConfiguration crossOriginConfiguration) {
-        var allowedOrigins = Objects.requireNonNullElse(crossOriginConfiguration.getAllowOrigins(), "")
-                .split(";");
+        var allowedOrigins = crossOriginConfiguration.getAllowOrigins();
         return request -> {
             var config = getDefaultCorsConfiguration();
-            for (var origin : allowedOrigins) {
-                config.addAllowedOrigin(origin);
+            if (allowedOrigins != null){
+                for (var origin : allowedOrigins) {
+                    config.addAllowedOrigin(origin);
+                }
             }
             if (!request.getRequestURI().startsWith("/api")){
                 return config;

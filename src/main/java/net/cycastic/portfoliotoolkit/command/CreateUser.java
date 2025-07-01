@@ -3,6 +3,7 @@ package net.cycastic.portfoliotoolkit.command;
 import net.cycastic.portfoliotoolkit.application.auth.UserService;
 import net.cycastic.portfoliotoolkit.domain.model.UsageType;
 import net.cycastic.portfoliotoolkit.domain.model.User;
+import net.cycastic.portfoliotoolkit.domain.model.UserStatus;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.service.PasswordHasher;
 import org.slf4j.Logger;
@@ -38,30 +39,22 @@ public class CreateUser implements Callable<Integer> {
     @CommandLine.Option(names = "--usage-type")
     private UsageType usageType;
 
-    private final UserRepository userRepository;
-    private final PasswordHasher passwordHasher;
+    private final UserService userService;
 
-    public CreateUser(UserRepository userRepository, PasswordHasher passwordHasher){
-        this.userRepository = userRepository;
-        this.passwordHasher = passwordHasher;
+    public CreateUser(UserService userService){
+        this.userService = userService;
     }
 
     @Override
     public Integer call() {
-        var user = User.builder()
-                .email(email)
-                .normalizedEmail(email.toUpperCase(Locale.ROOT))
-                .firstName(firstName)
-                .lastName(lastName)
-                .hashedPassword(passwordHasher.hash(password))
-                .roles(String.join(",", roles))
-                .disabled(false)
-                .joinedAt(OffsetDateTime.now())
-                .securityStamp(new byte[32])
-                .usageType(Objects.requireNonNullElse(usageType, UsageType.STANDARD))
-                .build();
-        UserService.refreshSecurityStamp(user);
-        userRepository.save(user);
+        userService.registerUser(email,
+                firstName,
+                lastName,
+                password,
+                roles,
+                UserStatus.ACTIVE,
+                usageType,
+                true);
         logger.info("User created.");
         return 0;
     }

@@ -8,5 +8,5 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "application.cors")
 public class CrossOriginConfiguration {
-    private String allowOrigins;
+    private String[] allowOrigins;
 }

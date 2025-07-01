@@ -1,6 +1,7 @@
 package net.cycastic.portfoliotoolkit.application.email.smtp.save;
 
 import net.cycastic.portfoliotoolkit.application.validation.CommandValidator;
+import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.domain.dto.IdDto;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import org.springframework.stereotype.Component;
@@ -14,15 +15,10 @@ import java.util.regex.Pattern;
 public class SaveSmtpCredentialCommandValidator implements CommandValidator<SaveSmtpCredentialCommand, IdDto> {
     private static final Set<String> VALID_SECURITY_SETTINGS;
     private static final Pattern HOSTNAME_PATTERN;
-    private static final Pattern EMAIL_PATTERN;
 
     static {
         HOSTNAME_PATTERN = Pattern.compile(
                 "^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\\.?$"
-        );
-
-        EMAIL_PATTERN = Pattern.compile(
-                "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
         );
 
         VALID_SECURITY_SETTINGS = new HashSet<>();
@@ -45,7 +41,7 @@ public class SaveSmtpCredentialCommandValidator implements CommandValidator<Save
         if (!HOSTNAME_PATTERN.matcher(command.getServerAddress()).matches()){
             throw new RequestException(400, "Invalid server address");
         }
-        if (!EMAIL_PATTERN.matcher(command.getFromAddress()).matches()){
+        if (!ApplicationUtilities.isEmail(command.getFromAddress())){
             throw new RequestException(400, "Invalid sender address");
         }
     }

@@ -3,6 +3,8 @@ package net.cycastic.portfoliotoolkit.domain.repository;
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
 import net.cycastic.portfoliotoolkit.domain.model.User;
+import net.cycastic.portfoliotoolkit.domain.model.listing.AttachmentListing;
+import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
@@ -23,4 +25,10 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     default @Nullable User getByEmail(@NotNull String email){
         return findByNormalizedEmail(email.toUpperCase(Locale.ROOT));
     }
+
+    @Query("select al.listing.project.user from AttachmentListing al WHERE al = :attachmentListing")
+    Optional<User> findByAttachmentListing(@Param("attachmentListing") AttachmentListing attachmentListing);
+
+    @Query("select l.project.user from Listing l where l = :listing")
+    Optional<User> findByListing(@Param("listing") Listing listing);
 }

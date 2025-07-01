@@ -70,7 +70,7 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
             throw e;
         }
 
-        var user = userRepository.findById(loggedUserAccessor.getUserId())
+        var user = userRepository.findByAttachmentListing(listing)
                 .orElseThrow(() -> new RequestException(404, "User not found"));
         var limit = limitProvider.extractUsageDetails(user);
         if (limit.getPerAttachmentSize() != null && size > limit.getPerAttachmentSize()){

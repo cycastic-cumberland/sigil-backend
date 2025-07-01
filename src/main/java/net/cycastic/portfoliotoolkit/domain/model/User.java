@@ -43,8 +43,6 @@ public class User implements UserDetails {
     @NotNull
     private String roles;
 
-    private boolean disabled;
-
     @Column(nullable = false)
     private UsageType usageType;
 
@@ -61,12 +59,19 @@ public class User implements UserDetails {
     @Getter
     private long accumulatedAttachmentStorageUsage;
 
+    @Column(nullable = false)
+    private UserStatus status;
+
+    private OffsetDateTime lastInvitationSent;
+
+    private boolean emailVerified;
+
     @OneToMany(mappedBy = "user")
     private Set<Project> projects;
 
     @Override
     public boolean isEnabled() {
-        return !disabled;
+        return status == UserStatus.ACTIVE;
     }
 
     @Override

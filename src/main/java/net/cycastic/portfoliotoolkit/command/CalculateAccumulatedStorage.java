@@ -51,9 +51,6 @@ public class CalculateAccumulatedStorage implements Callable<Integer> {
             }
             logger.info("Calculating. User: {}. Batch: {}/{}", user.getEmail(), i + 1, page.getTotalPages());
 
-            var a = contents.stream()
-                    .filter(o -> o.getBucket() == null || o.getKey() == null)
-                    .count();
             Collection<Callable<Long>> delegates = contents.stream()
                     .map(o -> (Callable<Long>)(() -> storageProvider.getBucket(o.getBucket()).getObjectSize(o.getKey())))
                     .toList();

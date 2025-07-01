@@ -34,28 +34,6 @@ public class FreemarkerEmailTemplateEngine implements EmailTemplateEngine {
         return cfg;
     }
 
-    private static HashMap<String, Object> buildParameterMap(EmailParameter[] emailParameters){
-        HashMap<String, Object> map = HashMap.newHashMap(emailParameters.length);
-        for (var parameter: emailParameters){
-            if (map.containsKey(parameter.getName())){
-                throw new RequestException(400, "Email parameter %s already declared", parameter.getName());
-            }
-
-            if (parameter.getType() == EmailParameterType.DECIMAL){
-                try {
-                    map.put(parameter.getName(), Double.parseDouble(parameter.getValue()));
-                } catch (NumberFormatException e){
-                    throw new RequestException(400, "Undefined decimal format: %s", parameter.getValue());
-                }
-
-                continue;
-            }
-
-            map.put(parameter.getName(), parameter.getValue());
-        }
-        return map;
-    }
-
     private static String getStringParam(Map params, String name, boolean required) throws TemplateException {
         Object val = params.get(name);
         if (val == null) {
@@ -78,7 +56,7 @@ public class FreemarkerEmailTemplateEngine implements EmailTemplateEngine {
 
     @Override
     @SneakyThrows
-    public void render(InputStream templateStream, OutputStream renderStream, EmailParameter[] emailParameters) {
+    public void render(InputStream templateStream, OutputStream renderStream, Map<String, Object> emailParameters) {
         var cfg = getBaseConfiguration();
         cfg.setSharedVariable("loadImage", (TemplateDirectiveModel) (environment, params, templateModels, templateDirectiveBody) -> {
             var path = getStringParam(params, "path", true);
@@ -109,8 +87,7 @@ public class FreemarkerEmailTemplateEngine implements EmailTemplateEngine {
         } catch (freemarker.core.ParseException e){
             throw new RequestException(400, e, "Email template contains syntax error");
         }
-        var data = buildParameterMap(emailParameters);
         var writer = new OutputStreamWriter(renderStream);
-        template.process(data, writer);
+        template.process(emailParameters, writer);
     }
 }

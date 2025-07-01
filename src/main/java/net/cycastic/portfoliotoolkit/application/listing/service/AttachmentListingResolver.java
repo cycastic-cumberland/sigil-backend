@@ -1,6 +1,7 @@
 package net.cycastic.portfoliotoolkit.application.listing.service;
 
 import lombok.RequiredArgsConstructor;
+import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.ListingType;
 import net.cycastic.portfoliotoolkit.domain.model.listing.Listing;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
@@ -36,6 +37,10 @@ public class AttachmentListingResolver implements ListingResolver {
             return Optional.empty();
         }
 
-        return Optional.of(AttachmentDto.fromDomain(listing.getAttachmentListing(), listing));
+        var attachmentListing = listing.getAttachmentListing();
+        if (!attachmentListing.isUploadCompleted()){
+            throw new RequestException(400, "Attachment is uploading or corrupted");
+        }
+        return Optional.of(AttachmentDto.fromDomain(attachmentListing, listing));
     }
 }

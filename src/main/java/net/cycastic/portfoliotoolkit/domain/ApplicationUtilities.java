@@ -14,8 +14,13 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class ApplicationUtilities {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
+
     private static final SecureRandom RANDOM = new SecureRandom();
     public static String getMimeType(String fileName) {
         return URLConnection.guessContentTypeFromName(fileName);
@@ -37,10 +42,10 @@ public class ApplicationUtilities {
         };
     }
 
-    public static String encodeURIComponent(String s)
+    public static String encodeURIComponent(Object obj)
     {
         String result;
-        result = URLEncoder.encode(s, StandardCharsets.UTF_8)
+        result = URLEncoder.encode(obj instanceof String s ? s : obj.toString(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20")
                 .replaceAll("%21", "!")
                 .replaceAll("%27", "'")
@@ -88,5 +93,9 @@ public class ApplicationUtilities {
         }
 
         return Paths.get(tempDir, fileName);
+    }
+
+    public static boolean isEmail(@NotNull String input){
+        return EMAIL_PATTERN.matcher(input).matches();
     }
 }

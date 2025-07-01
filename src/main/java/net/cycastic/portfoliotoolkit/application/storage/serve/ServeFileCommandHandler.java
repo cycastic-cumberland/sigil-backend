@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.listing.AttachmentListingRepository;
+import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import net.cycastic.portfoliotoolkit.service.StorageProvider;
 import net.cycastic.portfoliotoolkit.service.UrlAccessor;
 import net.cycastic.portfoliotoolkit.service.impl.UriPresigner;
@@ -18,11 +19,11 @@ public class ServeFileCommandHandler implements Command.Handler<ServeFileCommand
     private final AttachmentListingRepository attachmentListingRepository;
     private final StorageProvider storageProvider;
     private final UriPresigner uriPresigner;
-    private final UrlAccessor urlAccessor;
+    private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
     public ServeFileCommandResponse handle(ServeFileCommand command) {
-        var url = urlAccessor.getRequestPath();
+        var url = loggedUserAccessor.getRequestPath();
         if (!uriPresigner.verifyUri(URI.create(url))){
             throw new RequestException(401, "Signature verification failed");
         }

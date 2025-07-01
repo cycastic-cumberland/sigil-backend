@@ -1,7 +1,6 @@
 package net.cycastic.portfoliotoolkit.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.S3Configurations;
 import net.cycastic.portfoliotoolkit.domain.ApplicationUtilities;
 import net.cycastic.portfoliotoolkit.service.StorageProvider;
@@ -21,7 +20,6 @@ import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.time.OffsetDateTime;

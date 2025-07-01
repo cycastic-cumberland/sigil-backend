@@ -1,8 +1,11 @@
-package net.cycastic.portfoliotoolkit.application.listing.attachment.create;
+package net.cycastic.portfoliotoolkit.application.listing.attachment;
 
+import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.portfoliotoolkit.application.listing.attachment.create.CreateAttachmentListingCommand;
 import net.cycastic.portfoliotoolkit.application.validation.CommandValidator;
 import net.cycastic.portfoliotoolkit.domain.dto.AttachmentPresignedDto;
+import net.cycastic.portfoliotoolkit.domain.dto.listing.AttachmentUploadDto;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.service.LimitProvider;
@@ -15,15 +18,21 @@ import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
-public class CreateAttachmentListingCommandValidator implements CommandValidator<CreateAttachmentListingCommand, AttachmentPresignedDto> {
-    private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentListingCommandValidator.class);
+public class AttachmentListingUploadCommandValidator implements CommandValidator {
+    private static final Logger logger = LoggerFactory.getLogger(AttachmentListingUploadCommandValidator.class);
     private static final Pattern INVALID_PATH = Pattern.compile("/{2}|\\p{Cntrl}");
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
     private final LimitProvider limitProvider;
 
     @Override
-    public void validate(CreateAttachmentListingCommand command) {
+    public boolean matches(Command o) {
+        return o instanceof AttachmentUploadDto;
+    }
+
+    @Override
+    public void validate(Command o) {
+        var command = (AttachmentUploadDto)o;
         var path = command.getPath();
         if (!path.startsWith("/")){
             throw new RequestException(400, "Listing path must start with a forward slash");

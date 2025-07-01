@@ -10,6 +10,11 @@ logging:
       springframework:
         web: DEBUG
 spring:
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    vault:
+      enabled: false
   application:
     name: portfoliotoolkit
   datasource:

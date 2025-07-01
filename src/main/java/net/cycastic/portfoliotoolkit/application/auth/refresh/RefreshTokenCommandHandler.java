@@ -7,6 +7,7 @@ import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
 import net.cycastic.portfoliotoolkit.domain.exception.ForbiddenException;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.User;
+import net.cycastic.portfoliotoolkit.domain.model.UserStatus;
 import net.cycastic.portfoliotoolkit.domain.repository.UserRepository;
 import net.cycastic.portfoliotoolkit.domain.dto.CredentialDto;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
@@ -25,12 +26,15 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
     private final JwtIssuer jwtIssuer;
     private final JwtVerifier jwtVerifier;
 
-    private static void verifyCurrentSecurityStamp(Claims claims, User user){
+    private static void verifyCurrentStatus(Claims claims, User user){
+        if (!user.isEnabled()){
+            throw new ForbiddenException();
+        }
         var currentStamp = Base64.getEncoder().encodeToString(user.getSecurityStamp());
         if (!claims.containsKey(ApplicationConstants.SECURITY_STAMP_ENTRY) ||
             !(claims.get(ApplicationConstants.SECURITY_STAMP_ENTRY) instanceof String claimedStamp) ||
             !currentStamp.equals(claimedStamp)){
-            throw new ForbiddenException("Invalid security stamp");
+            throw new ForbiddenException("For your account's safety, please sign in again");
         }
     }
 
@@ -43,10 +47,7 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
             var userId = Integer.parseInt(subject);
             var user = userRepository.findById(userId)
                     .orElseThrow(() -> new RequestException(404, "Could not find user"));
-            if (user.isDisabled()){
-                throw new ForbiddenException("User disabled");
-            }
-            verifyCurrentSecurityStamp(claims, user);
+            verifyCurrentStatus(claims, user);
             return CredentialDto.builder()
                     .userId(userId)
                     .userEmail(user.getEmail())

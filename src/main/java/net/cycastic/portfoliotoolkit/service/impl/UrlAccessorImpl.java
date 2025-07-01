@@ -3,6 +3,7 @@ package net.cycastic.portfoliotoolkit.service.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.portfoliotoolkit.configuration.OriginConfigurations;
 import net.cycastic.portfoliotoolkit.service.UrlAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -13,15 +14,16 @@ import java.util.Objects;
 @Component
 @RequiredArgsConstructor
 public class UrlAccessorImpl implements UrlAccessor {
-    private @NonNull ServletRequestAttributes getAttributes(){
+    private final OriginConfigurations originConfigurations;
+
+    private static @NonNull ServletRequestAttributes getAttributes(){
         var attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
         return Objects.requireNonNull(attr, () -> {
             throw new IllegalStateException("Must be called inside an HTTP request");
         });
     }
 
-    @Override
-    public String getServiceBasePath() {
+    private static String getBackendOriginFromServlet() {
         var attrs = getAttributes();
         var request = attrs.getRequest();
         var scheme = request.getScheme();
@@ -37,17 +39,23 @@ public class UrlAccessorImpl implements UrlAccessor {
     }
 
     @Override
-    public String getRequestPath() {
-        var attrs = getAttributes();
-        var request = attrs.getRequest();
-
-        var url = request.getRequestURL();
-        var query = request.getQueryString();
-
-        if (query != null) {
-            url.append('?').append(query);
+    public String getBackendOrigin() {
+        var fromConfig = originConfigurations.getBackendOrigin();
+        if (fromConfig != null){
+            return fromConfig.endsWith("/") ? fromConfig.substring(0, fromConfig.length() - 1) : fromConfig;
         }
 
-        return url.toString();
+        return getBackendOriginFromServlet();
+    }
+
+    @Override
+    public String getFrontendOrigin() {
+        var fromConfig = originConfigurations.getFrontendOrigin();
+        if (fromConfig != null){
+            return fromConfig.endsWith("/") ? fromConfig.substring(0, fromConfig.length() - 1) : fromConfig;
+        }
+
+        // Assume that frontend and backend run on the same origin (probably through a proxy)
+        return getBackendOrigin();
     }
 }

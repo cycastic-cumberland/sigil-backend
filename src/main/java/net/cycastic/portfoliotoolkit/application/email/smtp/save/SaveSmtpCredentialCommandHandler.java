@@ -12,11 +12,6 @@ import net.cycastic.portfoliotoolkit.service.EncryptionProvider;
 import net.cycastic.portfoliotoolkit.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 @Component
 @RequiredArgsConstructor
 public class SaveSmtpCredentialCommandHandler implements Command.Handler<SaveSmtpCredentialCommand, IdDto> {

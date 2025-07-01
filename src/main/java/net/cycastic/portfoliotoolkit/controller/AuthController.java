@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.portfoliotoolkit.application.auth.invalidatesessions.InvalidateAllSessionsCommand;
 import net.cycastic.portfoliotoolkit.application.auth.refresh.RefreshTokenCommand;
+import net.cycastic.portfoliotoolkit.application.auth.register.CompleteUserRegistrationCommand;
+import net.cycastic.portfoliotoolkit.application.auth.register.RegisterUserCommand;
 import net.cycastic.portfoliotoolkit.application.auth.self.GetSelfCommand;
 import net.cycastic.portfoliotoolkit.application.auth.signin.SignInCommand;
 import net.cycastic.portfoliotoolkit.domain.dto.CredentialDto;
@@ -16,6 +18,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/auth")
 public class AuthController {
     private final Pipelinr pipelinr;
+
+    @PostMapping("register")
+    public void registerUser(@RequestBody RegisterUserCommand command){
+        pipelinr.send(command);
+    }
+
+    @PostMapping("complete")
+    public void completeRegistration(CompleteUserRegistrationCommand command){
+        pipelinr.send(command);
+    }
 
     @PostMapping
     public @NotNull CredentialDto signIn(@RequestBody @NotNull SignInCommand command){

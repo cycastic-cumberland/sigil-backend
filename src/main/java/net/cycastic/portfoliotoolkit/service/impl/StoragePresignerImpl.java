@@ -28,7 +28,7 @@ public class StoragePresignerImpl implements StoragePresigner {
         var listing = attachmentListingRepository.findByListing_Project_IdAndListing_ListingPath(projectId, listingPath)
                 .orElseThrow(() -> new RequestException(404, "Listing does not exists"));
         var token = listing.getShareToken();
-        var url = new StringBuilder(urlAccessor.getServiceBasePath())
+        var url = new StringBuilder(urlAccessor.getBackendOrigin())
                 .append("/api/storage")
                 .append("?projectId=").append(projectId)
                 .append("&userId=").append(userId)

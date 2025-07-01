@@ -47,4 +47,7 @@ public class Project {
     private OffsetDateTime updatedAt;
 
     private OffsetDateTime removedAt;
+
+    @Version
+    private long version;
 }

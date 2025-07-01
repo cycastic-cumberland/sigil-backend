@@ -1,7 +1,7 @@
 package net.cycastic.portfoliotoolkit.service;
 
 public interface UrlAccessor {
-    String getServiceBasePath();
+    String getBackendOrigin();
 
-    String getRequestPath();
+    String getFrontendOrigin();
 }
