@@ -6,16 +6,17 @@ import freemarker.template.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
-import net.cycastic.portfoliotoolkit.domain.model.EmailParameter;
-import net.cycastic.portfoliotoolkit.domain.model.EmailParameterType;
+import net.cycastic.portfoliotoolkit.service.EmailImage;
 import net.cycastic.portfoliotoolkit.service.EmailTemplateEngine;
 import net.cycastic.portfoliotoolkit.service.StoragePresigner;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -56,7 +57,7 @@ public class FreemarkerEmailTemplateEngine implements EmailTemplateEngine {
 
     @Override
     @SneakyThrows
-    public void render(InputStream templateStream, OutputStream renderStream, Map<String, Object> emailParameters) {
+    public RenderResult render(InputStream templateStream, OutputStream renderStream, Map<String, Object> emailParameters) {
         var cfg = getBaseConfiguration();
         cfg.setSharedVariable("loadImage", (TemplateDirectiveModel) (environment, params, templateModels, templateDirectiveBody) -> {
             var path = getStringParam(params, "path", true);
@@ -88,6 +89,25 @@ public class FreemarkerEmailTemplateEngine implements EmailTemplateEngine {
             throw new RequestException(400, e, "Email template contains syntax error");
         }
         var writer = new OutputStreamWriter(renderStream);
+        HashMap<String, EmailImage> images;
+        {
+            var newParams = new HashMap<String, Object>();
+            images = new HashMap<>();
+            for (var entry : emailParameters.entrySet()){
+                if (entry.getValue() instanceof EmailImage emailImage){
+                    var fileExt = FilenameUtils.getExtension(emailImage.getFileName());
+                    var randomizedName = fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s.%s", UUID.randomUUID(), fileExt);
+                    newParams.put(entry.getKey(), "cid:" + randomizedName);
+                    images.put(randomizedName, emailImage);
+                    continue;
+                }
+
+                newParams.put(entry.getKey(), entry.getValue());
+            }
+
+            emailParameters = newParams;
+        }
         template.process(emailParameters, writer);
+        return new RenderResult(images);
     }
 }

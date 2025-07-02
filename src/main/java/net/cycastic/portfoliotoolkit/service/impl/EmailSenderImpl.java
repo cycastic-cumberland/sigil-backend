@@ -3,10 +3,14 @@ package net.cycastic.portfoliotoolkit.service.impl;
 import jakarta.mail.internet.InternetAddress;
 import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.mail.MailSettings;
+import net.cycastic.portfoliotoolkit.service.EmailImage;
 import net.cycastic.portfoliotoolkit.service.EmailSender;
+import org.springframework.lang.Nullable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
+
+import java.util.Map;
 
 public class EmailSenderImpl implements EmailSender {
     private final JavaMailSender sender;
@@ -25,15 +29,17 @@ public class EmailSenderImpl implements EmailSender {
         var props = sender.getJavaMailProperties();
         props.put("mail.smtp.auth", String.valueOf(mailSettings.isAuth()));
         props.put("mail.smtp.starttls.enable", String.valueOf(mailSettings.isStarttls()));
+        props.put("mail.mime.charset", "UTF-8");
+        props.put("mail.smtp.allowutf8", "true");
 
         return sender;
     }
 
     @Override
     @SneakyThrows
-    public void sendHtml(String fromAddress, String fromName, String to, String cc, String subject, String htmlBody) {
+    public void sendHtml(String fromAddress, String fromName, String to, String cc, String subject, String htmlBody, @Nullable Map<String, EmailImage> imageStreamSource) {
         var message = sender.createMimeMessage();
-        var helper = new MimeMessageHelper(message, true);
+        var helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setFrom(new InternetAddress(fromAddress, fromName));
         helper.setTo(to);
@@ -42,6 +48,12 @@ public class EmailSenderImpl implements EmailSender {
         }
         helper.setSubject(subject);
         helper.setText(htmlBody, true);
+
+        if (imageStreamSource != null){
+            for (var entry : imageStreamSource.entrySet()){
+                helper.addInline(entry.getKey(), entry.getValue().getImageSource(), entry.getValue().getMimeType());
+            }
+        }
 
         sender.send(message);
     }

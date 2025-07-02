@@ -1,5 +1,7 @@
 package net.cycastic.portfoliotoolkit.service;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
 import net.cycastic.portfoliotoolkit.domain.model.EmailParameter;
 import net.cycastic.portfoliotoolkit.domain.model.EmailParameterType;
@@ -10,6 +12,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface EmailTemplateEngine {
+    @Getter
+    @AllArgsConstructor
+    class RenderResult {
+        private Map<String, EmailImage> imageStreamSource;
+    }
+
     private static HashMap<String, Object> buildParameterMap(EmailParameter[] emailParameters){
         HashMap<String, Object> map = HashMap.newHashMap(emailParameters.length);
         for (var parameter: emailParameters){
@@ -32,12 +40,12 @@ public interface EmailTemplateEngine {
         return map;
     }
 
-    void render(InputStream templateStream,
+    RenderResult render(InputStream templateStream,
                 OutputStream renderStream,
                 Map<String, Object> emailParameters);
 
-    default void render(InputStream templateStream, OutputStream renderStream, EmailParameter[] emailParameters){
+    default RenderResult render(InputStream templateStream, OutputStream renderStream, EmailParameter[] emailParameters){
         var map = buildParameterMap(emailParameters);
-        render(templateStream, renderStream, map);
+        return render(templateStream, renderStream, map);
     }
 }

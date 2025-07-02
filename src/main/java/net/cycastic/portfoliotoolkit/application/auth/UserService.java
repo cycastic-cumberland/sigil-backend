@@ -19,6 +19,7 @@ import net.cycastic.portfoliotoolkit.service.impl.UriPresigner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -174,6 +176,10 @@ public class UserService {
         return uriPresigner.signUri(backendCompletionUri);
     }
 
+    private static InputStream loadIconImage(){
+        return UserService.class.getClassLoader().getResourceAsStream("static/logo.png");
+    }
+
     @SneakyThrows
     private void sendConfirmationEmailInternal(@NotNull UserDto user, String securityStamp){
         var nvb = OffsetDateTime.now();
@@ -190,13 +196,30 @@ public class UserService {
                 "lastName", user.getLastName(),
                 "notValidAfter", DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
                         .withLocale(Locale.ROOT)
-                        .format(nva)
+                        .format(nva),
+                "logo", new EmailImage() {
+                    @Override
+                    public String getFileName() {
+                        return "logo.png";
+                    }
+
+                    @Override
+                    public String getMimeType() {
+                        return "image/png";
+                    }
+
+                    @Override
+                    public InputStreamSource getImageSource() {
+                        return UserService::loadIconImage;
+                    }
+                }
         );
         byte[] renderedContent;
+        EmailTemplateEngine.RenderResult renderResult;
 
         try (var byteStream = new ByteArrayOutputStream()){
             try (var templateStream = getClass().getClassLoader().getResourceAsStream("templates/register/RegistrationCompletionMail.ftl")){
-                emailTemplateEngine.render(templateStream, byteStream, parameters);
+                renderResult = emailTemplateEngine.render(templateStream, byteStream, parameters);
             }
 
             renderedContent = byteStream.toByteArray();
@@ -205,7 +228,8 @@ public class UserService {
         applicationEmailSender.sendHtml(user.getEmail(),
                 null,
                 "Complete your registration with PortfolioToolkit",
-                new String(renderedContent, StandardCharsets.UTF_8));
+                new String(renderedContent, StandardCharsets.UTF_8),
+                renderResult.getImageStreamSource());
     }
 
     public void sendConfirmationEmail(User user){

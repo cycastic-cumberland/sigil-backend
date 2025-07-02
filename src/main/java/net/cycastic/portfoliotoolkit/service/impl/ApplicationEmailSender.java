@@ -2,8 +2,12 @@ package net.cycastic.portfoliotoolkit.service.impl;
 
 import net.cycastic.portfoliotoolkit.configuration.mail.ApplicationEmailConfigurations;
 import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
+import net.cycastic.portfoliotoolkit.service.EmailImage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
+
+import java.util.Map;
 
 public class ApplicationEmailSender extends EmailSenderImpl {
     @Configuration
@@ -30,7 +34,7 @@ public class ApplicationEmailSender extends EmailSenderImpl {
         return configurations;
     }
 
-    public void sendHtml(String to, String cc, String subject, String htmlBody){
-        sendHtml(senderAddress, "PortfolioToolkit", to, cc, subject, htmlBody);
+    public void sendHtml(String to, String cc, String subject, String htmlBody, @Nullable Map<String, EmailImage> imageStreamSource){
+        sendHtml(senderAddress, "PortfolioToolkit", to, cc, subject, htmlBody, imageStreamSource);
     }
 }
