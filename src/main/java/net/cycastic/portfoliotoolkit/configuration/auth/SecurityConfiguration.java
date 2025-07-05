@@ -25,8 +25,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.Objects;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -56,6 +54,7 @@ public class SecurityConfiguration {
                 .requestMatchers(new RequestMatcher[]{
                         new AntPathRequestMatcher("/api/auth/**"),
                         new AntPathRequestMatcher("/api/storage/**"),
+                        new AntPathRequestMatcher("/.well-known/**"),
                         new AntPathRequestMatcher("/v2/api-docs"),
                         new AntPathRequestMatcher("/v3/api-docs"),
                         new AntPathRequestMatcher("/v3/api-docs/**"),

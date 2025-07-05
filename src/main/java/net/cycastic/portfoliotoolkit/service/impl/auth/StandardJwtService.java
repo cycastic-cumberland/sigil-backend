@@ -5,29 +5,32 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import net.cycastic.portfoliotoolkit.configuration.BaseJwtConfiguration;
 import net.cycastic.portfoliotoolkit.configuration.auth.JwtConfiguration;
 import net.cycastic.portfoliotoolkit.domain.ApplicationConstants;
+import net.cycastic.portfoliotoolkit.domain.dto.JwkDto;
 import net.cycastic.portfoliotoolkit.domain.exception.RequestException;
+import net.cycastic.portfoliotoolkit.service.auth.AsymmetricJwtVerifier;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
-import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.MessageDigest;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 
-public class StandardJwtService implements JwtIssuer, JwtVerifier {
+public class StandardJwtService implements JwtIssuer, AsymmetricJwtVerifier {
     private static final Logger logger = LoggerFactory.getLogger(StandardJwtService.class);
     private final BaseJwtConfiguration jwtConfiguration;
-    private final PrivateKey privateKey;
-    private final PublicKey publicKey;
+    private final ECPrivateKey privateKey;
+    private final ECPublicKey publicKey;
 
     public StandardJwtService(JwtConfiguration jwtConfiguration){
         this.jwtConfiguration = jwtConfiguration;
@@ -35,30 +38,30 @@ public class StandardJwtService implements JwtIssuer, JwtVerifier {
         publicKey = decodePublicKey(jwtConfiguration.getPublicKey());
     }
 
-    public StandardJwtService(BaseJwtConfiguration jwtConfiguration, PrivateKey privateKey, PublicKey publicKey){
+    public StandardJwtService(BaseJwtConfiguration jwtConfiguration, ECPrivateKey privateKey, ECPublicKey publicKey){
 
         this.jwtConfiguration = jwtConfiguration;
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
 
-    public static @NonNull PrivateKey decodePrivateKey(@NotNull String base64Private) {
+    public static @NonNull ECPrivateKey decodePrivateKey(@NotNull String base64Private) {
         try {
             var keyBytes = Base64.getDecoder().decode(base64Private);
             var keySpec = new PKCS8EncodedKeySpec(keyBytes);
             var kf = KeyFactory.getInstance("EC");
-            return kf.generatePrivate(keySpec);
+            return (ECPrivateKey)kf.generatePrivate(keySpec);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to load EC private key", e);
         }
     }
 
-    public static @NonNull PublicKey decodePublicKey(@NotNull String base64Public) {
+    public static @NonNull ECPublicKey decodePublicKey(@NotNull String base64Public) {
         try {
             var keyBytes = Base64.getDecoder().decode(base64Public);
             var keySpec = new X509EncodedKeySpec(keyBytes);
             var kf = KeyFactory.getInstance("EC");
-            return kf.generatePublic(keySpec);
+            return (ECPublicKey)kf.generatePublic(keySpec);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to load EC public key", e);
         }
@@ -129,5 +132,38 @@ public class StandardJwtService implements JwtIssuer, JwtVerifier {
             logger.error("Exception caught while parsing token", e);
             throw new RequestException(401, "Failed to authenticate request");
         }
+    }
+
+    @Override
+    @SneakyThrows
+    public JwkDto getJwk() {
+        var fieldSize =  publicKey.getParams().getCurve().getField().getFieldSize();
+        var crv = switch (fieldSize) {
+            case 256 -> "P-256";
+            case 384 -> "P-384";
+            case 521 -> "P-521";
+            default -> throw new IllegalArgumentException("Unsupported curve");
+        };
+        var alg = switch (fieldSize) {
+            case 256 -> "ES256";
+            case 384 -> "ES384";
+            case 521 -> "ES521";
+            default -> throw new IllegalArgumentException("Unsupported curve");
+        };
+        var urlEnc = Base64.getUrlEncoder().withoutPadding();
+        var x = urlEnc.encodeToString(publicKey.getW().getAffineX().toByteArray());
+        var y = urlEnc.encodeToString(publicKey.getW().getAffineY().toByteArray());
+        var md = MessageDigest.getInstance("SHA-256");
+        var digest = md.digest(publicKey.getEncoded());
+        var kid = Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
+        return JwkDto.builder()
+                .kty("EC")
+                .crv(crv)
+                .x(x)
+                .y(y)
+                .use("sig")
+                .alg(alg)
+                .kid(kid)
+                .build();
     }
 }

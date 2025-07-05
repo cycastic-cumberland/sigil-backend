@@ -4,6 +4,7 @@ import net.cycastic.portfoliotoolkit.configuration.auth.JwtConfiguration;
 import net.cycastic.portfoliotoolkit.service.DecryptionProvider;
 import net.cycastic.portfoliotoolkit.service.EncryptionProvider;
 import net.cycastic.portfoliotoolkit.service.Presigner;
+import net.cycastic.portfoliotoolkit.service.auth.AsymmetricJwtVerifier;
 import net.cycastic.portfoliotoolkit.service.auth.JwtIssuer;
 import net.cycastic.portfoliotoolkit.service.auth.JwtVerifier;
 import net.cycastic.portfoliotoolkit.service.impl.*;
@@ -128,6 +129,11 @@ public class EncryptionConfigurations {
 
     @Bean
     public synchronized JwtVerifier jwtVerifier(){
+        return jwtService.get();
+    }
+
+    @Bean
+    public synchronized AsymmetricJwtVerifier asymmetricJwtVerifier(){
         return jwtService.get();
     }
 

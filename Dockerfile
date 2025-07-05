@@ -1,7 +1,7 @@
 # -------------------
 # 1. Builder stage
 # -------------------
-FROM maven:3.9-eclipse-temurin-21 AS builder
+FROM maven:3.9-eclipse-temurin-23 AS builder
 WORKDIR /app
 
 COPY pom.xml .
@@ -12,7 +12,7 @@ COPY src ./src
 RUN rm ./src/main/resources/application-local.yaml
 RUN mvn clean package -DskipTests -B
 
-FROM bellsoft/liberica-runtime-container:jre-21-slim-musl AS runtime
+FROM bellsoft/liberica-runtime-container:jre-23-slim-musl AS runtime
 WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar

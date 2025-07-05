@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import net.cycastic.portfoliotoolkit.domain.model.EncryptedSmtpCredential;
 
 @Data
@@ -11,9 +12,11 @@ import net.cycastic.portfoliotoolkit.domain.model.EncryptedSmtpCredential;
 @EqualsAndHashCode(callSuper = true)
 public class DecryptedSmtpCredentialDto extends BaseSmtpCredentialDto{
     @NotNull
+    @ToString.Exclude
     private String fromAddress;
 
     @NotNull
+    @ToString.Exclude
     private String password;
 
     public DecryptedSmtpCredentialDto(EncryptedSmtpCredential credential,
