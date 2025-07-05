@@ -11,7 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface LoggedUserAccessor {
-    Optional<Integer> tryGetProjectId();
+    Optional<Integer> tryGetTenantId();
+
+    Optional<byte[]> tryGetSymmetricKey();
 
     Optional<Integer> tryGetUserId();
 
@@ -29,9 +31,14 @@ public interface LoggedUserAccessor {
         return getRoles().contains(ApplicationConstants.Roles.ADMIN);
     }
 
-    default int getProjectId(){
-        return tryGetProjectId()
+    default int getTenantId(){
+        return tryGetTenantId()
                 .orElseThrow(() -> new RequestException(400, "Invalid project ID or not exists"));
+    }
+
+    default byte[] getSymmetricKey(){
+        return tryGetSymmetricKey()
+                .orElseThrow(() -> new RequestException(400, "Encryption key is required"));
     }
 
     default int getUserId(){

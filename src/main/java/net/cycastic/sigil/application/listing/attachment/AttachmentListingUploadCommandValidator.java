@@ -4,8 +4,10 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.validation.CommandValidator;
 import net.cycastic.sigil.domain.dto.listing.AttachmentUploadDto;
+import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.domain.repository.TenantUserRepository;
 import net.cycastic.sigil.service.LimitProvider;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.slf4j.Logger;
@@ -20,7 +22,8 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
     private static final Logger logger = LoggerFactory.getLogger(AttachmentListingUploadCommandValidator.class);
     private static final Pattern INVALID_PATH = Pattern.compile("/{2}|\\p{Cntrl}");
     private final LoggedUserAccessor loggedUserAccessor;
-    private final UserRepository userRepository;
+    private final TenantRepository tenantRepository;
+    private final TenantUserRepository tenantUserRepository;
     private final LimitProvider limitProvider;
 
     @Override
@@ -45,16 +48,20 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
             throw new RequestException(400, "Invalid content length");
         }
 
-        var user = userRepository.findById(loggedUserAccessor.getUserId())
-                .orElseThrow(() -> new RequestException(404, "User not found"));
-        var limit = limitProvider.extractUsageDetails(user);
+        var projectOpt = tenantRepository.findById(loggedUserAccessor.getTenantId());
+        if (projectOpt.isEmpty() || !tenantUserRepository.existsByTenant_IdAndUser_Id(projectOpt.get().getId(), loggedUserAccessor.getUserId())){
+            throw new ForbiddenException();
+        }
+
+        var project = projectOpt.get();
+        var limit = limitProvider.extractUsageDetails(project);
         if (limit.getPerAttachmentSize() != null && command.getContentLength() > limit.getPerAttachmentSize()){
             logger.error("File is larger than permitted limit. Size: {} byte(s), limit: {} byte(s)",
                     command.getContentLength(), limit.getPerAttachmentSize());
             throw new RequestException(413, "File is larger than permitted limit.");
         }
 
-        var acc = command.getContentLength() + user.getAccumulatedAttachmentStorageUsage();
+        var acc = command.getContentLength() + project.getAccumulatedAttachmentStorageUsage();
         if (limit.getAllAttachmentSize() != null && acc > limit.getAllAttachmentSize()){
             throw new RequestException(413, "Accumulated storage usage exceeded");
         }

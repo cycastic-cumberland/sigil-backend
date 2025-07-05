@@ -1,14 +1,10 @@
 package net.cycastic.sigil.configuration.auth;
 
-import an.awesome.pipelinr.Pipelinr;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.application.project.get.GetProjectCommand;
 import net.cycastic.sigil.configuration.CrossOriginConfiguration;
 import net.cycastic.sigil.controller.filter.JwtAuthenticationFilter;
 import net.cycastic.sigil.controller.filter.PerfFilter;
-import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.dto.ProjectDto;
-import net.cycastic.sigil.service.LoggedUserAccessor;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -25,11 +21,19 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.security.Security;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    private static final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
+    private static final Logger logger;
+
+    static {
+        logger = LoggerFactory.getLogger(SecurityConfiguration.class);
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final PerfFilter perfFilter;
     private final AuthenticationProvider authenticationProvider;
@@ -86,9 +90,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(LoggedUserAccessor loggedUserAccessor,
-                                                           Pipelinr pipelinr,
-                                                           CrossOriginConfiguration crossOriginConfiguration) {
+    public CorsConfigurationSource corsConfigurationSource(CrossOriginConfiguration crossOriginConfiguration) {
         var allowedOrigins = crossOriginConfiguration.getAllowOrigins();
         return request -> {
             var config = getDefaultCorsConfiguration();
@@ -97,27 +99,6 @@ public class SecurityConfiguration {
                     config.addAllowedOrigin(origin);
                 }
             }
-            if (!request.getRequestURI().startsWith("/api")){
-                return config;
-            }
-            var opt = loggedUserAccessor.tryGetProjectId();
-            if (opt.isEmpty()){
-                return config;
-            }
-
-            ProjectDto project;
-            try {
-                project = pipelinr.send(new GetProjectCommand(opt.get()));
-            } catch (RequestException e){
-                return config;
-            }
-
-            if (project.getCorsSettings() != null){
-                for (var origin : project.getCorsSettings().split(";")){
-                    config.addAllowedOrigin(origin);
-                }
-            }
-
             return config;
         };
     }

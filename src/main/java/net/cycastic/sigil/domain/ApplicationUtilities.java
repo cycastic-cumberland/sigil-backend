@@ -35,8 +35,6 @@ public class ApplicationUtilities {
 
     public static FolderItemType fromListingType(ListingType t){
         return switch (t){
-            case TEXT -> FolderItemType.TEXT;
-            case DECIMAL -> FolderItemType.DECIMAL;
             case ATTACHMENT -> FolderItemType.ATTACHMENT;
         };
     }

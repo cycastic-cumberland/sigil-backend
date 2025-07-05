@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.ProjectRepository;
+import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.domain.dto.ProjectDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class QueryProjectsCommandHandler implements Command.Handler<QueryProjectsCommand, PageResponseDto<ProjectDto>> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
-    private final ProjectRepository projectRepository;
+    private final TenantRepository tenantRepository;
 
     @Override
     public PageResponseDto<ProjectDto> handle(QueryProjectsCommand queryProjectsCommand) {
@@ -32,7 +32,7 @@ public class QueryProjectsCommandHandler implements Command.Handler<QueryProject
         }
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RequestException(404, "Could not find user"));
-        var projects = projectRepository.findProjectsByUser(user, queryProjectsCommand.toPageable());
+        var projects = tenantRepository.findByUser(user, queryProjectsCommand.toPageable());
         return PageResponseDto.fromDomain(projects, ProjectDto::fromDomain);
     }
 }

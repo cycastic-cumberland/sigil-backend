@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.BaseJwtConfiguration;
 import net.cycastic.sigil.configuration.auth.JwtConfiguration;
 import net.cycastic.sigil.domain.ApplicationConstants;
+import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.JwkDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.auth.AsymmetricJwtVerifier;
@@ -153,8 +154,7 @@ public class StandardJwtService implements JwtIssuer, AsymmetricJwtVerifier {
         var urlEnc = Base64.getUrlEncoder().withoutPadding();
         var x = urlEnc.encodeToString(publicKey.getW().getAffineX().toByteArray());
         var y = urlEnc.encodeToString(publicKey.getW().getAffineY().toByteArray());
-        var md = MessageDigest.getInstance("SHA-256");
-        var digest = md.digest(publicKey.getEncoded());
+        var digest = CryptographicUtilities.digestSha256(publicKey.getEncoded());
         var kid = Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
         return JwkDto.builder()
                 .kty("EC")

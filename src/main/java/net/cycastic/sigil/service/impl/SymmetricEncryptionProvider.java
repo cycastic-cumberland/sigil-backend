@@ -15,28 +15,20 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 public class SymmetricEncryptionProvider implements EncryptionProvider, DecryptionProvider {
-    private static final SecureRandom RANDOM = new SecureRandom();
-    private static final int NONCE_LENGTH = 12; // 96-bit
-    private static final int KEY_LENGTH = 32; // 256-bit
     private final SecretKeySpec key;
 
     public SymmetricEncryptionProvider(SymmetricEncryptionConfiguration configuration){
-        var okm = CryptographicUtilities.deriveKey(KEY_LENGTH, configuration.getIkm(), configuration.getSalt());
+        var okm = CryptographicUtilities.deriveKey(CryptographicUtilities.KEY_LENGTH, configuration.getIkm(), configuration.getSalt());
         key = new SecretKeySpec(okm, "AES");
     }
 
     @SneakyThrows
     private String encryptInternal(byte @NotNull [] unencryptedData){
-        var iv = new byte[NONCE_LENGTH];
-        RANDOM.nextBytes(iv);
-        var gcmSpec = new GCMParameterSpec(128, iv);
-        var cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.ENCRYPT_MODE, key, gcmSpec);
-        var encryptedData = cipher.doFinal(unencryptedData);
+        var encryptionResult = CryptographicUtilities.encrypt(key, unencryptedData);
 
         var sb = new StringBuilder("aes256-gcm96$");
-        sb.append(Base64.getEncoder().encodeToString(iv)).append('$');
-        sb.append(Base64.getEncoder().encodeToString(encryptedData));
+        sb.append(Base64.getEncoder().encodeToString(encryptionResult.getIv())).append('$');
+        sb.append(Base64.getEncoder().encodeToString(encryptionResult.getCipher()));
         return sb.toString();
     }
 
@@ -51,10 +43,7 @@ public class SymmetricEncryptionProvider implements EncryptionProvider, Decrypti
         }
         var iv = Base64.getDecoder().decode(fragment[1].getBytes(StandardCharsets.UTF_8));
         var cipherText = Base64.getDecoder().decode(fragment[2].getBytes(StandardCharsets.UTF_8));
-        var gcmSpec = new GCMParameterSpec(128, iv);
-        var cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
-        return cipher.doFinal(cipherText);
+        return CryptographicUtilities.decrypt(key, iv, cipherText);
     }
 
     @Override

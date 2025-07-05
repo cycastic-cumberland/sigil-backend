@@ -5,8 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.listing.service.ListingService;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.listing.Listing;
-import net.cycastic.sigil.domain.repository.ProjectRepository;
+import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.domain.dto.listing.ListingDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
@@ -19,33 +18,26 @@ public class QueryListingCommandHandler implements Command.Handler<QueryListingC
     private final ListingService listingService;
     private final LoggedUserAccessor loggedUserAccessor;
     private final ListingRepository listingRepository;
-    private final ProjectRepository projectRepository;
+    private final TenantRepository tenantRepository;
 
-    private PageResponseDto<ListingDto> handle(QueryListingCommand command, @NotNull Integer projectId, boolean verifyAccess){
-        var project = projectRepository.findById(projectId)
+    private PageResponseDto<ListingDto> handle(QueryListingCommand command, @NotNull Integer projectId){
+        var project = tenantRepository.findById(projectId)
                 .orElseThrow(() -> new RequestException(404, "Project not found"));
-        var page = listingRepository.findListingsByProjectAndListingPathStartingWith(project,
+        var page = listingRepository.findListingsByTenantAndListingPathStartingWith(project,
                 command.getPrefix(),
                 command.toPageable());
         var currentUserId = loggedUserAccessor.tryGetUserId();
         if (loggedUserAccessor.isAdmin() ||
                 (currentUserId.isPresent() &&
-                        project.getUser().getId().equals(currentUserId.get()))){
+                        project.getOwner().getId().equals(currentUserId.get()))){
             return listingService.toDto(page);
         }
 
-        if (verifyAccess) {
-            listingService.verifyAccess(project, page.getContent().stream().map(Listing::getListingPath));
-        }
         return listingService.toDto(page);
     }
 
     @Override
     public PageResponseDto<ListingDto> handle(QueryListingCommand command) {
-        if (command.getProjectId() != null){
-            return handle(command, command.getProjectId(), true);
-        }
-
-        return handle(command, loggedUserAccessor.getProjectId(), false);
+        return handle(command, loggedUserAccessor.getTenantId());
     }
 }

@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Command;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
+import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.User;
@@ -51,6 +52,7 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
                     .userId(userId)
                     .userEmail(user.getEmail())
                     .authToken(newToken)
+                    .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
                     .build();
         } catch (Exception e){
             logger.error("Error caught while refreshing token", e);

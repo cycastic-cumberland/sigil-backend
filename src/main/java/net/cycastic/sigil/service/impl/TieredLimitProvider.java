@@ -3,8 +3,8 @@ package net.cycastic.sigil.service.impl;
 import net.cycastic.sigil.configuration.limit.LimitConfigurations;
 import net.cycastic.sigil.domain.dto.TypedUsageDetailsDto;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.model.UsageType;
-import net.cycastic.sigil.domain.model.User;
 import net.cycastic.sigil.service.LimitProvider;
 import net.cycastic.sigil.service.UsageDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +29,10 @@ public class TieredLimitProvider implements LimitProvider {
     }
 
     @Override
-    public UsageDetails extractUsageDetails(User user) {
-        var details = tiers.get(user.getUsageType());
+    public UsageDetails extractUsageDetails(Tenant tenant) {
+        var details = tiers.get(tenant.getUsageType());
         if (details == null){
-            throw new RequestException(500, "Usage type is undefined: " + user.getUsageType());
+            throw new RequestException(500, "Usage type is undefined: " + tenant.getUsageType());
         }
 
         return details;

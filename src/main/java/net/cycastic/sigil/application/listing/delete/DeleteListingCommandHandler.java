@@ -17,7 +17,7 @@ public class DeleteListingCommandHandler implements Command.Handler<DeleteListin
     @Override
     @Transactional
     public @Null Object handle(DeleteListingCommand command) {
-        listingService.deleteListingNoTransaction(loggedUserAccessor.getProjectId(), command.getListingPath());
+        listingService.deleteListingNoTransaction(loggedUserAccessor.getTenantId(), command.getListingPath());
         return null;
     }
 }

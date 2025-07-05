@@ -37,14 +37,24 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
     }
 
     @Override
-    public Optional<Integer> tryGetProjectId() {
+    public Optional<Integer> tryGetTenantId() {
         var request = getAttributes().getRequest();
-        var header = request.getHeader(ApplicationConstants.PROJECT_ID_HEADER);
+        var header = request.getHeader(ApplicationConstants.TENANT_ID_HEADER);
         if (header == null){
             return Optional.empty();
         }
 
         return ApplicationUtilities.tryParseInt(header);
+    }
+
+    @Override
+    public Optional<byte[]> tryGetSymmetricKey() {
+        var request = getAttributes().getRequest();
+        var header = request.getHeader(ApplicationConstants.SYMMETRIC_KEY_HEADER);
+        if (header == null){
+            return Optional.empty();
+        }
+        return Optional.ofNullable(Base64.getUrlDecoder().decode(header));
     }
 
     private Claims createClaimsFromRequest(){

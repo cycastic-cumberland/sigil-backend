@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX listing_access_control_policies_priority_project_id_uindex ON listing_access_control_policies (project_id, priority);

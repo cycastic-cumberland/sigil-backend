@@ -28,11 +28,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Lazy
 @Component
 @RequiredArgsConstructor
-public class S3StorageProvider implements StorageProvider {
+public class S3StorageProvider implements AutoCloseable, StorageProvider {
     private final ConcurrentHashMap<String, S3BucketProvider> cachedProviders = new ConcurrentHashMap<>();
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final ApplicationContext ctx;
+
+    @Override
+    public void close() {
+        s3Client.close();
+        s3Presigner.close();
+    }
 
     @Component
     @RequiredArgsConstructor
@@ -43,17 +49,22 @@ public class S3StorageProvider implements StorageProvider {
 
         @Override
         @HandleS3Exception
-        public String generatePresignedUploadPath(String fileKey, String fileName, OffsetDateTime expiration, long objectLength) {
+        public String generatePresignedUploadPath(String fileKey, String fileName, OffsetDateTime expiration, long objectLength, String encryptionKeyMd5Checksum) {
             var ttl = Duration.between(OffsetDateTime.now(), expiration);
             var requestBuilder = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileKey)
                     .contentType("application/octet-stream")
                     .contentLength(objectLength);
+            if (encryptionKeyMd5Checksum != null){
+                requestBuilder = requestBuilder
+                        .sseCustomerAlgorithm("AES256")
+                        .sseCustomerKeyMD5(encryptionKeyMd5Checksum);
+            }
 
+            var request = requestBuilder.build();
             var presignedPut = provider.s3Presigner.presignPutObject(r ->
-                    r.signatureDuration(ttl)
-                            .putObjectRequest(requestBuilder.build())
+                    r.signatureDuration(ttl).putObjectRequest(request)
             );
             return presignedPut.url().toString();
         }

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import net.cycastic.sigil.controller.annotation.RequireProjectId;
+import net.cycastic.sigil.controller.annotation.UseSymmetricKey;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -44,15 +45,25 @@ public class SpringDocConfiguration {
     @Bean
     public OperationCustomizer requireHeaderWhenAnnotated() {
         return (Operation operation, HandlerMethod handlerMethod) -> {
-            Class<?> controllerClass = handlerMethod.getBeanType();
+            var controllerClass = handlerMethod.getBeanType();
             if (controllerClass.isAnnotationPresent(RequireProjectId.class) ||
                     handlerMethod.getBeanType().isAnnotationPresent(RequireProjectId.class)) {
-                Parameter header = new Parameter()
+                var header = new Parameter()
                         .in("header")
-                        .name(ApplicationConstants.PROJECT_ID_HEADER)
+                        .name(ApplicationConstants.TENANT_ID_HEADER)
                         .required(true)
                         .schema(new StringSchema())
                         .description("Requires project ID");
+                operation.addParametersItem(header);
+            }
+            if (controllerClass.isAnnotationPresent(UseSymmetricKey.class) ||
+                    handlerMethod.getBeanType().isAnnotationPresent(UseSymmetricKey.class)) {
+                var header = new Parameter()
+                        .in("header")
+                        .name(ApplicationConstants.SYMMETRIC_KEY_HEADER)
+                        .required(false)
+                        .schema(new StringSchema())
+                        .description("Symmetric encryption key");
                 operation.addParametersItem(header);
             }
             return operation;

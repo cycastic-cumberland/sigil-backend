@@ -1,2 +1,0 @@
-ALTER TABLE users
-    MODIFY version BIGINT NOT NULL;

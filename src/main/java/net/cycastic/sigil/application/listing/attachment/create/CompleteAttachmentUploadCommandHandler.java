@@ -9,7 +9,7 @@ import net.cycastic.sigil.application.listing.service.ListingService;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.service.LimitProvider;
 import net.cycastic.sigil.service.LoggedUserAccessor;
@@ -25,7 +25,7 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
     private final StorageProvider storageProvider;
     private final LoggedUserAccessor loggedUserAccessor;
     private final AttachmentListingRepository attachmentListingRepository;
-    private final UserRepository userRepository;
+    private final TenantRepository tenantRepository;
     private final LimitProvider limitProvider;
 
     private void completeAttachmentUpload(@NotNull AttachmentListing listing){
@@ -50,7 +50,7 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
     public Object handle(CompleteAttachmentUploadCommand command) {
         var listing = attachmentListingRepository.findById(command.getId())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
-        if (!listing.getListing().getProject().getId().equals(loggedUserAccessor.getProjectId())){
+        if (!listing.getListing().getTenant().getId().equals(loggedUserAccessor.getTenantId())){
             throw new RequestException(404, "Invalid request");
         }
         if (listing.isUploadCompleted()){
@@ -68,22 +68,22 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
             throw e;
         }
 
-        var user = userRepository.findByAttachmentListing(listing)
+        var project = tenantRepository.findByAttachmentListing(listing)
                 .orElseThrow(() -> new RequestException(404, "User not found"));
-        var limit = limitProvider.extractUsageDetails(user);
+        var limit = limitProvider.extractUsageDetails(project);
         if (limit.getPerAttachmentSize() != null && size > limit.getPerAttachmentSize()){
             logger.error("File is larger than permitted limit. Size: {} byte(s), limit: {} byte(s)",
                     size, limit.getPerAttachmentSize());
             throw new RequestException(413, "File is larger than permitted limit");
         }
-        var acc = user.getAccumulatedAttachmentStorageUsage() + size;
+        var acc = project.getAccumulatedAttachmentStorageUsage() + size;
         if (limit.getAllAttachmentSize() != null && acc > limit.getAllAttachmentSize()){
             throw new RequestException(413, "Accumulated storage usage exceeded");
         }
         completeAttachmentUpload(listing);
 
-        user.setAccumulatedAttachmentStorageUsage(acc);
-        userRepository.save(user);
+        project.setAccumulatedAttachmentStorageUsage(acc);
+        tenantRepository.save(project);
         return null;
     }
 }

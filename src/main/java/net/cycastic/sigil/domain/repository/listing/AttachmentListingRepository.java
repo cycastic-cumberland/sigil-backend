@@ -2,8 +2,7 @@ package net.cycastic.sigil.domain.repository.listing;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
-import net.cycastic.sigil.domain.model.Project;
-import net.cycastic.sigil.domain.model.User;
+import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import net.cycastic.sigil.domain.model.listing.Listing;
 import org.springframework.data.domain.Page;
@@ -25,9 +24,9 @@ public interface AttachmentListingRepository extends JpaRepository<AttachmentLis
 
     void removeByUploadCompletedAndListing_CreatedAtLessThan(boolean uploadCompleted, @NotNull OffsetDateTime listingCreatedAt);
 
-    Optional<AttachmentListing> findByListing_ProjectAndListing_ListingPath(@NotNull Project listingProject, @NotNull String listingListingPath);
+    Optional<AttachmentListing> findByListing_TenantAndListing_ListingPath(@NotNull Tenant listingTenant, @NotNull String listingListingPath);
 
-    Optional<AttachmentListing> findByListing_Project_IdAndListing_ListingPath(@NotNull Integer listingProjectId, @NotNull String listingListingPath);
+    Optional<AttachmentListing> findByListing_Tenant_IdAndListing_ListingPath(@NotNull Integer listingProjectId, @NotNull String listingListingPath);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT l.attachmentListing FROM Listing l WHERE l = :listing")
@@ -38,11 +37,11 @@ public interface AttachmentListingRepository extends JpaRepository<AttachmentLis
     @Query(value = """
                    SELECT l.id AS id, l.objectKey AS key, l.bucketName AS bucket
                    FROM AttachmentListing l
-                   WHERE l.listing.project.user = :user AND l.uploadCompleted
+                   WHERE l.listing.tenant = :tenant AND l.uploadCompleted
                    """,
             countQuery = """
-                         SELECT COUNT(l.objectKey) FROM AttachmentListing l WHERE l.listing.project.user = :user
+                         SELECT COUNT(l.objectKey) FROM AttachmentListing l WHERE l.listing.tenant = :tenant
                          """
     )
-    Page<ObjectInfo> getObjectKeysByUser(@Param("user")User user, Pageable pageable);
+    Page<ObjectInfo> getObjectKeysByUser(@Param("user") Tenant tenant, Pageable pageable);
 }

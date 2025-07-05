@@ -14,10 +14,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Operation(parameters = {
         @Parameter(
-                name = ApplicationConstants.TENANT_ID_HEADER,
+                name = ApplicationConstants.SYMMETRIC_KEY_HEADER,
                 in = ParameterIn.HEADER,
-                required = true,
-                description = "Must include this header"
+                description = "May require symmetric encryption key"
         )
 })
-public @interface RequireProjectId { }
+public @interface UseSymmetricKey { }

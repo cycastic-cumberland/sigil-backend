@@ -1,7 +1,7 @@
 package net.cycastic.sigil.command;
 
+import jakarta.transaction.Transactional;
 import net.cycastic.sigil.application.auth.UserService;
-import net.cycastic.sigil.domain.model.UsageType;
 import net.cycastic.sigil.domain.model.UserStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +30,6 @@ public class CreateUser implements Callable<Integer> {
     @CommandLine.Option(names = "--roles", required = true, split = ",")
     private List<String> roles;
 
-    @CommandLine.Option(names = "--usage-type")
-    private UsageType usageType;
-
     private final UserService userService;
 
     public CreateUser(UserService userService){
@@ -40,14 +37,14 @@ public class CreateUser implements Callable<Integer> {
     }
 
     @Override
+    @Transactional
     public Integer call() {
-        userService.registerUser(email,
+        userService.registerUserNoTransaction(email,
                 firstName,
                 lastName,
                 password,
                 roles,
                 UserStatus.ACTIVE,
-                usageType,
                 true);
         logger.info("User created.");
         return 0;

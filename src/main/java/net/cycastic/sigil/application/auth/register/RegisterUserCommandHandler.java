@@ -8,7 +8,6 @@ import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.UsageType;
 import net.cycastic.sigil.domain.model.UserStatus;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import org.springframework.stereotype.Component;
@@ -53,13 +52,12 @@ public class RegisterUserCommandHandler implements Command.Handler<RegisterUserC
             return null;
         }
 
-        user = userService.registerUser(command.getEmail(),
+        user = userService.registerUserNoTransaction(command.getEmail(),
                 command.getFirstName(),
                 command.getLastName(),
                 command.getPassword(),
                 Collections.singleton(ApplicationConstants.Roles.COMMON),
                 UserStatus.INVITED,
-                UsageType.STANDARD,
                 false);
         userService.sendConfirmationEmail(user);
         return null;

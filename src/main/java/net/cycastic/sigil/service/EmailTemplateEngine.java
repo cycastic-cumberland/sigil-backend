@@ -3,8 +3,8 @@ package net.cycastic.sigil.service;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.EmailParameter;
-import net.cycastic.sigil.domain.model.EmailParameterType;
+import net.cycastic.sigil.domain.dto.EmailParameterDto;
+import net.cycastic.sigil.domain.dto.EmailParameterType;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,9 +18,9 @@ public interface EmailTemplateEngine {
         private Map<String, EmailImage> imageStreamSource;
     }
 
-    private static HashMap<String, Object> buildParameterMap(EmailParameter[] emailParameters){
-        HashMap<String, Object> map = HashMap.newHashMap(emailParameters.length);
-        for (var parameter: emailParameters){
+    private static HashMap<String, Object> buildParameterMap(EmailParameterDto[] emailParameterDtos){
+        HashMap<String, Object> map = HashMap.newHashMap(emailParameterDtos.length);
+        for (var parameter: emailParameterDtos){
             if (map.containsKey(parameter.getName())){
                 throw new RequestException(400, "Email parameter %s already declared", parameter.getName());
             }
@@ -44,8 +44,8 @@ public interface EmailTemplateEngine {
                 OutputStream renderStream,
                 Map<String, Object> emailParameters);
 
-    default RenderResult render(InputStream templateStream, OutputStream renderStream, EmailParameter[] emailParameters){
-        var map = buildParameterMap(emailParameters);
+    default RenderResult render(InputStream templateStream, OutputStream renderStream, EmailParameterDto[] emailParameterDtos){
+        var map = buildParameterMap(emailParameterDtos);
         return render(templateStream, renderStream, map);
     }
 }

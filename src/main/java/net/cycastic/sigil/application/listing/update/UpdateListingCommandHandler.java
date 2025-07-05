@@ -20,7 +20,7 @@ public class UpdateListingCommandHandler implements Command.Handler<UpdateListin
     @Override
     @Transactional
     public @Null Object handle(UpdateListingCommand command) {
-        var listing = listingRepository.findByProject_IdAndListingPath(loggedUserAccessor.getProjectId(), command.getPath())
+        var listing = listingRepository.findByTenant_IdAndListingPath(loggedUserAccessor.getTenantId(), command.getPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
         listing.setListingPath(command.getNewPath());
         listing.setUpdatedAt(OffsetDateTime.now());

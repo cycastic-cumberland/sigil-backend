@@ -1,7 +1,7 @@
 package net.cycastic.sigil.service;
 
-import net.cycastic.sigil.domain.model.User;
+import net.cycastic.sigil.domain.model.Tenant;
 
 public interface LimitProvider {
-    UsageDetails extractUsageDetails(User user);
+    UsageDetails extractUsageDetails(Tenant user);
 }

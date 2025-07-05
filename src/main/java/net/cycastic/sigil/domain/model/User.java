@@ -24,26 +24,20 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull
+    @Column(nullable = false)
     private String email;
 
-    @NotNull
+    @Column(nullable = false)
     private String normalizedEmail;
 
-    @NotNull
     private String firstName;
 
-    @NotNull
     private String lastName;
 
-    @NotNull
     private String hashedPassword;
 
-    @NotNull
-    private String roles;
-
     @Column(nullable = false)
-    private UsageType usageType;
+    private String roles;
 
     @NotNull
     private OffsetDateTime joinedAt;
@@ -55,9 +49,6 @@ public class User implements UserDetails {
     @Version
     private long version;
 
-    @Getter
-    private long accumulatedAttachmentStorageUsage;
-
     @Column(nullable = false)
     private UserStatus status;
 
@@ -66,7 +57,14 @@ public class User implements UserDetails {
     private boolean emailVerified;
 
     @OneToMany(mappedBy = "user")
-    private Set<Project> projects;
+    private Set<TenantUser> tenantUsers;
+
+    @Column(columnDefinition = "VARCHAR(256)")
+    private byte[] publicRsaKey;
+
+    @OneToOne
+    @JoinColumn(name = "wrapped_user_key_id")
+    private Cipher wrappedUserKey;
 
     @Override
     public boolean isEnabled() {
@@ -88,9 +86,5 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
-    }
-
-    public void setAccumulatedAttachmentStorageUsage(long accumulatedAttachmentStorageUsage){
-        this.accumulatedAttachmentStorageUsage = accumulatedAttachmentStorageUsage < 0 ? 0 : accumulatedAttachmentStorageUsage;
     }
 }

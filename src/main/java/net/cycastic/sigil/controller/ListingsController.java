@@ -2,7 +2,6 @@ package net.cycastic.sigil.controller;
 
 import an.awesome.pipelinr.Pipelinr;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.application.listing.acp.create.SaveLACPCommand;
 import net.cycastic.sigil.application.listing.attachment.create.CompleteAttachmentUploadCommand;
 import net.cycastic.sigil.application.listing.attachment.create.CreateAttachmentListingCommand;
 import net.cycastic.sigil.application.listing.delete.DeleteListingCommand;
@@ -22,10 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/listings")
 public class ListingsController {
     private final Pipelinr pipelinr;
-    @PostMapping("acp")
-    public void saveLACP(@RequestBody SaveLACPCommand command){
-        pipelinr.send(command);
-    }
 
     @PostMapping("attachment")
     public AttachmentPresignedDto uploadAttachment(@RequestBody CreateAttachmentListingCommand command){

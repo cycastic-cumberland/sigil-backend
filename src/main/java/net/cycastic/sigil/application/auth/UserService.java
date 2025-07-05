@@ -5,12 +5,12 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
+import net.cycastic.sigil.domain.CryptographicUtilities;
+import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.dto.CredentialDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.UsageType;
-import net.cycastic.sigil.domain.model.User;
-import net.cycastic.sigil.domain.model.UserStatus;
+import net.cycastic.sigil.domain.model.*;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
@@ -21,15 +21,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -55,9 +56,10 @@ public class UserService {
     private final EmailTemplateEngine emailTemplateEngine;
     private final ApplicationEmailSender applicationEmailSender;
     private final TaskExecutor taskScheduler;
+    private final CipherRepository cipherRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordHasher passwordHasher, PasswordValidator passwordValidator, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler){
+    public UserService(UserRepository userRepository, PasswordHasher passwordHasher, PasswordValidator passwordValidator, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler, CipherRepository cipherRepository){
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.passwordValidator = passwordValidator;
@@ -69,26 +71,45 @@ public class UserService {
         this.emailTemplateEngine = emailTemplateEngine;
         this.applicationEmailSender = applicationEmailSender;
         this.taskScheduler = taskScheduler;
+        this.cipherRepository = cipherRepository;
     }
 
     public static void refreshSecurityStamp(User user){
         RANDOM.nextBytes(user.getSecurityStamp());
     }
 
-    public User registerUser(@NotNull String email,
-                             @NotNull String firstName,
-                             @NotNull String lastName,
-                             @NotNull String password,
-                             @NotNull Collection<String> roles,
-                             @NotNull UserStatus userStatus,
-                             @Nullable UsageType usageType,
-                             boolean emailVerified){
+    @SneakyThrows
+    private void reEnrollKeyPair(User.UserBuilder user, byte[] key){
+        var keyGen = KeyPairGenerator.getInstance("RSA", "BC");
+        keyGen.initialize(2048);
+        var keyPair = keyGen.generateKeyPair();
+        user.publicRsaKey(keyPair.getPublic().getEncoded());
+        var wrapKey = new SecretKeySpec(CryptographicUtilities.deriveKey(CryptographicUtilities.KEY_LENGTH,
+                key,
+                null),
+                "AES");
+        var encodedPrivateKey = keyPair.getPrivate().getEncoded();
+        var wrappedPrivateKey = CryptographicUtilities.encrypt(wrapKey, encodedPrivateKey);
+        var kid = CryptographicUtilities.digestSha256(encodedPrivateKey);
+        var cipher = new Cipher(null, kid, CipherEncryptionMethod.UNWRAPPED_USER_KEY, wrappedPrivateKey.getIv(), null, null);
+        cipher.setCipher(wrappedPrivateKey.getCipher());
+        cipherRepository.save(cipher);
+        user.wrappedUserKey(cipher);
+    }
+
+    public User registerUserNoTransaction(@NotNull String email,
+                                          @NotNull String firstName,
+                                          @NotNull String lastName,
+                                          @NotNull String password,
+                                          @NotNull Collection<String> roles,
+                                          @NotNull UserStatus userStatus,
+                                          boolean emailVerified){
         if (!ApplicationUtilities.isEmail(email)){
             throw new RequestException(400, "Malformed email address");
         }
         passwordValidator.validate(password);
 
-        var user = User.builder()
+        var userBuilder = User.builder()
                 .email(email)
                 .normalizedEmail(email.toUpperCase(Locale.ROOT))
                 .firstName(firstName)
@@ -98,10 +119,10 @@ public class UserService {
                 .joinedAt(OffsetDateTime.now())
                 .securityStamp(new byte[32])
                 .status(userStatus)
-                .usageType(Objects.requireNonNullElse(usageType, UsageType.STANDARD))
                 .lastInvitationSent(OffsetDateTime.now())
-                .emailVerified(emailVerified)
-                .build();
+                .emailVerified(emailVerified);
+        reEnrollKeyPair(userBuilder, password.getBytes(StandardCharsets.UTF_8));
+        var user = userBuilder.build();
         refreshSecurityStamp(user);
         userRepository.save(user);
         return user;
@@ -152,6 +173,7 @@ public class UserService {
                 .userId(user.getId())
                 .userEmail(user.getEmail())
                 .authToken(token)
+                .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
                 .build();
     }
 

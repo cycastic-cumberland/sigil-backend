@@ -20,7 +20,6 @@ public class UserDto {
     private String lastName;
     private String[] roles;
     private OffsetDateTime joinedAt;
-    private UsageDetailsDto usageDetails;
 
     public static UserDto fromDomain(@NotNull User user){
         return UserDto.builder()

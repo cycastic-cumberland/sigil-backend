@@ -10,7 +10,7 @@ target/
 .apt_generated
 .classpath
 .factorypath
-.project
+.tenant
 .settings
 .springBeans
 .sts4-cache

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import net.cycastic.sigil.domain.model.ListingType;
-import net.cycastic.sigil.domain.model.Project;
+import net.cycastic.sigil.domain.model.Tenant;
 
 import java.time.OffsetDateTime;
 
@@ -22,7 +22,7 @@ public class Listing {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="project_id", nullable=false)
-    private Project project;
+    private Tenant tenant;
 
     @NotNull
     @Column(columnDefinition = "VARCHAR(512)")
@@ -31,12 +31,6 @@ public class Listing {
     @NotNull
     @Enumerated(EnumType.ORDINAL)
     private ListingType type;
-
-    @OneToOne(mappedBy = "listing")
-    private TextListing textListing;
-
-    @OneToOne(mappedBy = "listing")
-    private DecimalListing decimalListing;
 
     @OneToOne(mappedBy = "listing")
     private AttachmentListing attachmentListing;

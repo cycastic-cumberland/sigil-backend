@@ -1,2 +1,0 @@
-ALTER TABLE listings
-    MODIFY COLUMN listing_path VARCHAR(512) CHARACTER SET utf8mb4 NOT NULL;

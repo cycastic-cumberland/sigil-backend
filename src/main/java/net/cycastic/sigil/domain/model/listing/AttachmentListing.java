@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.sigil.domain.model.EmailTemplate;
+import net.cycastic.sigil.domain.model.Cipher;
 
 import java.util.UUID;
 
@@ -19,8 +19,8 @@ public class AttachmentListing {
     @Id
     private Integer id;
 
-    @OneToOne(cascade = CascadeType.ALL)
     @MapsId
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id", referencedColumnName = "id")
     private Listing listing;
 
@@ -38,12 +38,10 @@ public class AttachmentListing {
 
     private boolean uploadCompleted;
 
-    @Column(nullable = false)
-    private UUID shareToken;
+    @OneToOne
+    @JoinColumn(name = "encryption_detail_id")
+    private Cipher encryptionDetails;
 
     @Version
     private long version;
-
-    @OneToOne(mappedBy = "attachmentListing")
-    private EmailTemplate emailTemplate;
 }

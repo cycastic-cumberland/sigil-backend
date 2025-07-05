@@ -9,11 +9,10 @@ import net.cycastic.sigil.configuration.S3Configurations;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.ListingType;
-import net.cycastic.sigil.domain.model.Project;
+import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import net.cycastic.sigil.domain.model.listing.Listing;
-import net.cycastic.sigil.domain.model.ListingAccessControlPolicy;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.*;
 import net.cycastic.sigil.domain.dto.listing.ListingDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
@@ -25,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -49,15 +47,12 @@ public class ListingService {
 
     private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
 
-    private final ListingACPRepository listingACPRepository;
+    private final TenantRepository tenantRepository;
     private final LoggedUserAccessor loggedUserAccessor;
     private final List<ListingResolver> resolvers;
     private final StorageProvider storageProvider;
     private final DeferrableStorageProvider deferrableStorageProvider;
-    private final UserRepository userRepository;
 
-    private final TextListingRepository textListingRepository;
-    private final DecimalListingRepository decimalListingRepository;
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final S3Configurations s3Configurations;
@@ -86,12 +81,6 @@ public class ListingService {
         return Pattern.compile(regex.append('$').toString());
     }
 
-    private static Pattern getRegex(@NotNull ListingAccessControlPolicy policy){
-        if (policy.getGlobPath() == null){
-            return MATCH_ALL;
-        }
-        return PATTERN_CACHE.get(policy.getGlobPath(), ListingService::buildRegexFromGlob);
-    }
 
     private static Pattern joinPatterns(@NotNull Stream<Pattern> stream){
         var combined = stream.map(Pattern::pattern)
@@ -100,44 +89,6 @@ public class ListingService {
         var pattern = Pattern.compile(combined);
         PATTERN_CACHE.put(combined, pattern);
         return pattern;
-    }
-
-    public void verifyAccess(@NotNull Project project,
-                             @NotNull Stream<String> listingPaths){
-        if (loggedUserAccessor.isAdmin()){
-            return;
-        }
-
-        if (project.getUser().getId().equals(loggedUserAccessor.getUserId())){
-            return;
-        }
-        var currentUserId = loggedUserAccessor.tryGetUserId();
-        var policies = listingACPRepository.findListingAccessControlPoliciesByProject(project,
-                Sort.by("priority").ascending());
-        var baseFilter = policies.stream()
-                .filter(policy -> policy.getApplyToId() == null ||
-                        (currentUserId.isPresent() && policy.getApplyToId().equals(currentUserId.get())));
-        var allowPattern = joinPatterns(baseFilter.filter(ListingAccessControlPolicy::isAllowed)
-                .map(ListingService::getRegex));
-
-        try (listingPaths){
-            var it = listingPaths.iterator();
-            var allowed = 0;
-            var iterated = 0;
-            while (it.hasNext()){
-               var listingPath = it.next();
-               iterated++;
-               if (allowPattern.matcher(listingPath).matches()){
-                   allowed++;
-                   continue;
-               }
-
-               break;
-            }
-            if (allowed != iterated){
-                throw new ForbiddenException();
-            }
-        }
     }
 
     public ListingDto toDto(Listing listing){
@@ -182,9 +133,9 @@ public class ListingService {
     }
 
     @Transactional
-    public AttachmentListing saveTemporaryAttachment(@NotNull Project project, @NotNull String path, String mimeType){
+    public AttachmentListing saveTemporaryAttachment(@NotNull Tenant tenant, @NotNull String path, String mimeType){
         var listing = Listing.builder()
-                .project(project)
+                .tenant(tenant)
                 .listingPath(path)
                 .type(ListingType.ATTACHMENT)
                 .createdAt(OffsetDateTime.now())
@@ -196,7 +147,6 @@ public class ListingService {
                 .bucketRegion(s3Configurations.getRegionName())
                 .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s%s.%s", TEMP_FILE_PREFIX, UUID.randomUUID(), fileExt))
                 .mimeType(mimeType)
-                .shareToken(UUID.randomUUID())
                 .build();
         listingRepository.save(listing);
         attachmentListingRepository.save(attachmentListing);
@@ -209,11 +159,10 @@ public class ListingService {
             attachmentListingRepository.save(attachment);
 
             var size = storageProvider.getBucket(attachment.getBucketName()).getObjectSize(attachment.getObjectKey());
-            var user = userRepository.findByListing(listing)
-                    .orElseThrow(() -> new RequestException(404, "User not found"));
-            user.setAccumulatedAttachmentStorageUsage(user.getAccumulatedAttachmentStorageUsage() - size);
+            var project = listing.getTenant();
+            project.setAccumulatedAttachmentStorageUsage(project.getAccumulatedAttachmentStorageUsage() - size);
             deferrableStorageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
-            userRepository.save(user);
+            tenantRepository.save(project);
         }
 
         attachmentListingRepository.delete(attachment);
@@ -221,22 +170,14 @@ public class ListingService {
     }
 
     public void deleteListingNoTransaction(int projectId, String path){
-        var listing = listingRepository.findByProject_IdAndListingPath(projectId, path)
+        var listing = listingRepository.findByTenant_IdAndListingPath(projectId, path)
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
 
-        if (!listing.getProject().getId().equals(loggedUserAccessor.getProjectId())){
+        if (!listing.getTenant().getId().equals(loggedUserAccessor.getTenantId())){
             throw new ForbiddenException();
         }
 
         switch (listing.getType()){
-            case TEXT -> {
-                textListingRepository.removeByListing(listing);
-                listingRepository.delete(listing);
-            }
-            case DECIMAL -> {
-                decimalListingRepository.removeByListing(listing);
-                listingRepository.delete(listing);
-            }
             case ATTACHMENT -> {
                 var attachment = attachmentListingRepository.findAttachmentListingForUpdate(listing)
                         .orElseThrow(() -> new IllegalStateException("unreachable"));

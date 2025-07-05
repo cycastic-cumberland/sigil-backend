@@ -18,7 +18,8 @@ public class ApplicationConstants {
         }
     }
 
-    public static final String PROJECT_ID_HEADER = "X-Project-Id";
+    public static final String TENANT_ID_HEADER = "X-Tenant-Id";
+    public static final String SYMMETRIC_KEY_HEADER = "X-Symmetric-Key";
     public static final String ROLES_ENTRY = "roles";
     public static final String SECURITY_STAMP_ENTRY = "security_stamp";
     public static final String PresignSignatureEntry = "x-pt-signature";

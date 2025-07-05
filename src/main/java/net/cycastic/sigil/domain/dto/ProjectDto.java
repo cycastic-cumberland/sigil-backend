@@ -5,8 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.sigil.domain.model.Project;
-import org.springframework.lang.Nullable;
+import net.cycastic.sigil.domain.model.Tenant;
 
 import java.time.OffsetDateTime;
 
@@ -19,10 +18,7 @@ public class ProjectDto {
     private Integer id;
 
     @NotNull
-    private String projectName;
-
-    @Nullable
-    private String corsSettings;
+    private long accumulatedAttachmentStorageUsage;
 
     @NotNull
     private OffsetDateTime createdAt = OffsetDateTime.now();
@@ -31,14 +27,13 @@ public class ProjectDto {
 
     private OffsetDateTime removedAt;
 
-    public static ProjectDto fromDomain(Project project){
+    public static ProjectDto fromDomain(Tenant tenant){
         return ProjectDto.builder()
-                .id(project.getId())
-                .projectName(project.getProjectName())
-                .corsSettings(project.getCorsSettings())
-                .createdAt(project.getCreatedAt())
-                .updatedAt(project.getUpdatedAt())
-                .removedAt(project.getRemovedAt())
+                .id(tenant.getId())
+                .createdAt(tenant.getCreatedAt())
+                .updatedAt(tenant.getUpdatedAt())
+                .removedAt(tenant.getRemovedAt())
+                .accumulatedAttachmentStorageUsage(tenant.getAccumulatedAttachmentStorageUsage())
                 .build();
     }
 }

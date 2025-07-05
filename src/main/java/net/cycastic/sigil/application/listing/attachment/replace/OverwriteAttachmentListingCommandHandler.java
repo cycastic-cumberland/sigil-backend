@@ -5,7 +5,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
@@ -21,14 +21,14 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
     private final ListingRepository listingRepository;
     private final StorageProvider storageProvider;
     private final DeferrableStorageProvider deferrableStorageProvider;
-    private final UserRepository userRepository;
+    private final TenantRepository tenantRepository;
 
     @Override
     @Transactional
     public @Null Object handle(OverwriteAttachmentListingCommand command) {
-        var sourceListing = listingRepository.findByProject_IdAndListingPathForUpdate(loggedUserAccessor.getProjectId(), command.getSourcePath())
+        var sourceListing = listingRepository.findByTenant_IdAndListingPathForUpdate(loggedUserAccessor.getTenantId(), command.getSourcePath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
-        var destinationListing = listingRepository.findByProject_IdAndListingPath(loggedUserAccessor.getProjectId(), command.getDestinationPath())
+        var destinationListing = listingRepository.findByTenant_IdAndListingPath(loggedUserAccessor.getTenantId(), command.getDestinationPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
         var source = attachmentListingRepository.findByListing(sourceListing);
         var destination = attachmentListingRepository.findAttachmentListingForUpdate(destinationListing)
@@ -39,14 +39,14 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
         destination.setUploadCompleted(false);
         attachmentListingRepository.save(destination);
 
-        var user = userRepository.findByAttachmentListing(source)
+        var project = tenantRepository.findByAttachmentListing(source)
                 .orElseThrow(() -> new RequestException(404, "User not found"));
         sourceListing.setListingPath(destinationListing.getListingPath());
         var destSize = storageProvider.getBucket(destination.getBucketName()).getObjectSize(destination.getObjectKey());
-        user.setAccumulatedAttachmentStorageUsage(user.getAccumulatedAttachmentStorageUsage() - destSize);
+        project.setAccumulatedAttachmentStorageUsage(project.getAccumulatedAttachmentStorageUsage() - destSize);
         deferrableStorageProvider.getBucket(destination.getBucketName()).deleteFile(destination.getObjectKey());
 
-        userRepository.save(user);
+        tenantRepository.save(project);
         attachmentListingRepository.delete(destination);
         listingRepository.delete(destinationListing);
         listingRepository.save(sourceListing);
