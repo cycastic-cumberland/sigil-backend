@@ -3,11 +3,13 @@ package net.cycastic.sigil.controller;
 import an.awesome.pipelinr.Pipelinr;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.tenant.delete.DeleteTenantCommand;
+import net.cycastic.sigil.application.tenant.get.GetTenantCipherCommand;
 import net.cycastic.sigil.application.tenant.get.GetTenantCommand;
 import net.cycastic.sigil.application.tenant.query.QueryTenantCommand;
 import net.cycastic.sigil.application.tenant.save.SaveTenantCommand;
+import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.dto.IdDto;
-import net.cycastic.sigil.domain.dto.ProjectDto;
+import net.cycastic.sigil.domain.dto.TenantDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,12 @@ public class TenantsController {
     private final Pipelinr pipelinr;
 
     @GetMapping("tenant")
-    public ProjectDto getTenant(GetTenantCommand command){
+    public TenantDto getTenant(GetTenantCommand command){
+        return pipelinr.send(command);
+    }
+
+    @GetMapping("tenant/cipher")
+    public CipherDto getCipher(GetTenantCipherCommand command){
         return pipelinr.send(command);
     }
 
@@ -33,7 +40,7 @@ public class TenantsController {
     }
 
     @GetMapping
-    public PageResponseDto<ProjectDto> queryTenants(QueryTenantCommand command){
+    public PageResponseDto<TenantDto> queryTenants(QueryTenantCommand command){
         return pipelinr.send(command);
     }
 }

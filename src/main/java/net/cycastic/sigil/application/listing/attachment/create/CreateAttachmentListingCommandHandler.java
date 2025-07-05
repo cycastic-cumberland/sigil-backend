@@ -24,12 +24,13 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
     @Override
     public AttachmentPresignedDto handle(CreateAttachmentListingCommand command) {
         var project = tenantRepository.findById(loggedUserAccessor.getTenantId())
-                .orElseThrow(() -> new RequestException(404, "Project not found"));
+                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
 
         var path = command.getPath();
         var incompleteAttachment = listingService.saveTemporaryAttachment(project,
                 path,
-                command.getMimeType() != null ? command.getMimeType() : ApplicationUtilities.getMimeType(command.getPath()));
+                command.getMimeType() != null ? command.getMimeType() : ApplicationUtilities.getMimeType(command.getPath()),
+                command.getContentLength());
 
         var uploadUrl = storageProvider.getBucket(incompleteAttachment.getBucketName())
                 .generatePresignedUploadPath(incompleteAttachment.getObjectKey(),

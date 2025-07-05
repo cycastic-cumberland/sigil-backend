@@ -8,6 +8,8 @@ import org.springframework.lang.Nullable;
 
 @Data
 public class GenerateAttachmentPresignedDownloadCommand implements Command<AttachmentPresignedDto> {
-    private @Nullable Integer projectId;
-    private @NotNull String listingPath;
+    @NotNull
+    private String listingPath;
+    @Nullable
+    private String keyMd5;
 }

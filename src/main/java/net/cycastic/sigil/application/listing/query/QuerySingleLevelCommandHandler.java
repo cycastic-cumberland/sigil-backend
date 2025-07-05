@@ -29,7 +29,7 @@ public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySing
             folder = folder + '/';
         }
         var project = tenantRepository.findById(loggedUserAccessor.getTenantId())
-                .orElseThrow(() -> new RequestException(404, "Project not found"));
+                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
 
         var page = listingRepository.findItems(project, folder, command.toPageable());
 

@@ -57,7 +57,7 @@ public class SaveTenantCommandHandler implements Command.Handler<SaveTenantComma
 
         var userId = loggedUserAccessor.getUserId();
         var project = tenantRepository.findById(command.getId())
-                .orElseThrow(() -> new RequestException(404, "Could not find project"));
+                .orElseThrow(() -> new RequestException(404, "Could not find tenant"));
         if (!loggedUserAccessor.isAdmin() &&
                 !project.getOwner().getId().equals(userId)){
             throw new ForbiddenException();

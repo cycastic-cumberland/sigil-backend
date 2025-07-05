@@ -38,10 +38,11 @@ public class AttachmentListing {
 
     private boolean uploadCompleted;
 
-    @OneToOne
-    @JoinColumn(name = "encryption_detail_id")
-    private Cipher encryptionDetails;
+    private long contentLength;
 
     @Version
     private long version;
+
+    @Column(columnDefinition = "BINARY(32)")
+    private byte[] encryptionKeyId;
 }

@@ -133,7 +133,7 @@ public class ListingService {
     }
 
     @Transactional
-    public AttachmentListing saveTemporaryAttachment(@NotNull Tenant tenant, @NotNull String path, String mimeType){
+    public AttachmentListing saveTemporaryAttachment(@NotNull Tenant tenant, @NotNull String path, String mimeType, long contentLength){
         var listing = Listing.builder()
                 .tenant(tenant)
                 .listingPath(path)
@@ -147,6 +147,7 @@ public class ListingService {
                 .bucketRegion(s3Configurations.getRegionName())
                 .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s%s.%s", TEMP_FILE_PREFIX, UUID.randomUUID(), fileExt))
                 .mimeType(mimeType)
+                .contentLength(contentLength)
                 .build();
         listingRepository.save(listing);
         attachmentListingRepository.save(attachmentListing);

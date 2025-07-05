@@ -21,7 +21,7 @@ public class GetListingCommandHandler implements Command.Handler<GetListingComma
 
     private ListingDto handle(GetListingCommand command, @NotNull Integer projectId){
         var project = tenantRepository.findById(projectId)
-                .orElseThrow(() -> new RequestException(404, "Project not found"));
+                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
 
         var listing = listingRepository.findByTenantAndListingPath(project, command.getListingPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));

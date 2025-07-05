@@ -62,7 +62,7 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
             size = storageProvider.getBucket(listing.getBucketName()).getObjectSize(listing.getObjectKey());
         } catch (RequestException e){
             if (e.getResponseCode() == 404){
-                throw new RequestException(400, "Object has not been uploaded yet");
+                throw new RequestException(400, "Attachment has not been uploaded yet");
             }
 
             throw e;

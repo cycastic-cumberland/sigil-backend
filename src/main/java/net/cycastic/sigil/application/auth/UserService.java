@@ -80,11 +80,11 @@ public class UserService {
     }
 
     @SneakyThrows
-    private void reEnrollKeyPair(User.UserBuilder user, byte[] key){
+    private void reEnrollKeyPair(User user, byte[] key){
         var keyGen = KeyPairGenerator.getInstance("RSA", "BC");
         keyGen.initialize(2048);
         var keyPair = keyGen.generateKeyPair();
-        user.publicRsaKey(keyPair.getPublic().getEncoded());
+        user.setPublicRsaKey(keyPair.getPublic().getEncoded());
         var wrapKey = new SecretKeySpec(CryptographicUtilities.deriveKey(CryptographicUtilities.KEY_LENGTH,
                 key,
                 null),
@@ -95,7 +95,7 @@ public class UserService {
         var cipher = new Cipher(null, kid, CipherEncryptionMethod.USER_PASSWORD, wrappedPrivateKey.getIv(), null, null);
         cipher.setCipher(wrappedPrivateKey.getCipher());
         cipherRepository.save(cipher);
-        user.wrappedUserKey(cipher);
+        user.setWrappedUserKey(cipher);
     }
 
     public User registerUserNoTransaction(@NotNull String email,
@@ -110,7 +110,7 @@ public class UserService {
         }
         passwordValidator.validate(password);
 
-        var userBuilder = User.builder()
+        var user = User.builder()
                 .email(email)
                 .normalizedEmail(email.toUpperCase(Locale.ROOT))
                 .firstName(firstName)
@@ -121,9 +121,9 @@ public class UserService {
                 .securityStamp(new byte[32])
                 .status(userStatus)
                 .lastInvitationSent(OffsetDateTime.now())
-                .emailVerified(emailVerified);
-        reEnrollKeyPair(userBuilder, password.getBytes(StandardCharsets.UTF_8));
-        var user = userBuilder.build();
+                .emailVerified(emailVerified)
+                .build();
+        reEnrollKeyPair(user, password.getBytes(StandardCharsets.UTF_8));
         refreshSecurityStamp(user);
         userRepository.save(user);
         return user;

@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>net.cycastic</groupId>
-    <artifactId>portfoliotoolkit</artifactId>
+    <artifactId>sigil</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>portfoliotoolkit</name>
-    <description>portfoliotoolkit</description>
+    <name>sigil</name>
+    <description>sigil</description>
     <url/>
     <licenses>
         <license/>

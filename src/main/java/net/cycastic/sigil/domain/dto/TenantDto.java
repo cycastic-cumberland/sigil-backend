@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectDto {
+public class TenantDto {
     @NotNull
     private Integer id;
 
@@ -27,8 +27,8 @@ public class ProjectDto {
 
     private OffsetDateTime removedAt;
 
-    public static ProjectDto fromDomain(Tenant tenant){
-        return ProjectDto.builder()
+    public static TenantDto fromDomain(Tenant tenant){
+        return TenantDto.builder()
                 .id(tenant.getId())
                 .createdAt(tenant.getCreatedAt())
                 .updatedAt(tenant.getUpdatedAt())

@@ -6,20 +6,20 @@ import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.UserRepository;
-import net.cycastic.sigil.domain.dto.ProjectDto;
+import net.cycastic.sigil.domain.dto.TenantDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class QueryTenantCommandHandler implements Command.Handler<QueryTenantCommand, PageResponseDto<ProjectDto>> {
+public class QueryTenantCommandHandler implements Command.Handler<QueryTenantCommand, PageResponseDto<TenantDto>> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
     private final TenantRepository tenantRepository;
 
     @Override
-    public PageResponseDto<ProjectDto> handle(QueryTenantCommand command) {
+    public PageResponseDto<TenantDto> handle(QueryTenantCommand command) {
         var userId = command.getUserId();
         if (userId != null &&
                 !loggedUserAccessor.isAdmin() &&
@@ -33,6 +33,6 @@ public class QueryTenantCommandHandler implements Command.Handler<QueryTenantCom
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RequestException(404, "Could not find user"));
         var projects = tenantRepository.findByUser(user, command.toPageable());
-        return PageResponseDto.fromDomain(projects, ProjectDto::fromDomain);
+        return PageResponseDto.fromDomain(projects, TenantDto::fromDomain);
     }
 }

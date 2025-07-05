@@ -22,9 +22,9 @@ public class GenerateAttachmentPresignedDownloadCommandHandler implements Comman
     private final AttachmentListingRepository attachmentListingRepository;
     private final StorageProvider storageProvider;
 
-    private AttachmentPresignedDto handle(GenerateAttachmentPresignedDownloadCommand command, @NotNull Integer projectId){
-        var project = tenantRepository.findById(projectId)
-                .orElseThrow(() -> new RequestException(404, "Project not found"));
+    private AttachmentPresignedDto handle(GenerateAttachmentPresignedDownloadCommand command, @NotNull Integer tenantId){
+        var project = tenantRepository.findById(tenantId)
+                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
 
         var listing = attachmentListingRepository.findByListing_TenantAndListing_ListingPath(project, command.getListingPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
@@ -32,7 +32,8 @@ public class GenerateAttachmentPresignedDownloadCommandHandler implements Comman
         var url = storageProvider.getBucket(listing.getBucketName())
                 .generatePresignedDownloadPath(listing.getObjectKey(),
                         new File(command.getListingPath()).getName(),
-                        OffsetDateTime.now().plusHours(6)); // TODO: Override this
+                        OffsetDateTime.now().plusHours(6),
+                        command.getKeyMd5()); // TODO: Override this
         return AttachmentPresignedDto.builder()
                 .id(listing.getId())
                 .url(url)

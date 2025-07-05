@@ -3,12 +3,14 @@ package net.cycastic.sigil.service.impl;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.configuration.S3Configurations;
 import net.cycastic.sigil.domain.ApplicationUtilities;
+import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.service.StorageProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -23,12 +25,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Lazy
 @Component
 @RequiredArgsConstructor
 public class S3StorageProvider implements AutoCloseable, StorageProvider {
+    private static final String DEFAULT_SSE_C_ALGORITHM = "AES256";
     private final ConcurrentHashMap<String, S3BucketProvider> cachedProviders = new ConcurrentHashMap<>();
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -58,7 +62,7 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
                     .contentLength(objectLength);
             if (encryptionKeyMd5Checksum != null){
                 requestBuilder = requestBuilder
-                        .sseCustomerAlgorithm("AES256")
+                        .sseCustomerAlgorithm(DEFAULT_SSE_C_ALGORITHM)
                         .sseCustomerKeyMD5(encryptionKeyMd5Checksum);
             }
 
@@ -69,14 +73,31 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
             return presignedPut.url().toString();
         }
 
+        private static GetObjectRequest.Builder withDecryption(GetObjectRequest.Builder builder, byte[] key){
+            var encoder = Base64.getEncoder();
+            var keyBase64 = encoder.encodeToString(key);
+            var md5Base64 = encoder.encodeToString(CryptographicUtilities.digestMd5(key));
+            return builder
+                    .sseCustomerAlgorithm(DEFAULT_SSE_C_ALGORITHM)
+                    .sseCustomerKeyMD5(md5Base64)
+                    .sseCustomerKey(keyBase64);
+        }
+
         @Override
         @HandleS3Exception
-        public String generatePresignedDownloadPath(String fileKey, String fileName, OffsetDateTime expiration) {
+        public String generatePresignedDownloadPath(String fileKey, String fileName, OffsetDateTime expiration, @Nullable String encryptionKeyMd5Checksum) {
             var ttl = Duration.between(OffsetDateTime.now(), expiration);
-            var getReq = GetObjectRequest.builder()
+            var requestBuilder = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(fileKey)
-                    .responseContentDisposition("attachment; filename=\"" + ApplicationUtilities.encodeURIComponent(fileName) + "\"")
+                    .responseContentDisposition("attachment; filename=\"" + ApplicationUtilities.encodeURIComponent(fileName) + "\"");
+            if (encryptionKeyMd5Checksum != null){
+                requestBuilder = requestBuilder
+                        .sseCustomerAlgorithm(DEFAULT_SSE_C_ALGORITHM)
+                        .sseCustomerKeyMD5(encryptionKeyMd5Checksum);
+            }
+
+            var getReq = requestBuilder
                     .build();
 
             var presignedGet = provider.s3Presigner.presignGetObject(r ->
@@ -87,11 +108,18 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
 
         @Override
         @HandleS3Exception
-        public InputStream openDownloadStream(String fileKey) {
-            return provider.s3Client.getObject(request -> request
-                            .bucket(bucketName)
-                            .key(fileKey),
-                    ResponseTransformer.toInputStream());
+        public InputStream download(final String fileKey, final String fileName, final byte[] decryptionKey) {
+            var requestBuilder = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .responseContentDisposition("attachment; filename=\"" + ApplicationUtilities.encodeURIComponent(fileName) + "\"");
+
+            if (decryptionKey != null){
+                requestBuilder = withDecryption(requestBuilder, decryptionKey);
+            }
+
+            var getReq = requestBuilder.build();
+            return provider.s3Client.getObject(getReq, ResponseTransformer.toInputStream());
         }
 
         private HeadObjectResponse headObject(String fileKey){

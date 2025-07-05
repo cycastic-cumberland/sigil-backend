@@ -22,7 +22,7 @@ public class QueryListingCommandHandler implements Command.Handler<QueryListingC
 
     private PageResponseDto<ListingDto> handle(QueryListingCommand command, @NotNull Integer projectId){
         var project = tenantRepository.findById(projectId)
-                .orElseThrow(() -> new RequestException(404, "Project not found"));
+                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
         var page = listingRepository.findListingsByTenantAndListingPathStartingWith(project,
                 command.getPrefix(),
                 command.toPageable());
