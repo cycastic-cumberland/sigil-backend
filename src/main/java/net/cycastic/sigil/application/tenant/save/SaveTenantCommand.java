@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.project.save;
+package net.cycastic.sigil.application.tenant.save;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +11,7 @@ import org.springframework.lang.Nullable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaveProjectCommand implements Command<IdDto> {
+public class SaveTenantCommand implements Command<IdDto> {
     private @Nullable Integer id;
     private @Nullable Integer userId;
     private @NotNull String name;

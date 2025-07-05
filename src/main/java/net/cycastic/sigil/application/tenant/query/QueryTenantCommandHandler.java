@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.project.query;
+package net.cycastic.sigil.application.tenant.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class QueryProjectsCommandHandler implements Command.Handler<QueryProjectsCommand, PageResponseDto<ProjectDto>> {
+public class QueryTenantCommandHandler implements Command.Handler<QueryTenantCommand, PageResponseDto<ProjectDto>> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
     private final TenantRepository tenantRepository;
 
     @Override
-    public PageResponseDto<ProjectDto> handle(QueryProjectsCommand queryProjectsCommand) {
-        var userId = queryProjectsCommand.getUserId();
+    public PageResponseDto<ProjectDto> handle(QueryTenantCommand command) {
+        var userId = command.getUserId();
         if (userId != null &&
                 !loggedUserAccessor.isAdmin() &&
                 !userId.equals(loggedUserAccessor.getUserId())){
@@ -32,7 +32,7 @@ public class QueryProjectsCommandHandler implements Command.Handler<QueryProject
         }
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RequestException(404, "Could not find user"));
-        var projects = tenantRepository.findByUser(user, queryProjectsCommand.toPageable());
+        var projects = tenantRepository.findByUser(user, command.toPageable());
         return PageResponseDto.fromDomain(projects, ProjectDto::fromDomain);
     }
 }

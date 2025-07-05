@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.project.get;
+package net.cycastic.sigil.application.tenant.get;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GetProjectCommandHandler implements Command.Handler<GetProjectCommand, ProjectDto> {
+public class GetTenantCommandHandler implements Command.Handler<GetTenantCommand, ProjectDto> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantRepository tenantRepository;
 
     @Override
-    public ProjectDto handle(GetProjectCommand command) {
+    public ProjectDto handle(GetTenantCommand command) {
         var userId = loggedUserAccessor.getUserId();
         var project = tenantRepository.findById(command.getId())
                 .orElseThrow(() -> new RequestException(404, "Could not find project"));

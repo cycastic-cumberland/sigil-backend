@@ -9,18 +9,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ProjectValidator implements CommandValidator{
+public class TenantValidator implements CommandValidator{
     private final TenantUserRepository tenantUserRepository;
     private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
     public void validate(Command command) {
-        var projectIdOpt = loggedUserAccessor.tryGetTenantId();
-        if (projectIdOpt.isEmpty()){
+        var tenantIdOpt = loggedUserAccessor.tryGetTenantId();
+        if (tenantIdOpt.isEmpty()){
             return;
         }
 
-        if (!loggedUserAccessor.isAdmin() && !tenantUserRepository.existsByTenant_IdAndUser_Id(projectIdOpt.get(), loggedUserAccessor.getUserId())){
+        if (!loggedUserAccessor.isAdmin() && !tenantUserRepository.existsByTenant_IdAndUser_Id(tenantIdOpt.get(), loggedUserAccessor.getUserId())){
             throw new ForbiddenException();
         }
     }

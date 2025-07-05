@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.project.save;
+package net.cycastic.sigil.application.tenant.save;
 
 import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
@@ -8,6 +8,7 @@ import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
@@ -15,11 +16,12 @@ import java.time.OffsetDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class SaveProjectCommandHandler implements Command.Handler<SaveProjectCommand, IdDto> {
+public class SaveTenantCommandHandler implements Command.Handler<SaveTenantCommand, IdDto> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantRepository tenantRepository;
+    private final UserRepository userRepository;
 
-    private Integer updateProject(SaveProjectCommand command, Tenant tenant){
+    private Integer updateTenant(SaveTenantCommand command, Tenant tenant){
         tenant.setName(command.getName());
         tenant.setUpdatedAt(OffsetDateTime.now());
 
@@ -27,11 +29,30 @@ public class SaveProjectCommandHandler implements Command.Handler<SaveProjectCom
         return tenant.getId();
     }
 
+    private Integer createTenant(SaveTenantCommand command){
+        var user = userRepository.findByIdForUpdate(command.getUserId())
+                .orElseThrow(() -> new RequestException(404, "User not found"));
+
+        var project = Tenant.builder()
+                .name(command.getName())
+                .owner(user)
+                .createdAt(OffsetDateTime.now())
+                .build();
+        tenantRepository.save(project);
+        return project.getId();
+    }
+
     @Override
     @Transactional
-    public IdDto handle(SaveProjectCommand command) {
+    public IdDto handle(SaveTenantCommand command) {
         if (command.getId() == null){
-            throw new ForbiddenException();
+            var userId = command.getUserId();
+            if (userId == null){
+                command.setUserId(loggedUserAccessor.getUserId());
+            } else if (!loggedUserAccessor.isAdmin()){ // only admins can have multiple tenants
+                throw new ForbiddenException();
+            }
+            return new IdDto(createTenant(command));
         }
 
         var userId = loggedUserAccessor.getUserId();
@@ -42,6 +63,6 @@ public class SaveProjectCommandHandler implements Command.Handler<SaveProjectCom
             throw new ForbiddenException();
         }
 
-        return new IdDto(updateProject(command, project));
+        return new IdDto(updateTenant(command, project));
     }
 }

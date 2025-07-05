@@ -1,14 +1,14 @@
-package net.cycastic.sigil.application.project.delete;
+package net.cycastic.sigil.application.tenant.get;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.sigil.domain.dto.ProjectDto;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeleteProjectCommand implements Command<@Null Object> {
+public class GetTenantCommand implements Command<ProjectDto> {
     private int id;
 }

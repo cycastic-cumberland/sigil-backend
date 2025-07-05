@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.project.query;
+package net.cycastic.sigil.application.tenant.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.*;
@@ -10,6 +10,6 @@ import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class QueryProjectsCommand extends PageRequestDto implements Command<PageResponseDto<ProjectDto>> {
+public class QueryTenantCommand extends PageRequestDto implements Command<PageResponseDto<ProjectDto>> {
     private Integer userId;
 }

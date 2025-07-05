@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.project.delete;
+package net.cycastic.sigil.application.tenant.delete;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Null;
@@ -13,12 +13,12 @@ import java.time.OffsetDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class DeleteProjectCommandHandler implements Command.Handler<DeleteProjectCommand, @Null Object> {
+public class DeleteTenantCommandHandler implements Command.Handler<DeleteTenantCommand, @Null Object> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantRepository tenantRepository;
 
     @Override
-    public @Null Object handle(DeleteProjectCommand command) {
+    public @Null Object handle(DeleteTenantCommand command) {
         var userId = loggedUserAccessor.getUserId();
         var project = tenantRepository.findById(command.getId())
                 .orElseThrow(() -> new RequestException(404, "Could not find project"));
