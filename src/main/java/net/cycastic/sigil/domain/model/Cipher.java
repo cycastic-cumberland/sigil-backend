@@ -17,7 +17,7 @@ public class Cipher {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "BINARY(32)")
+    @Column(columnDefinition = "BINARY(32)", nullable = false)
     private byte[] kid;
 
     @Column(nullable = false)

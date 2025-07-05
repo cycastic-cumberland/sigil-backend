@@ -1,0 +1,2 @@
+ALTER TABLE cipher_store
+    MODIFY kid BINARY(32) NOT NULL;

@@ -27,7 +27,7 @@ public class SigilApplication implements CommandLineRunner {
     private final Cli cliCommand;
 
     @Component
-    @CommandLine.Command(name = "tools",
+    @CommandLine.Command(
             subcommands = {CreateUser.class, VerifyPassword.class, GenerateKeyPair.class, Cleanup.class,
                     CalculateAccumulatedStorage.class})
     public static class Cli{ }

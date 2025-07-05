@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "listings", indexes = { @Index(name = "listings_project_id_listing_path_uindex", columnList = "project_id,listing_path", unique = true) })
+@Table(name = "listings", indexes = { @Index(name = "listings_tenant_id_listing_path_uindex", columnList = "tenant_id,listing_path", unique = true) })
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class Listing {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="project_id", nullable=false)
+    @JoinColumn(name="tenant_id", nullable=false)
     private Tenant tenant;
 
     @NotNull

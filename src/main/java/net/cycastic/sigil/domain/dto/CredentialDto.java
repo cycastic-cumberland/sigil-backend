@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class CredentialDto {
     private int userId;
     private String userEmail;
+    private String publicRsaKey;
     private CipherDto wrappedUserKey;
     private String authToken;
 }

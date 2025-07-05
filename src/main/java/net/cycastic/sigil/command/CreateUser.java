@@ -1,6 +1,5 @@
 package net.cycastic.sigil.command;
 
-import jakarta.transaction.Transactional;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.model.UserStatus;
 import org.slf4j.Logger;
@@ -37,9 +36,8 @@ public class CreateUser implements Callable<Integer> {
     }
 
     @Override
-    @Transactional
     public Integer call() {
-        userService.registerUserNoTransaction(email,
+        userService.registerUser(email,
                 firstName,
                 lastName,
                 password,

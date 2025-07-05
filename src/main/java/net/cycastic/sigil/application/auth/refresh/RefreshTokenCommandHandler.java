@@ -52,6 +52,7 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
                     .userId(userId)
                     .userEmail(user.getEmail())
                     .authToken(newToken)
+                    .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                     .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
                     .build();
         } catch (Exception e){

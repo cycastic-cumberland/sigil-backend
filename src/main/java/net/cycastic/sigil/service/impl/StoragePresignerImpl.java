@@ -3,7 +3,6 @@ package net.cycastic.sigil.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.domain.ApplicationUtilities;
-import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.StoragePresigner;
 import net.cycastic.sigil.service.UrlAccessor;

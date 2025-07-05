@@ -26,7 +26,7 @@ public class CipherDto {
                 .id(cipher.getId())
                 .decryptionMethod(cipher.getDecryptionMethod())
                 .kid(encoder.encodeToString(cipher.getKid()))
-                .iv(encoder.encodeToString(cipher.getIv()))
+                .iv(cipher.getIv() == null ? null : encoder.encodeToString(cipher.getIv()))
                 .cipher(encoder.encodeToString(cipher.getCipher()))
                 .build();
     }

@@ -1,5 +1,6 @@
 package net.cycastic.sigil.application.auth;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
@@ -91,7 +92,7 @@ public class UserService {
         var encodedPrivateKey = keyPair.getPrivate().getEncoded();
         var wrappedPrivateKey = CryptographicUtilities.encrypt(wrapKey, encodedPrivateKey);
         var kid = CryptographicUtilities.digestSha256(encodedPrivateKey);
-        var cipher = new Cipher(null, kid, CipherEncryptionMethod.UNWRAPPED_USER_KEY, wrappedPrivateKey.getIv(), null, null);
+        var cipher = new Cipher(null, kid, CipherEncryptionMethod.USER_PASSWORD, wrappedPrivateKey.getIv(), null, null);
         cipher.setCipher(wrappedPrivateKey.getCipher());
         cipherRepository.save(cipher);
         user.wrappedUserKey(cipher);
@@ -126,6 +127,17 @@ public class UserService {
         refreshSecurityStamp(user);
         userRepository.save(user);
         return user;
+    }
+
+    @Transactional
+    public User registerUser(@NotNull String email,
+                             @NotNull String firstName,
+                             @NotNull String lastName,
+                             @NotNull String password,
+                             @NotNull Collection<String> roles,
+                             @NotNull UserStatus userStatus,
+                             boolean emailVerified){
+        return registerUserNoTransaction(email, firstName, lastName, password, roles, userStatus, emailVerified);
     }
 
     private CredentialDto wasteComputePower(){
@@ -173,6 +185,7 @@ public class UserService {
                 .userId(user.getId())
                 .userEmail(user.getEmail())
                 .authToken(token)
+                .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
                 .build();
     }

@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "project_users", indexes = @Index(name = "project_users_project_id_user_id_uindex", columnList = "project,user", unique = true))
+@Table(name = "tenant_users", indexes = @Index(name = "tenant_users_tenant_id_user_id_uindex", columnList = "tenant_id,user_id", unique = true))
 public class TenantUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name="project_id", nullable = false)
+    @JoinColumn(name="tenant_id", nullable = false)
     private Tenant tenant;
 
     @ManyToOne

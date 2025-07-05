@@ -59,7 +59,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private Set<TenantUser> tenantUsers;
 
-    @Column(columnDefinition = "VARCHAR(256)")
+    @Column(columnDefinition = "VARBINARY(512)")
     private byte[] publicRsaKey;
 
     @OneToOne

@@ -36,10 +36,10 @@ public class Tenant {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "tenant")
     private Set<Listing> listings;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "tenant")
     private Set<TenantUser> tenantUsers;
 
     @NotNull
