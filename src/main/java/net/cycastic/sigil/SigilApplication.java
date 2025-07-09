@@ -5,7 +5,6 @@ import net.cycastic.sigil.command.*;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.UserRepository;
-import net.cycastic.sigil.service.PasswordHasher;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,6 +15,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
@@ -51,14 +51,14 @@ public class SigilApplication implements CommandLineRunner {
     @Component
     @RequiredArgsConstructor
     public static class AuthenticationProviderConfigurations{
-        private final PasswordHasher passwordHasher;
+        private final PasswordEncoder passwordEncoder;
         private final UserDetailsService userDetailsService;
 
         @Bean
         public AuthenticationProvider authenticationProvider(){
             var authProvider = new DaoAuthenticationProvider();
             authProvider.setUserDetailsService(userDetailsService);
-            authProvider.setPasswordEncoder(passwordHasher);
+            authProvider.setPasswordEncoder(passwordEncoder);
             return authProvider;
         }
     }

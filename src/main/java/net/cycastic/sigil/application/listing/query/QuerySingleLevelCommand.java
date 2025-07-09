@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class QuerySingleLevelCommand extends PageRequestDto implements Command<PageResponseDto<FolderItemDto>> {
+    private int partitionId;
     private @NotNull String folder;
 
     @Override

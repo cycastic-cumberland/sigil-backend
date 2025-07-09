@@ -8,14 +8,17 @@ import org.springframework.lang.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 public interface LoggedUserAccessor {
-    Optional<Integer> tryGetTenantId();
+    OptionalInt tryGetTenantId();
 
-    Optional<byte[]> tryGetSymmetricKey();
+    OptionalInt tryGetPartitionId();
 
-    Optional<Integer> tryGetUserId();
+    Optional<String> tryGetEncryptionKey();
+
+    OptionalInt tryGetUserId();
 
     @Null Claims getClaims();
 
@@ -33,12 +36,12 @@ public interface LoggedUserAccessor {
 
     default int getTenantId(){
         return tryGetTenantId()
-                .orElseThrow(() -> new RequestException(400, "Invalid project ID or not exists"));
+                .orElseThrow(() -> new RequestException(400, "Invalid project ID or not supplied"));
     }
 
-    default byte[] getSymmetricKey(){
-        return tryGetSymmetricKey()
-                .orElseThrow(() -> new RequestException(400, "Encryption key is required"));
+    default int getPartitionId(){
+        return tryGetPartitionId()
+                .orElseThrow(() -> new RequestException(400, "Invalid partition ID or not supplied"));
     }
 
     default int getUserId(){

@@ -13,6 +13,7 @@ public class HashicorpVaultConfiguration {
     private String encryptionKeyName;
     private String presignKeyName;
     private String signingKeyName;
+    private String ephemeralKeyName;
     private String signingPrivateKeyWrapped;
     private String signingPublicKey;
     private int apiVersion = 1;

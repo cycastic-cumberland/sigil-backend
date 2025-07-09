@@ -1,5 +1,6 @@
 package net.cycastic.sigil.service.impl;
 
+import com.bettercloud.vault.VaultConfig;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.HashicorpVaultConfiguration;
@@ -19,11 +20,15 @@ public class HashicorpVaultEncryptionProvider extends HashicorpVaultService impl
     private static final Logger logger = LoggerFactory.getLogger(HashicorpVaultEncryptionProvider.class);
 
     public HashicorpVaultEncryptionProvider(HashicorpVaultConfiguration configuration){
-        super(buildConfig(configuration), configuration.getEncryptionKeyName());
+        this(buildConfig(configuration), configuration.getEncryptionKeyName());
+    }
+
+    protected HashicorpVaultEncryptionProvider(VaultConfig vaultConfig, String keyName){
+        super(vaultConfig, keyName);
     }
 
     @SneakyThrows
-    private @NotNull String encryptInternal(byte @NotNull [] unencryptedData){
+    protected @NotNull String encryptInternal(byte @NotNull [] unencryptedData){
         var base64 = Base64.getEncoder().encodeToString(unencryptedData);
         Map<String, Object> encryptData = Collections.singletonMap("plaintext", base64);
         var encResp = vault.logical()
@@ -38,7 +43,7 @@ public class HashicorpVaultEncryptionProvider extends HashicorpVaultService impl
     }
 
     @SneakyThrows
-    private byte @NotNull [] decryptInternal(@NotNull String encryptedData){
+    protected byte @NotNull [] decryptInternal(@NotNull String encryptedData){
         Map<String, Object> decryptData = Collections.singletonMap("ciphertext", encryptedData);
         var decResp = vault.logical()
                 .write(String.format("transit/decrypt/%s", ApplicationUtilities.encodeURIComponent(keyName)), decryptData);

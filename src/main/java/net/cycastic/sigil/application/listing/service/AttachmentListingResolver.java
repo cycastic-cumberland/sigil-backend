@@ -2,7 +2,7 @@ package net.cycastic.sigil.application.listing.service;
 
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.ListingType;
+import net.cycastic.sigil.domain.model.listing.ListingType;
 import net.cycastic.sigil.domain.model.listing.Listing;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.dto.listing.AttachmentDto;

@@ -3,8 +3,8 @@ package net.cycastic.sigil.application.auth.refresh;
 import an.awesome.pipelinr.Command;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.User;
@@ -23,6 +23,7 @@ import java.util.Base64;
 public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenCommand, CredentialDto> {
     private static final Logger logger = LoggerFactory.getLogger(RefreshTokenCommandHandler.class);
     private final UserRepository userRepository;
+    private final UserService userService;
     private final JwtIssuer jwtIssuer;
     private final JwtVerifier jwtVerifier;
 
@@ -48,13 +49,7 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
             var user = userRepository.findById(userId)
                     .orElseThrow(() -> new RequestException(404, "Could not find user"));
             verifyCurrentStatus(claims, user);
-            return CredentialDto.builder()
-                    .userId(userId)
-                    .userEmail(user.getEmail())
-                    .authToken(newToken)
-                    .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
-                    .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
-                    .build();
+            return userService.createCredential(user, newToken);
         } catch (Exception e){
             logger.error("Error caught while refreshing token", e);
             throw new RequestException(401, "Failed to refresh token");

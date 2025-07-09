@@ -15,7 +15,5 @@ import org.springframework.lang.Nullable;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class QueryListingCommand extends PageRequestDto implements Command<PageResponseDto<ListingDto>> {
-    private @Nullable Integer projectId;
-
     private String prefix;
 }

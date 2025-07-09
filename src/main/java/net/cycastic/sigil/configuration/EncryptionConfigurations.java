@@ -20,6 +20,7 @@ import java.util.ArrayList;
 @org.springframework.context.annotation.Lazy
 public class EncryptionConfigurations {
     private final Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider;
+    private final Lazy<HashicorpVaultEphemeralAsymmetricEncryptionProvider> hashicorpVaultEphemeralAsymmetricEncryptionProvider;
     private final Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider;
     private final Lazy<EncryptionProvider> encryptionProvider;
     private final Lazy<DecryptionProvider> decryptionProvider;
@@ -35,6 +36,7 @@ public class EncryptionConfigurations {
                                     JwtConfiguration jwtConfiguration){
         var vaultEnabled = false;
         Lazy<HashicorpVaultEncryptionProvider> hashicorpVaultEncryptionProvider = null;
+        Lazy<HashicorpVaultEphemeralAsymmetricEncryptionProvider> hashicorpVaultEphemeralAsymmetricEncryptionProvider = null;
         Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider = null;
         Lazy<EncryptionProvider> encryptionProvider = null;
         Lazy<DecryptionProvider> decryptionProvider = null;
@@ -45,6 +47,7 @@ public class EncryptionConfigurations {
         if (hashicorpVaultConfiguration.isValid()){
             vaultEnabled = true;
             hashicorpVaultEncryptionProvider = Lazy.of(() -> new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration));
+            hashicorpVaultEphemeralAsymmetricEncryptionProvider = Lazy.of(() -> new HashicorpVaultEphemeralAsymmetricEncryptionProvider(hashicorpVaultConfiguration));
             encryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
             decryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
 
@@ -82,6 +85,9 @@ public class EncryptionConfigurations {
         this.hashicorpVaultEncryptionProvider = hashicorpVaultEncryptionProvider == null
                 ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
                 : hashicorpVaultEncryptionProvider;
+        this.hashicorpVaultEphemeralAsymmetricEncryptionProvider = hashicorpVaultEphemeralAsymmetricEncryptionProvider == null
+                ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
+                : hashicorpVaultEphemeralAsymmetricEncryptionProvider;
 
         this.symmetricEncryptionProvider = symmetricEncryptionProvider == null
                 ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
@@ -145,6 +151,11 @@ public class EncryptionConfigurations {
     @Bean
     public synchronized HashicorpVaultPresigner hashicorpVaultPresigner(){
         return hashicorpVaultPresigner.get();
+    }
+
+    @Bean
+    public synchronized HashicorpVaultEphemeralAsymmetricEncryptionProvider hashicorpVaultEphemeralAsymmetricEncryptionProvider(){
+        return hashicorpVaultEphemeralAsymmetricEncryptionProvider.get();
     }
 
     @Bean

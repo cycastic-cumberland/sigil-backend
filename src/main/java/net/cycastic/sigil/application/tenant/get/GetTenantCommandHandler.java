@@ -2,28 +2,17 @@ package net.cycastic.sigil.application.tenant.get;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
-import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.domain.dto.TenantDto;
-import net.cycastic.sigil.domain.repository.TenantUserRepository;
-import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class GetTenantCommandHandler implements Command.Handler<GetTenantCommand, TenantDto> {
-    private final TenantUserRepository tenantUserRepository;
-    private final LoggedUserAccessor loggedUserAccessor;
-    private final TenantRepository tenantRepository;
+    private final TenantService tenantService;
 
     @Override
     public TenantDto handle(GetTenantCommand command) {
-        if (!loggedUserAccessor.isAdmin() && !tenantUserRepository.existsByTenant_IdAndUser_Id(command.getId(), loggedUserAccessor.getUserId())){
-            throw new ForbiddenException();
-        }
-        var tenant = tenantRepository.findById(command.getId())
-                .orElseThrow(() -> new RequestException(404, "Could not find tenant"));
-        return TenantDto.fromDomain(tenant);
+        return TenantDto.fromDomain(tenantService.getTenant());
     }
 }

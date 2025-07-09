@@ -3,6 +3,7 @@ package net.cycastic.sigil.application.auth;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
+import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
@@ -12,11 +13,14 @@ import net.cycastic.sigil.domain.dto.CredentialDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.*;
+import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
+import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import net.cycastic.sigil.service.impl.ApplicationEmailSender;
 import net.cycastic.sigil.service.impl.UriPresigner;
+import net.cycastic.sigil.service.impl.auth.RSAKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +31,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -43,12 +46,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private static final String DUMMY_TEXT = "Hello World!";
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
-    private final PasswordHasher passwordHasher;
     private final PasswordValidator passwordValidator;
+    private final KeyDerivationFunction keyDerivationFunction;
     private final JwtIssuer jwtIssuer;
     private final String dummyHash;
     private final RegistrationConfigurations registrationConfigurations;
@@ -58,14 +60,15 @@ public class UserService {
     private final ApplicationEmailSender applicationEmailSender;
     private final TaskExecutor taskScheduler;
     private final CipherRepository cipherRepository;
+    private final TenantService tenantService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordHasher passwordHasher, PasswordValidator passwordValidator, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler, CipherRepository cipherRepository){
+    public UserService(UserRepository userRepository, PasswordValidator passwordValidator, KeyDerivationFunction keyDerivationFunction, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler, CipherRepository cipherRepository, TenantService tenantService){
         this.userRepository = userRepository;
-        this.passwordHasher = passwordHasher;
         this.passwordValidator = passwordValidator;
+        this.keyDerivationFunction = keyDerivationFunction;
         this.jwtIssuer = jwtIssuer;
-        this.dummyHash = passwordHasher.hash(DUMMY_TEXT);
+        this.dummyHash = keyDerivationFunction.encode(DUMMY_TEXT);
         this.registrationConfigurations = registrationConfigurations;
         this.urlAccessor = urlAccessor;
         this.uriPresigner = uriPresigner;
@@ -73,29 +76,60 @@ public class UserService {
         this.applicationEmailSender = applicationEmailSender;
         this.taskScheduler = taskScheduler;
         this.cipherRepository = cipherRepository;
+        this.tenantService = tenantService;
     }
 
     public static void refreshSecurityStamp(User user){
-        RANDOM.nextBytes(user.getSecurityStamp());
+        CryptographicUtilities.generateRandom(user.getSecurityStamp());
     }
 
     @SneakyThrows
-    private void reEnrollKeyPair(User user, byte[] key){
-        var keyGen = KeyPairGenerator.getInstance("RSA", "BC");
-        keyGen.initialize(2048);
-        var keyPair = keyGen.generateKeyPair();
-        user.setPublicRsaKey(keyPair.getPublic().getEncoded());
-        var wrapKey = new SecretKeySpec(CryptographicUtilities.deriveKey(CryptographicUtilities.KEY_LENGTH,
-                key,
-                null),
-                "AES");
-        var encodedPrivateKey = keyPair.getPrivate().getEncoded();
+    private void reEnrollKeyPair(User user, KeyDerivationFunction.KeyDerivationResult keyEncryptionKey){
+       var keyPair = RSAKeyGenerator.INSTANCE.generate();
+        user.setPublicRsaKey(keyPair.getPublicKey().getEncoded());
+        var hash = keyEncryptionKey.getHash();
+        if (hash.length != CryptographicUtilities.KEY_LENGTH){
+            throw new RequestException(400, "Invalid key encryption key");
+        }
+        var wrapKey = new SecretKeySpec(hash, "AES");
+        var encodedPrivateKey = keyPair.getPrivateKey().getEncoded();
         var wrappedPrivateKey = CryptographicUtilities.encrypt(wrapKey, encodedPrivateKey);
-        var kid = CryptographicUtilities.digestSha256(encodedPrivateKey);
-        var cipher = new Cipher(null, kid, CipherEncryptionMethod.USER_PASSWORD, wrappedPrivateKey.getIv(), null, null);
-        cipher.setCipher(wrappedPrivateKey.getCipher());
+        var kid = CryptographicUtilities.digestSha256(hash);
+        var cipher = new Cipher(kid, CipherDecryptionMethod.USER_PASSWORD, wrappedPrivateKey.getIv(), wrappedPrivateKey.getCipher());
         cipherRepository.save(cipher);
         user.setWrappedUserKey(cipher);
+        user.setKdfSettings(keyEncryptionKey.getParameters().encode());
+        user.setKdfSalt(keyEncryptionKey.getSalt());
+    }
+
+    private User registerUserNoTransactionNoValidation(@NotNull String email,
+                                                       @NotNull String firstName,
+                                                       @NotNull String lastName,
+                                                       @NotNull String passwordKdf,
+                                                       @NotNull KeyDerivationFunction.KeyDerivationResult keyEncryptionKey,
+                                                       @NotNull Collection<String> roles,
+                                                       @NotNull UserStatus userStatus,
+                                                       @NotNull UsageType usageType,
+                                                       boolean emailVerified){
+        keyDerivationFunction.decode(passwordKdf); // Check validity
+        var user = User.builder()
+                .email(email)
+                .normalizedEmail(email.toUpperCase(Locale.ROOT))
+                .firstName(firstName)
+                .lastName(lastName)
+                .hashedPassword(passwordKdf)
+                .roles(String.join(",", roles))
+                .joinedAt(OffsetDateTime.now())
+                .securityStamp(new byte[32])
+                .status(userStatus)
+                .lastInvitationSent(OffsetDateTime.now())
+                .emailVerified(emailVerified)
+                .build();
+        reEnrollKeyPair(user, keyEncryptionKey);
+        refreshSecurityStamp(user);
+        userRepository.save(user);
+        tenantService.createTenant(user, user.getLastName() + "'s tenant", usageType);
+        return user;
     }
 
     public User registerUserNoTransaction(@NotNull String email,
@@ -104,29 +138,18 @@ public class UserService {
                                           @NotNull String password,
                                           @NotNull Collection<String> roles,
                                           @NotNull UserStatus userStatus,
+                                          @NotNull UsageType usageType,
                                           boolean emailVerified){
         if (!ApplicationUtilities.isEmail(email)){
             throw new RequestException(400, "Malformed email address");
         }
         passwordValidator.validate(password);
+        var passwordKdf = keyDerivationFunction.encode(password);
+        var salt = new byte[KeyDerivationFunction.SALT_SIZE];
+        CryptographicUtilities.generateRandom(salt);
+        var kekKdf = keyDerivationFunction.derive(password.getBytes(StandardCharsets.UTF_8), salt, keyDerivationFunction.getDefaultParameters());
 
-        var user = User.builder()
-                .email(email)
-                .normalizedEmail(email.toUpperCase(Locale.ROOT))
-                .firstName(firstName)
-                .lastName(lastName)
-                .hashedPassword(passwordHasher.hash(password))
-                .roles(String.join(",", roles))
-                .joinedAt(OffsetDateTime.now())
-                .securityStamp(new byte[32])
-                .status(userStatus)
-                .lastInvitationSent(OffsetDateTime.now())
-                .emailVerified(emailVerified)
-                .build();
-        reEnrollKeyPair(user, password.getBytes(StandardCharsets.UTF_8));
-        refreshSecurityStamp(user);
-        userRepository.save(user);
-        return user;
+        return registerUserNoTransactionNoValidation(email, firstName, lastName, passwordKdf, kekKdf, roles, userStatus, usageType, emailVerified);
     }
 
     @Transactional
@@ -136,12 +159,45 @@ public class UserService {
                              @NotNull String password,
                              @NotNull Collection<String> roles,
                              @NotNull UserStatus userStatus,
+                             @NotNull UsageType usageType,
                              boolean emailVerified){
-        return registerUserNoTransaction(email, firstName, lastName, password, roles, userStatus, emailVerified);
+        return registerUserNoTransaction(email, firstName, lastName, password, roles, userStatus, usageType, emailVerified);
+    }
+
+    @SneakyThrows
+    private String getKdfSettings(User user){
+        final KeyDerivationFunction.Parameters parameters;
+        try (var stream = new ByteArrayInputStream(user.getKdfSettings())){
+            parameters = keyDerivationFunction.getParameters(stream);
+        }
+        final var salt = user.getKdfSalt();
+
+        return keyDerivationFunction.encodeSettings(new KeyDerivationFunction.KeyDerivationSettings() {
+            @Override
+            public byte[] getSalt() {
+                return salt;
+            }
+
+            @Override
+            public KeyDerivationFunction.Parameters getParameters() {
+                return parameters;
+            }
+        });
+    }
+
+    public CredentialDto createCredential(User user, String authToken){
+        return CredentialDto.builder()
+                .userId(user.getId())
+                .userEmail(user.getEmail())
+                .authToken(authToken)
+                .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
+                .kdfSettings(getKdfSettings(user))
+                .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
+                .build();
     }
 
     private CredentialDto wasteComputePower(){
-        passwordHasher.verify(DUMMY_TEXT, dummyHash);
+        keyDerivationFunction.matches(DUMMY_TEXT, dummyHash);
         jwtIssuer.generateTokens("", null);
         throw new RequestException(401, "Incorrect credential");
     }
@@ -150,7 +206,7 @@ public class UserService {
         if (user == null || user.getPassword() == null){
             return wasteComputePower();
         }
-        if (!passwordHasher.verify(password, user.getPassword())){
+        if (!keyDerivationFunction.matches(password, user.getPassword())){
             jwtIssuer.generateTokens("", null);
             throw new RequestException(401, "Incorrect credential");
         }
@@ -181,13 +237,7 @@ public class UserService {
         additionalClaims.put(ApplicationConstants.ROLES_ENTRY, roles);
         additionalClaims.put(ApplicationConstants.SECURITY_STAMP_ENTRY, Base64.getEncoder().encodeToString(user.getSecurityStamp()));
         var token = jwtIssuer.generateTokens(user.getId().toString(), additionalClaims);
-        return CredentialDto.builder()
-                .userId(user.getId())
-                .userEmail(user.getEmail())
-                .authToken(token)
-                .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
-                .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
-                .build();
+        return createCredential(user, token);
     }
 
     public CredentialDto generateCredential(String email, String password){

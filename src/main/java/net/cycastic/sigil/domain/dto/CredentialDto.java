@@ -13,6 +13,7 @@ public class CredentialDto {
     private int userId;
     private String userEmail;
     private String publicRsaKey;
+    private String kdfSettings;
     private CipherDto wrappedUserKey;
     private String authToken;
 }

@@ -9,6 +9,7 @@ import net.cycastic.sigil.application.listing.delete.DeleteListingCommand;
 import net.cycastic.sigil.application.listing.attachment.download.GenerateAttachmentPresignedDownloadCommand;
 import net.cycastic.sigil.application.listing.get.GetListingCommand;
 import net.cycastic.sigil.application.listing.query.QuerySingleLevelCommand;
+import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireProjectId;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
 import net.cycastic.sigil.domain.dto.FolderItemDto;
@@ -25,6 +26,7 @@ import java.time.Duration;
 
 @RestController
 @RequireProjectId
+@RequirePartitionId
 @RequiredArgsConstructor
 @RequestMapping("api/listings")
 public class ListingsController {

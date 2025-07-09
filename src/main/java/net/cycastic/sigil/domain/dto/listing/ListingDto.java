@@ -1,7 +1,7 @@
 package net.cycastic.sigil.domain.dto.listing;
 
 import lombok.*;
-import net.cycastic.sigil.domain.model.ListingType;
+import net.cycastic.sigil.domain.model.listing.ListingType;
 import net.cycastic.sigil.domain.model.listing.Listing;
 
 import java.time.OffsetDateTime;

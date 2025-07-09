@@ -3,6 +3,7 @@ package net.cycastic.sigil.controller;
 import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.auth.ephemeral.GetEphemeralPublicKeyCommand;
 import net.cycastic.sigil.application.auth.invalidatesessions.InvalidateAllSessionsCommand;
 import net.cycastic.sigil.application.auth.refresh.RefreshTokenCommand;
 import net.cycastic.sigil.application.auth.register.CompleteUserRegistrationCommand;
@@ -10,6 +11,7 @@ import net.cycastic.sigil.application.auth.register.RegisterUserCommand;
 import net.cycastic.sigil.application.auth.self.GetSelfCommand;
 import net.cycastic.sigil.application.auth.signin.SignInCommand;
 import net.cycastic.sigil.domain.dto.CredentialDto;
+import net.cycastic.sigil.domain.dto.PemDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +49,10 @@ public class AuthController {
     @GetMapping("self")
     public UserDto getSelf(){
         return pipelinr.send(GetSelfCommand.INSTANCE);
+    }
+
+    @GetMapping("public-key")
+    public PemDto getEphemeralPublicKey(){
+        return pipelinr.send(GetEphemeralPublicKeyCommand.INSTANCE);
     }
 }

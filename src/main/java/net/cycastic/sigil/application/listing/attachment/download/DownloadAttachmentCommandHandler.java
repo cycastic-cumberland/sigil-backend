@@ -3,11 +3,10 @@ package net.cycastic.sigil.application.listing.attachment.download;
 import an.awesome.pipelinr.Command;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.service.InputStreamResponse;
-import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.StorageProvider;
 import org.springframework.stereotype.Component;
 
@@ -18,20 +17,15 @@ import java.util.Base64;
 @Component
 @RequiredArgsConstructor
 public class DownloadAttachmentCommandHandler implements Command.Handler<DownloadAttachmentCommand, InputStreamResponse> {
-    private final LoggedUserAccessor loggedUserAccessor;
-    private final TenantRepository tenantRepository;
     private final AttachmentListingRepository attachmentListingRepository;
+    private final PartitionService partitionService;
     private final StorageProvider storageProvider;
+
     @Override
     public InputStreamResponse handle(final DownloadAttachmentCommand command) {
-        if (command.getEncryptionKeyBase64() == null){
-            throw new RequestException(400, "Directly downloading non-encrypted attachments is not supported");
-        }
+        var partition = partitionService.getPartition();
 
-        var project = tenantRepository.findById(loggedUserAccessor.getTenantId())
-                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
-
-        var listing = attachmentListingRepository.findByListing_TenantAndListing_ListingPath(project, command.getListingPath())
+        var listing = attachmentListingRepository.findByListing_PartitionAndListing_ListingPath(partition, command.getListingPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
         final var decryptionKey = Base64.getDecoder().decode(command.getEncryptionKeyBase64());
         final var contentLength = listing.getContentLength();

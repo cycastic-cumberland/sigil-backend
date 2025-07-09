@@ -1,13 +1,11 @@
 package net.cycastic.sigil.application.listing.attachment.download;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
-import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.StorageProvider;
 import org.springframework.stereotype.Component;
 
@@ -17,16 +15,14 @@ import java.time.OffsetDateTime;
 @Component
 @RequiredArgsConstructor
 public class GenerateAttachmentPresignedDownloadCommandHandler implements Command.Handler<GenerateAttachmentPresignedDownloadCommand, AttachmentPresignedDto> {
-    private final LoggedUserAccessor loggedUserAccessor;
-    private final TenantRepository tenantRepository;
     private final AttachmentListingRepository attachmentListingRepository;
     private final StorageProvider storageProvider;
+    private final PartitionService partitionService;
 
-    private AttachmentPresignedDto handle(GenerateAttachmentPresignedDownloadCommand command, @NotNull Integer tenantId){
-        var project = tenantRepository.findById(tenantId)
-                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
 
-        var listing = attachmentListingRepository.findByListing_TenantAndListing_ListingPath(project, command.getListingPath())
+    @Override
+    public AttachmentPresignedDto handle(GenerateAttachmentPresignedDownloadCommand command) {
+        var listing = attachmentListingRepository.findByListing_PartitionAndListing_ListingPath(partitionService.getPartition(), command.getListingPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
 
         var url = storageProvider.getBucket(listing.getBucketName())
@@ -38,10 +34,5 @@ public class GenerateAttachmentPresignedDownloadCommandHandler implements Comman
                 .id(listing.getId())
                 .url(url)
                 .build();
-    }
-
-    @Override
-    public AttachmentPresignedDto handle(GenerateAttachmentPresignedDownloadCommand command) {
-        return handle(command, loggedUserAccessor.getTenantId());
     }
 }

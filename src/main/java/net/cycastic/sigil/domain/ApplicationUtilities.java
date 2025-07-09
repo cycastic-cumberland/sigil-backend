@@ -2,7 +2,7 @@ package net.cycastic.sigil.domain;
 
 import jakarta.validation.constraints.NotNull;
 import net.cycastic.sigil.domain.dto.FolderItemType;
-import net.cycastic.sigil.domain.model.ListingType;
+import net.cycastic.sigil.domain.model.listing.ListingType;
 
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -10,9 +10,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.regex.Pattern;
 
 public class ApplicationUtilities {
@@ -20,16 +20,15 @@ public class ApplicationUtilities {
             "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     );
 
-    private static final SecureRandom RANDOM = new SecureRandom();
     public static String getMimeType(String fileName) {
         return URLConnection.guessContentTypeFromName(fileName);
     }
 
-    public static Optional<Integer> tryParseInt(String str){
+    public static OptionalInt tryParseInt(String str){
         try {
-            return Optional.of(Integer.parseInt(str));
+            return OptionalInt.of(Integer.parseInt(str));
         } catch (NumberFormatException e){
-            return Optional.empty();
+            return OptionalInt.empty();
         }
     }
 
@@ -85,7 +84,7 @@ public class ApplicationUtilities {
         String fileName;
         {
             var bytes = new byte[32];
-            RANDOM.nextBytes(bytes);
+            CryptographicUtilities.generateRandom(bytes);
             fileName = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         }
 

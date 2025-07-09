@@ -62,6 +62,12 @@ public class User implements UserDetails {
     @Column(columnDefinition = "VARBINARY(512)")
     private byte[] publicRsaKey;
 
+    @Column(columnDefinition = "VARBINARY(32)")
+    private byte[] kdfSettings;
+
+    @Column(columnDefinition = "VARBINARY(32)")
+    private byte[] kdfSalt;
+
     @OneToOne
     @JoinColumn(name = "wrapped_user_key_id")
     private Cipher wrappedUserKey;

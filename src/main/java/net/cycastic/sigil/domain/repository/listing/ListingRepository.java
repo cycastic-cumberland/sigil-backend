@@ -2,7 +2,8 @@ package net.cycastic.sigil.domain.repository.listing;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
-import net.cycastic.sigil.domain.model.ListingType;
+import net.cycastic.sigil.domain.model.Partition;
+import net.cycastic.sigil.domain.model.listing.ListingType;
 import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import net.cycastic.sigil.domain.model.listing.Listing;
@@ -26,15 +27,13 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
 
     void removeByTypeAndAttachmentListing(@NotNull ListingType type, AttachmentListing attachmentListing);
 
-    Page<Listing> findListingsByTenantAndListingPathStartingWith(@NotNull Tenant tenant, @NotNull String path, Pageable pageable);
+    Page<Listing> findListingsByPartitionAndListingPathStartingWith(@NotNull Partition partition, @NotNull String path, Pageable pageable);
 
-    Optional<Listing> findByTenantAndListingPath(@NotNull Tenant tenant, @NotNull String listingPath);
-
-    Optional<Listing> findByTenant_IdAndListingPath(int tenantId, @NotNull String listingPath);
+    Optional<Listing> findByPartitionAndListingPath(Partition partition, @NotNull String listingPath);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT l FROM Listing l WHERE l.tenant.id = :tenantId AND l.listingPath = :listingPath")
-    Optional<Listing> findByTenant_IdAndListingPathForUpdate(@Param("tenantId") int tenantId, @Param("listingPath") @NotNull String listingPath);
+    @Query("SELECT l FROM Listing l WHERE l.partition = :partition AND l.listingPath = :listingPath")
+    Optional<Listing> findByPartitionAndListingPathForUpdate(@Param("partition")Partition partition, @Param("listingPath") @NotNull String listingPath);
 
     Listing findByAttachmentListing(@NotNull AttachmentListing attachmentListing);
 
@@ -64,7 +63,7 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
                         ELSE NULL END
                       ELSE NULL END AS attachmentUploadCompleted
                    FROM Listing l
-                   WHERE l.tenant = :tenant
+                   WHERE l.partition = :partition
                       AND l.listingPath LIKE CONCAT(:folder, '%')
                       AND LENGTH(l.listingPath) > LENGTH(:folder)
                       AND l.removedAt IS NULL
@@ -88,11 +87,11 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
                              )
                          )
                          FROM Listing l
-                         WHERE l.tenant = :tenant
+                         WHERE l.partition = :partition
                              AND l.listingPath LIKE CONCAT(:folder, '%')
                              AND LENGTH(l.listingPath) > LENGTH(:folder)
                              AND l.removedAt IS NULL
                         """
     )
-    Page<FileItem> findItems(@Param("tenant") Tenant tenant, @Param("folder") String folder, Pageable pageable);
+    Page<FileItem> findItems(@Param("partition") Partition partition, @Param("folder") String folder, Pageable pageable);
 }

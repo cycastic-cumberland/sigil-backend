@@ -14,9 +14,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Operation(parameters = {
         @Parameter(
-                name = ApplicationConstants.SYMMETRIC_KEY_HEADER,
+                name = ApplicationConstants.ENCRYPTION_KEY_HEADER,
                 in = ParameterIn.HEADER,
-                description = "May require symmetric encryption key"
+                description = "May require encryption key"
         )
 })
-public @interface UseSymmetricKey { }
+public @interface UseEncryptionKey { }

@@ -3,7 +3,7 @@ package net.cycastic.sigil.service.cleaners;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.configuration.CleanerConfigurations;
-import net.cycastic.sigil.domain.model.ListingType;
+import net.cycastic.sigil.domain.model.listing.ListingType;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.BackgroundCleaner;

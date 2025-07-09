@@ -25,7 +25,5 @@ public class TenantUser {
     @JoinColumn(name="user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name="wrapped_tenant_key_id", nullable = false)
-    private Cipher wrappedTenantKey;
+    private int permissions;
 }

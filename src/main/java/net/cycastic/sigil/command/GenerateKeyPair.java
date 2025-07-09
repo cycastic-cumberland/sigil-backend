@@ -28,8 +28,8 @@ public class GenerateKeyPair implements Callable<Integer> {
     @Override
     public Integer call() {
         var keyPair = asymmetricKeyGenerator.generate();
-        var privateKey = Base64.getEncoder().encodeToString(keyPair.privateKey().getEncoded());
-        logger.info("Public key: {}", Base64.getEncoder().encodeToString(keyPair.publicKey().getEncoded()));
+        var privateKey = Base64.getEncoder().encodeToString(keyPair.getPrivateKey().getEncoded());
+        logger.info("Public key: {}", Base64.getEncoder().encodeToString(keyPair.getPublicKey().getEncoded()));
         logger.info("Private key: {}", privateKey);
         if (encryptionProvider.isPresent()){
             var wrapped = encryptionProvider.get().encrypt(privateKey);

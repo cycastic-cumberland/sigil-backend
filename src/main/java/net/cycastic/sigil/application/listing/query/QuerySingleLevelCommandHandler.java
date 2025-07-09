@@ -2,22 +2,19 @@ package net.cycastic.sigil.application.listing.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.dto.FolderItemDto;
 import net.cycastic.sigil.domain.dto.FolderItemType;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
-import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
-import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySingleLevelCommand, PageResponseDto<FolderItemDto>> {
-    private final LoggedUserAccessor loggedUserAccessor;
-    private final TenantRepository tenantRepository;
     private final ListingRepository listingRepository;
+    private final PartitionService partitionService;
 
     @Override
     public PageResponseDto<FolderItemDto> handle(QuerySingleLevelCommand command) {
@@ -28,10 +25,7 @@ public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySing
         if (!folder.endsWith("/")){
             folder = folder + '/';
         }
-        var project = tenantRepository.findById(loggedUserAccessor.getTenantId())
-                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
-
-        var page = listingRepository.findItems(project, folder, command.toPageable());
+        var page = listingRepository.findItems(partitionService.getPartition(), folder, command.toPageable());
 
         return PageResponseDto.fromDomain(page,
                 f -> new FolderItemDto(f.getName(),

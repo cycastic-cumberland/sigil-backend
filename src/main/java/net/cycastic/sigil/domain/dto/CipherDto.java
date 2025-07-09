@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.model.Cipher;
-import net.cycastic.sigil.domain.model.CipherEncryptionMethod;
+import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 
 import java.util.Base64;
 
@@ -15,7 +15,7 @@ import java.util.Base64;
 @AllArgsConstructor
 public class CipherDto {
     private long id;
-    private CipherEncryptionMethod decryptionMethod;
+    private CipherDecryptionMethod decryptionMethod;
     private String kid;
     private String iv;
     private String cipher;

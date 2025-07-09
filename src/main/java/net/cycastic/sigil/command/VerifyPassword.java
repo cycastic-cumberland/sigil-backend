@@ -4,10 +4,11 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CredentialDto;
+import net.cycastic.sigil.service.auth.KeyDerivationFunction;
+import net.cycastic.sigil.service.impl.Argon2idPasswordHasher;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
-import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -26,31 +27,31 @@ public class VerifyPassword implements Callable<Integer> {
     private String password;
 
     private final UserService userService;
+    private final KeyDerivationFunction keyDerivationFunction;
 
-    public VerifyPassword(UserService userService){
+    public VerifyPassword(UserService userService, KeyDerivationFunction keyDerivationFunction){
         this.userService = userService;
+        this.keyDerivationFunction = keyDerivationFunction;
+    }
+
+    private byte[] deriveKey(CredentialDto credential, String password){
+        var settings = keyDerivationFunction.decodeSettings(credential.getKdfSettings());
+        return keyDerivationFunction.derive(password.getBytes(StandardCharsets.UTF_8), settings.getSalt(), settings.getParameters())
+                .getHash();
     }
 
     @SneakyThrows
-    private static void verifyDecryptionKey(CredentialDto credential, String password){
+    private void verifyDecryptionKey(CredentialDto credential, String password){
         final var sampleText = "Hello World!";
-        var wrapKey = new SecretKeySpec(CryptographicUtilities.deriveKey(CryptographicUtilities.KEY_LENGTH,
-                password.getBytes(StandardCharsets.UTF_8),
-                null),
-                "AES");
+        var wrapKey = new SecretKeySpec(deriveKey(credential, password), "AES");
         var unwrappedPrivateKey = CryptographicUtilities.decrypt(wrapKey,
                 Base64.getDecoder().decode(credential.getWrappedUserKey().getIv()),
                 Base64.getDecoder().decode(credential.getWrappedUserKey().getCipher()));
         var kf = KeyFactory.getInstance("RSA", "BC");
-        var pub = kf.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(credential.getPublicRsaKey())));
-        var priv = kf.generatePrivate(new PKCS8EncodedKeySpec(unwrappedPrivateKey));
-        var enc = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding", "BC");
-        enc.init(Cipher.ENCRYPT_MODE, pub);
-        var ciphertext = enc.doFinal(sampleText.getBytes(StandardCharsets.UTF_8));
-
-        var dec = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding", "BC");
-        dec.init(Cipher.DECRYPT_MODE, priv);
-        var plaintext = dec.doFinal(ciphertext);
+        var publicKey = kf.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(credential.getPublicRsaKey())));
+        var privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(unwrappedPrivateKey));
+        var ciphertext = CryptographicUtilities.encrypt(publicKey, sampleText.getBytes(StandardCharsets.UTF_8)).getCipher();
+        var plaintext = CryptographicUtilities.decrypt(privateKey, ciphertext);
         assert new String(plaintext, StandardCharsets.UTF_8).equals(sampleText);
     }
 

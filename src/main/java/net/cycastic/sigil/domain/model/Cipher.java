@@ -21,7 +21,7 @@ public class Cipher {
     private byte[] kid;
 
     @Column(nullable = false)
-    private CipherEncryptionMethod decryptionMethod;
+    private CipherDecryptionMethod decryptionMethod;
 
     @Column(columnDefinition = "BINARY(12)")
     private byte[] iv;
@@ -31,6 +31,13 @@ public class Cipher {
 
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] cipherLong;
+
+    public Cipher(byte[] kid, CipherDecryptionMethod decryptionMethod, byte[] iv, byte[] cipher){
+        this.kid = kid;
+        this.decryptionMethod = decryptionMethod;
+        this.iv = iv;
+        setCipher(cipher);
+    }
 
     public byte[] getCipher(){
         return Objects.requireNonNull(Objects.requireNonNullElse(cipherLong, cipherStandard));

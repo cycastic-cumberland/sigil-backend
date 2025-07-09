@@ -3,7 +3,7 @@ package net.cycastic.sigil.domain.model.listing;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import net.cycastic.sigil.domain.model.ListingType;
+import net.cycastic.sigil.domain.model.Partition;
 import net.cycastic.sigil.domain.model.Tenant;
 
 import java.time.OffsetDateTime;
@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "listings", indexes = { @Index(name = "listings_tenant_id_listing_path_uindex", columnList = "tenant_id,listing_path", unique = true) })
+@Table(name = "listings", indexes = { @Index(name = "listings_partition_id_listing_path_uindex", columnList = "partition_id,listing_path", unique = true) })
 public class Listing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,8 +21,8 @@ public class Listing {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="tenant_id", nullable=false)
-    private Tenant tenant;
+    @JoinColumn(name="partition_id", nullable=false)
+    private Partition partition;
 
     @NotNull
     @Column(columnDefinition = "VARCHAR(512)")

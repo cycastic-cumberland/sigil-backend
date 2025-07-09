@@ -48,20 +48,20 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
             throw new RequestException(400, "Invalid content length");
         }
 
-        var projectOpt = tenantRepository.findById(loggedUserAccessor.getTenantId());
-        if (projectOpt.isEmpty() || !tenantUserRepository.existsByTenant_IdAndUser_Id(projectOpt.get().getId(), loggedUserAccessor.getUserId())){
+        var tenantOpt = tenantRepository.findById(loggedUserAccessor.getTenantId());
+        if (tenantOpt.isEmpty() || !tenantUserRepository.existsByTenantAndUser_Id(tenantOpt.get(), loggedUserAccessor.getUserId())){
             throw new ForbiddenException();
         }
 
-        var project = projectOpt.get();
-        var limit = limitProvider.extractUsageDetails(project);
+        var partition = tenantOpt.get();
+        var limit = limitProvider.extractUsageDetails(partition);
         if (limit.getPerAttachmentSize() != null && command.getContentLength() > limit.getPerAttachmentSize()){
             logger.error("File is larger than permitted limit. Size: {} byte(s), limit: {} byte(s)",
                     command.getContentLength(), limit.getPerAttachmentSize());
             throw new RequestException(413, "File is larger than permitted limit.");
         }
 
-        var acc = command.getContentLength() + project.getAccumulatedAttachmentStorageUsage();
+        var acc = command.getContentLength() + partition.getAccumulatedAttachmentStorageUsage();
         if (limit.getAllAttachmentSize() != null && acc > limit.getAllAttachmentSize()){
             throw new RequestException(413, "Accumulated storage usage exceeded");
         }

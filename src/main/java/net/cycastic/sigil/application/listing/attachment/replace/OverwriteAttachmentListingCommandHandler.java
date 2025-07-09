@@ -4,12 +4,13 @@ import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.partition.PartitionService;
+import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
-import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.StorageProvider;
 import org.springframework.stereotype.Component;
 
@@ -17,18 +18,21 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OverwriteAttachmentListingCommandHandler implements Command.Handler<OverwriteAttachmentListingCommand, @Null Object> {
     private final AttachmentListingRepository attachmentListingRepository;
-    private final LoggedUserAccessor loggedUserAccessor;
     private final ListingRepository listingRepository;
     private final StorageProvider storageProvider;
     private final DeferrableStorageProvider deferrableStorageProvider;
+    private final PartitionService partitionService;
     private final TenantRepository tenantRepository;
 
     @Override
     @Transactional
     public @Null Object handle(OverwriteAttachmentListingCommand command) {
-        var sourceListing = listingRepository.findByTenant_IdAndListingPathForUpdate(loggedUserAccessor.getTenantId(), command.getSourcePath())
+        partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
+
+        var partition = partitionService.getPartition();
+        var sourceListing = listingRepository.findByPartitionAndListingPathForUpdate(partition, command.getSourcePath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
-        var destinationListing = listingRepository.findByTenant_IdAndListingPath(loggedUserAccessor.getTenantId(), command.getDestinationPath())
+        var destinationListing = listingRepository.findByPartitionAndListingPath(partition, command.getDestinationPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
         var source = attachmentListingRepository.findByListing(sourceListing);
         var destination = attachmentListingRepository.findAttachmentListingForUpdate(destinationListing)

@@ -7,6 +7,5 @@ import org.springframework.lang.Nullable;
 
 @Data
 public class GetListingCommand implements Command<ListingDto> {
-    private @Nullable Integer projectId;
     private String listingPath;
 }

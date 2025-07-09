@@ -2,6 +2,7 @@ package net.cycastic.sigil.domain.repository.listing;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
+import net.cycastic.sigil.domain.model.Partition;
 import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import net.cycastic.sigil.domain.model.listing.Listing;
@@ -24,9 +25,7 @@ public interface AttachmentListingRepository extends JpaRepository<AttachmentLis
 
     void removeByUploadCompletedAndListing_CreatedAtLessThan(boolean uploadCompleted, @NotNull OffsetDateTime listingCreatedAt);
 
-    Optional<AttachmentListing> findByListing_TenantAndListing_ListingPath(@NotNull Tenant listingTenant, @NotNull String listingListingPath);
-
-    Optional<AttachmentListing> findByListing_Tenant_IdAndListing_ListingPath(@NotNull Integer listingProjectId, @NotNull String listingListingPath);
+    Optional<AttachmentListing> findByListing_PartitionAndListing_ListingPath(@NotNull Partition partition, @NotNull String listingListingPath);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT l.attachmentListing FROM Listing l WHERE l = :listing")
@@ -37,10 +36,10 @@ public interface AttachmentListingRepository extends JpaRepository<AttachmentLis
     @Query(value = """
                    SELECT l.id AS id, l.objectKey AS key, l.bucketName AS bucket
                    FROM AttachmentListing l
-                   WHERE l.listing.tenant = :tenant AND l.uploadCompleted
+                   WHERE l.listing.partition.tenant = :tenant AND l.uploadCompleted
                    """,
             countQuery = """
-                         SELECT COUNT(l.objectKey) FROM AttachmentListing l WHERE l.listing.tenant = :tenant
+                         SELECT COUNT(l.objectKey) FROM AttachmentListing l WHERE l.listing.partition.tenant = :tenant
                          """
     )
     Page<ObjectInfo> getObjectKeysByUser(@Param("user") Tenant tenant, Pageable pageable);

@@ -1,12 +1,19 @@
 package net.cycastic.sigil.service.auth;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NonNull;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 public interface AsymmetricKeyGenerator {
-    record KeyPair(PublicKey publicKey, PrivateKey privateKey){}
+    @Data
+    @AllArgsConstructor
+    class KeyPair {
+        private PublicKey publicKey;
+        private PrivateKey privateKey;
+    }
 
     @NonNull KeyPair generate();
 }

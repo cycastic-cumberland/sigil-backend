@@ -37,24 +37,33 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
     }
 
     @Override
-    public Optional<Integer> tryGetTenantId() {
+    public OptionalInt tryGetTenantId() {
         var request = getAttributes().getRequest();
         var header = request.getHeader(ApplicationConstants.TENANT_ID_HEADER);
         if (header == null){
-            return Optional.empty();
+            return OptionalInt.empty();
         }
 
         return ApplicationUtilities.tryParseInt(header);
     }
 
     @Override
-    public Optional<byte[]> tryGetSymmetricKey() {
+    public OptionalInt tryGetPartitionId() {
         var request = getAttributes().getRequest();
-        var header = request.getHeader(ApplicationConstants.SYMMETRIC_KEY_HEADER);
+        var header = request.getHeader(ApplicationConstants.PARTITION_ID_HEADER);
         if (header == null){
-            return Optional.empty();
+            return OptionalInt.empty();
         }
-        return Optional.ofNullable(Base64.getUrlDecoder().decode(header));
+
+        return ApplicationUtilities.tryParseInt(header);
+    }
+
+    @Override
+    public Optional<String> tryGetEncryptionKey() {
+        var request = getAttributes().getRequest();
+        var header = request.getHeader(ApplicationConstants.ENCRYPTION_KEY_HEADER);
+
+        return Optional.ofNullable(header);
     }
 
     private Claims createClaimsFromRequest(){
@@ -94,15 +103,15 @@ public class LoggedUserAccessorImpl implements LoggedUserAccessor {
     }
 
     @Override
-    public Optional<Integer> tryGetUserId() {
+    public OptionalInt tryGetUserId() {
         var claims = getClaims();
         if (claims == null){
-            return Optional.empty();
+            return OptionalInt.empty();
         }
 
         var entry = claims.getSubject();
         if (entry == null){
-            return Optional.empty();
+            return OptionalInt.empty();
         }
         return ApplicationUtilities.tryParseInt(entry);
     }

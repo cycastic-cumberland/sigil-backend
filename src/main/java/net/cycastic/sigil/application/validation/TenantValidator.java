@@ -3,6 +3,7 @@ package net.cycastic.sigil.application.validation;
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
+import net.cycastic.sigil.domain.repository.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class TenantValidator implements CommandValidator{
     private final TenantUserRepository tenantUserRepository;
     private final LoggedUserAccessor loggedUserAccessor;
+    private final PartitionUserRepository partitionUserRepository;
 
     @Override
     public void validate(Command command) {
@@ -20,7 +22,17 @@ public class TenantValidator implements CommandValidator{
             return;
         }
 
-        if (!loggedUserAccessor.isAdmin() && !tenantUserRepository.existsByTenant_IdAndUser_Id(tenantIdOpt.get(), loggedUserAccessor.getUserId())){
+        if (!tenantUserRepository.existsByTenant_IdAndUser_Id(tenantIdOpt.getAsInt(), loggedUserAccessor.getUserId())){
+            throw new ForbiddenException();
+        }
+
+        var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
+        if (partitionIdOpt.isEmpty()){
+            return;
+        }
+        if (!partitionUserRepository.existsByPartition_Tenant_IdAndPartition_IdAndUser_Id(tenantIdOpt.getAsInt(),
+                partitionIdOpt.getAsInt(),
+                loggedUserAccessor.getUserId())){
             throw new ForbiddenException();
         }
     }

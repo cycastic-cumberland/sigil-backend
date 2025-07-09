@@ -37,9 +37,6 @@ public class Tenant {
     private User owner;
 
     @OneToMany(mappedBy = "tenant")
-    private Set<Listing> listings;
-
-    @OneToMany(mappedBy = "tenant")
     private Set<TenantUser> tenantUsers;
 
     @NotNull

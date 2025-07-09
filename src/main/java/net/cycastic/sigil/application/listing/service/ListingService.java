@@ -5,11 +5,13 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.configuration.S3Configurations;
+import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.ListingType;
-import net.cycastic.sigil.domain.model.Tenant;
+import net.cycastic.sigil.domain.model.Partition;
+import net.cycastic.sigil.domain.model.listing.ListingType;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import net.cycastic.sigil.domain.model.listing.Listing;
 import net.cycastic.sigil.domain.repository.TenantRepository;
@@ -53,6 +55,7 @@ public class ListingService {
     private final StorageProvider storageProvider;
     private final DeferrableStorageProvider deferrableStorageProvider;
 
+    private final PartitionService partitionService;
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final S3Configurations s3Configurations;
@@ -133,9 +136,9 @@ public class ListingService {
     }
 
     @Transactional
-    public AttachmentListing saveTemporaryAttachment(@NotNull Tenant tenant, @NotNull String path, String mimeType, long contentLength){
+    public AttachmentListing saveTemporaryAttachment(@NotNull Partition partition, @NotNull String path, String mimeType, long contentLength){
         var listing = Listing.builder()
-                .tenant(tenant)
+                .partition(partition)
                 .listingPath(path)
                 .type(ListingType.ATTACHMENT)
                 .createdAt(OffsetDateTime.now())
@@ -160,7 +163,7 @@ public class ListingService {
             attachmentListingRepository.save(attachment);
 
             var size = storageProvider.getBucket(attachment.getBucketName()).getObjectSize(attachment.getObjectKey());
-            var project = listing.getTenant();
+            var project = listing.getPartition().getTenant();
             project.setAccumulatedAttachmentStorageUsage(project.getAccumulatedAttachmentStorageUsage() - size);
             deferrableStorageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
             tenantRepository.save(project);
@@ -170,13 +173,11 @@ public class ListingService {
         listingRepository.delete(listing);
     }
 
-    public void deleteListingNoTransaction(int projectId, String path){
-        var listing = listingRepository.findByTenant_IdAndListingPath(projectId, path)
+    public void deleteListingNoTransaction(String path){
+        partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
+        var partition = partitionService.getPartition();
+        var listing = listingRepository.findByPartitionAndListingPath(partition, path)
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
-
-        if (!listing.getTenant().getId().equals(loggedUserAccessor.getTenantId())){
-            throw new ForbiddenException();
-        }
 
         switch (listing.getType()){
             case ATTACHMENT -> {

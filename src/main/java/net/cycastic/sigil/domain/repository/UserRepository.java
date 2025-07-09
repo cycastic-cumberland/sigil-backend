@@ -26,9 +26,9 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
         return findByNormalizedEmail(email.toUpperCase(Locale.ROOT));
     }
 
-    @Query("select al.listing.tenant.owner from AttachmentListing al WHERE al = :attachmentListing")
+    @Query("select al.listing.partition.tenant.owner from AttachmentListing al WHERE al = :attachmentListing")
     Optional<User> findByAttachmentListing(@Param("attachmentListing") AttachmentListing attachmentListing);
 
-    @Query("select l.tenant.owner from Listing l where l = :listing")
+    @Query("select l.partition.tenant.owner from Listing l where l = :listing")
     Optional<User> findByListing(@Param("listing") Listing listing);
 }
