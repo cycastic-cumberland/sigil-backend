@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.sigil.domain.CryptographicUtilities;
 
 import java.util.Objects;
 
@@ -37,6 +38,10 @@ public class Cipher {
         this.decryptionMethod = decryptionMethod;
         this.iv = iv;
         setCipher(cipher);
+    }
+
+    public Cipher(byte[] kid, CipherDecryptionMethod decryptionMethod, CryptographicUtilities.EncryptionResult encryptionResult){
+        this(kid, decryptionMethod, encryptionResult.getIv(), encryptionResult.getCipher());
     }
 
     public byte[] getCipher(){

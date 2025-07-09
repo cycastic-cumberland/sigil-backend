@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class QuerySingleLevelCommandHandler implements Command.Handler<QuerySingleLevelCommand, PageResponseDto<FolderItemDto>> {
+public class QueryListingSingleLevelCommandHandler implements Command.Handler<QueryListingSingleLevelCommand, PageResponseDto<FolderItemDto>> {
     private final ListingRepository listingRepository;
     private final PartitionService partitionService;
 
     @Override
-    public PageResponseDto<FolderItemDto> handle(QuerySingleLevelCommand command) {
+    public PageResponseDto<FolderItemDto> handle(QueryListingSingleLevelCommand command) {
         var folder = command.getFolder();
         if (!folder.startsWith("/")){
             folder = '/' + folder;

@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
                 name = ApplicationConstants.PARTITION_ID_HEADER,
                 in = ParameterIn.HEADER,
                 required = true,
-                description = "Must include this header"
+                description = "Requires partition ID"
         )
 })
 public @interface RequirePartitionId {

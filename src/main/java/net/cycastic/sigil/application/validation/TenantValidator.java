@@ -3,7 +3,7 @@ package net.cycastic.sigil.application.validation;
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
-import net.cycastic.sigil.domain.repository.PartitionUserRepository;
+import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;

@@ -36,6 +36,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -48,6 +51,7 @@ public class UserService {
     private static final String DUMMY_TEXT = "Hello World!";
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
     private final PasswordValidator passwordValidator;
     private final KeyDerivationFunction keyDerivationFunction;
@@ -63,7 +67,8 @@ public class UserService {
     private final TenantService tenantService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordValidator passwordValidator, KeyDerivationFunction keyDerivationFunction, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler, CipherRepository cipherRepository, TenantService tenantService){
+    public UserService(LoggedUserAccessor loggedUserAccessor, UserRepository userRepository, PasswordValidator passwordValidator, KeyDerivationFunction keyDerivationFunction, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler, CipherRepository cipherRepository, TenantService tenantService){
+        this.loggedUserAccessor = loggedUserAccessor;
         this.userRepository = userRepository;
         this.passwordValidator = passwordValidator;
         this.keyDerivationFunction = keyDerivationFunction;
@@ -95,7 +100,7 @@ public class UserService {
         var encodedPrivateKey = keyPair.getPrivateKey().getEncoded();
         var wrappedPrivateKey = CryptographicUtilities.encrypt(wrapKey, encodedPrivateKey);
         var kid = CryptographicUtilities.digestSha256(hash);
-        var cipher = new Cipher(kid, CipherDecryptionMethod.USER_PASSWORD, wrappedPrivateKey.getIv(), wrappedPrivateKey.getCipher());
+        var cipher = new Cipher(kid, CipherDecryptionMethod.USER_PASSWORD, wrappedPrivateKey);
         cipherRepository.save(cipher);
         user.setWrappedUserKey(cipher);
         user.setKdfSettings(keyEncryptionKey.getParameters().encode());
@@ -335,5 +340,17 @@ public class UserService {
                 logger.error("Failed to send confirmation email to user {}", dto.getId(), e);
             }
         });
+    }
+
+    public User getUser(){
+        return userRepository.findById(loggedUserAccessor.getUserId())
+                .orElseThrow(() -> new RequestException(404, "User not found"));
+    }
+
+    @SneakyThrows
+    public PublicKey getUserPublicKey(){
+        var keyEncoded = getUser().getPublicRsaKey();
+        var kf = KeyFactory.getInstance("RSA", "BC");
+        return kf.generatePublic(new X509EncodedKeySpec(keyEncoded));
     }
 }

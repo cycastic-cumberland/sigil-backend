@@ -47,7 +47,7 @@ public class TenantService {
 
         var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
                 .orElseThrow(ForbiddenException::new);
-        if ((tenantUser.getPermissions() & mask) == 0){
+        if ((tenantUser.getPermissions() & mask) != mask){
             throw new ForbiddenException();
         }
     }

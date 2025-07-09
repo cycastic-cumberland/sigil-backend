@@ -45,12 +45,10 @@ public class ListingService {
     private static final Cache<String, Pattern> PATTERN_CACHE = Caffeine.newBuilder()
             .maximumSize(512) // TODO: Ways to override this
             .build();
-    private static final Pattern MATCH_ALL = Pattern.compile(".*");
 
     private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
 
     private final TenantRepository tenantRepository;
-    private final LoggedUserAccessor loggedUserAccessor;
     private final List<ListingResolver> resolvers;
     private final StorageProvider storageProvider;
     private final DeferrableStorageProvider deferrableStorageProvider;

@@ -13,8 +13,7 @@ import org.springframework.data.domain.Sort;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class QuerySingleLevelCommand extends PageRequestDto implements Command<PageResponseDto<FolderItemDto>> {
-    private int partitionId;
+public class QueryListingSingleLevelCommand extends PageRequestDto implements Command<PageResponseDto<FolderItemDto>> {
     private @NotNull String folder;
 
     @Override

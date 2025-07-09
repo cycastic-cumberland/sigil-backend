@@ -9,5 +9,4 @@ import net.cycastic.sigil.service.InputStreamResponse;
 public class DownloadAttachmentCommand implements Command<InputStreamResponse> {
     @NotNull
     private String listingPath;
-    private String encryptionKeyBase64;
 }

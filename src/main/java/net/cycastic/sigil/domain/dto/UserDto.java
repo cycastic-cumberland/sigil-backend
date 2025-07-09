@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.model.User;
 
 import java.time.OffsetDateTime;
+import java.util.Base64;
 
 @Data
 @Builder
@@ -19,6 +20,7 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String[] roles;
+    private String publicRsaKey;
     private OffsetDateTime joinedAt;
 
     public static UserDto fromDomain(@NotNull User user){
@@ -28,6 +30,7 @@ public class UserDto {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .roles(user.getRoles().split(","))
+                .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .joinedAt(user.getJoinedAt())
                 .build();
     }

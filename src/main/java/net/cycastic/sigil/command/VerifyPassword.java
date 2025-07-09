@@ -5,7 +5,6 @@ import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CredentialDto;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
-import net.cycastic.sigil.service.impl.Argon2idPasswordHasher;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 

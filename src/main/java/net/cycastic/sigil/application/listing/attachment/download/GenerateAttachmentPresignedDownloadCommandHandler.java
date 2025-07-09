@@ -22,7 +22,11 @@ public class GenerateAttachmentPresignedDownloadCommandHandler implements Comman
 
     @Override
     public AttachmentPresignedDto handle(GenerateAttachmentPresignedDownloadCommand command) {
-        var listing = attachmentListingRepository.findByListing_PartitionAndListing_ListingPath(partitionService.getPartition(), command.getListingPath())
+        var partition = partitionService.getPartition();
+        if (partition.getServerPartitionKey() != null){
+            throw new RequestException(400, "Partition has server-managed key and can only be downloaded by submitting your partition key");
+        }
+        var listing = attachmentListingRepository.findByListing_PartitionAndListing_ListingPath(partition, command.getListingPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
 
         var url = storageProvider.getBucket(listing.getBucketName())

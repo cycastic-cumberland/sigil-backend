@@ -3,9 +3,10 @@ package net.cycastic.sigil.application.partition;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.Partition;
-import net.cycastic.sigil.domain.repository.PartitionRepository;
-import net.cycastic.sigil.domain.repository.PartitionUserRepository;
+import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
+import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Service;
@@ -28,9 +29,16 @@ public class PartitionService {
             return;
         }
 
-        if ((partitionUser.getPermissions() & mask) == 0){
+        if ((partitionUser.getPermissions() & mask) != mask){
             throw new ForbiddenException();
         }
+    }
+
+    public Cipher getPartitionCipher(){
+        var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
+                        loggedUserAccessor.getUserId())
+                .orElseThrow(ForbiddenException::new);
+        return partitionUser.getPartitionUserKey();
     }
 
     public Partition getPartition(){

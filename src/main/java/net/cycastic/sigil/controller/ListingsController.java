@@ -8,7 +8,7 @@ import net.cycastic.sigil.application.listing.attachment.download.DownloadAttach
 import net.cycastic.sigil.application.listing.delete.DeleteListingCommand;
 import net.cycastic.sigil.application.listing.attachment.download.GenerateAttachmentPresignedDownloadCommand;
 import net.cycastic.sigil.application.listing.get.GetListingCommand;
-import net.cycastic.sigil.application.listing.query.QuerySingleLevelCommand;
+import net.cycastic.sigil.application.listing.query.QueryListingSingleLevelCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireProjectId;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
@@ -71,7 +71,7 @@ public class ListingsController {
     }
 
     @GetMapping("subfolders")
-    public PageResponseDto<FolderItemDto> getSubfolders(QuerySingleLevelCommand command){
+    public PageResponseDto<FolderItemDto> getSubfolders(QueryListingSingleLevelCommand command){
         return pipelinr.send(command);
     }
 

@@ -1,6 +1,7 @@
 package net.cycastic.sigil.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
@@ -21,5 +22,10 @@ public class EncryptionKeyHelper {
         var wrappedKey = key.get();
         var unwrappedKey = hashicorpVaultEphemeralAsymmetricEncryptionProvider.decrypt(wrappedKey);
         return Optional.of(Base64.getDecoder().decode(unwrappedKey));
+    }
+
+    public byte[] getPartitionKey(){
+        return tryGetEncryptionKey()
+                .orElseThrow(() -> new RequestException(400, "Partition key is not supplied"));
     }
 }

@@ -24,8 +24,6 @@ public class Tenant {
     @Column(nullable = false)
     private String name;
 
-    private String accessControlList;
-
     @Column(nullable = false)
     private UsageType usageType;
 

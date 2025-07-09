@@ -23,6 +23,7 @@ public class ApplicationConstants {
         public static int CREATE_PARTITIONS = 1;
         public static int DELETE_PARTITIONS = 2;
         public static int MODERATOR = 4;
+        public static int LIST_USERS = 8;
     }
 
     public static class PartitionPermissions {
