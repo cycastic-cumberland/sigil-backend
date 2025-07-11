@@ -34,7 +34,8 @@ public class RegisterUserCommandHandler implements Command.Handler<RegisterUserC
             throw new IllegalStateException("Invalid resend verification time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
         }
 
-        var user = userRepository.getByEmail(command.getEmail());
+        var user = userRepository.getByEmail(command.getEmail())
+                .orElseThrow(RequestException::forbidden);
         if (user != null){
             if (user.getStatus() != UserStatus.INVITED || command.getPassword() != null || command.getFirstName() != null || command.getLastName() != null){
                 throw new RequestException(409, "This email is used");

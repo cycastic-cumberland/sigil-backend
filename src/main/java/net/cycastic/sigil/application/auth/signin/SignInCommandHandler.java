@@ -6,13 +6,15 @@ import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.dto.CredentialDto;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
+
 @Component
 @RequiredArgsConstructor
 public class SignInCommandHandler implements Command.Handler<SignInCommand, CredentialDto> {
     private final UserService userService;
 
     @Override
-    public CredentialDto handle(SignInCommand signInCommand) {
-        return userService.generateCredential(signInCommand.getEmail(), signInCommand.getPassword());
+    public CredentialDto handle(SignInCommand command) {
+        return userService.generateCredential(command.getEmail(), Base64.getDecoder().decode(command.getHashedPassword()));
     }
 }

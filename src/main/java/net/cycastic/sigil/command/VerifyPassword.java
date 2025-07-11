@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CredentialDto;
+import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
@@ -25,10 +26,12 @@ public class VerifyPassword implements Callable<Integer> {
     @CommandLine.Option(names = "--password", required = true)
     private String password;
 
+    private final UserRepository userRepository;
     private final UserService userService;
     private final KeyDerivationFunction keyDerivationFunction;
 
-    public VerifyPassword(UserService userService, KeyDerivationFunction keyDerivationFunction){
+    public VerifyPassword(UserRepository userRepository, UserService userService, KeyDerivationFunction keyDerivationFunction){
+        this.userRepository = userRepository;
         this.userService = userService;
         this.keyDerivationFunction = keyDerivationFunction;
     }
@@ -56,7 +59,11 @@ public class VerifyPassword implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        var cred = userService.generateCredential(email, password);
+        var user = userRepository.getByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+        var kdfSettings = keyDerivationFunction.decodeSettings(user.getHashedPassword());
+        var result = keyDerivationFunction.derive(password.getBytes(StandardCharsets.UTF_8), kdfSettings.getSalt(), kdfSettings.getParameters());
+        var cred = userService.generateCredential(email, result.getHash());
         verifyDecryptionKey(cred, password);
         return 0;
     }

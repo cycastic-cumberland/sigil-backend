@@ -22,10 +22,10 @@ public class Argon2idPasswordHasher extends KeyDerivationFunction {
     @Builder
     @AllArgsConstructor
     public static class CipherConfigurations implements KeyDerivationFunction.Parameters {
-
         private int parallelism;
         private int memoryKb;
         private int iterations;
+
         public static CipherConfigurations getDefault(){
             return new CipherConfigurations(PARALLELISM, MEMORY_KB, ITERATIONS);
         }

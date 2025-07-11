@@ -48,15 +48,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    private static final String DUMMY_TEXT = "Hello World!";
-
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
     private final PasswordValidator passwordValidator;
     private final KeyDerivationFunction keyDerivationFunction;
     private final JwtIssuer jwtIssuer;
-    private final String dummyHash;
+    private final byte[] dummyHash;
     private final RegistrationConfigurations registrationConfigurations;
     private final UrlAccessor urlAccessor;
     private final UriPresigner uriPresigner;
@@ -73,7 +71,7 @@ public class UserService {
         this.passwordValidator = passwordValidator;
         this.keyDerivationFunction = keyDerivationFunction;
         this.jwtIssuer = jwtIssuer;
-        this.dummyHash = keyDerivationFunction.encode(DUMMY_TEXT);
+        this.dummyHash = new byte[CryptographicUtilities.KEY_LENGTH];
         this.registrationConfigurations = registrationConfigurations;
         this.urlAccessor = urlAccessor;
         this.uriPresigner = uriPresigner;
@@ -201,17 +199,20 @@ public class UserService {
                 .build();
     }
 
-    private CredentialDto wasteComputePower(){
-        keyDerivationFunction.matches(DUMMY_TEXT, dummyHash);
+    private CredentialDto wasteComputePower(byte[] submittedHash){
+        CryptographicUtilities.constantTimeEquals(dummyHash, submittedHash);
         jwtIssuer.generateTokens("", null);
         throw RequestException.withExceptionCode("C401T000");
     }
 
-    private CredentialDto generateCredential(User user, String password){
-        if (user == null || user.getPassword() == null){
-            return wasteComputePower();
+    private CredentialDto generateCredential(Optional<User> userOpt, byte[] submittedHash){
+        if (userOpt.isEmpty()){
+            return wasteComputePower(submittedHash);
         }
-        if (!keyDerivationFunction.matches(password, user.getPassword())){
+
+        var user = userOpt.get();
+        var result = keyDerivationFunction.decode(user.getHashedPassword());
+        if (!CryptographicUtilities.constantTimeEquals(submittedHash, result.getHash())){
             jwtIssuer.generateTokens("", null);
             throw RequestException.withExceptionCode("C401T000");
         }
@@ -230,7 +231,7 @@ public class UserService {
             throw new RequestException(400, "Verification email sent, please check your inbox");
         }
         if (!user.isEnabled()){
-            return wasteComputePower();
+            return wasteComputePower(submittedHash);
         }
 
 
@@ -245,13 +246,13 @@ public class UserService {
         return createCredential(user, token);
     }
 
-    public CredentialDto generateCredential(String email, String password){
+    public CredentialDto generateCredential(String email, byte[] submittedHash){
         if (registrationConfigurations.getResendVerificationLimitSeconds() <= 0){
             throw new IllegalStateException("Invalid resend verification time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
         }
 
         var user = userRepository.getByEmail(email);
-        return generateCredential(user, password);
+        return generateCredential(user, submittedHash);
     }
 
     private URI generateCompletionUrl(UserDto user, String securityStamp, OffsetDateTime notValidBefore, OffsetDateTime notValidAfter){
