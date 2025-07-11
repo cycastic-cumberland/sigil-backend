@@ -4,7 +4,6 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.validation.CommandValidator;
 import net.cycastic.sigil.domain.dto.listing.AttachmentUploadDto;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.TenantUserRepository;
@@ -50,7 +49,7 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
 
         var tenantOpt = tenantRepository.findById(loggedUserAccessor.getTenantId());
         if (tenantOpt.isEmpty() || !tenantUserRepository.existsByTenantAndUser_Id(tenantOpt.get(), loggedUserAccessor.getUserId())){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
 
         var partition = tenantOpt.get();

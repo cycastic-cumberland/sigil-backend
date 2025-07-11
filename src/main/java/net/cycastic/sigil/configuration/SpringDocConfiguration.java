@@ -7,7 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireProjectId;
-import net.cycastic.sigil.controller.annotation.UseEncryptionKey;
+import net.cycastic.sigil.controller.annotation.RequireEncryptionKey;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -67,12 +67,12 @@ public class SpringDocConfiguration {
                         .description("Requires partition ID");
                 operation.addParametersItem(header);
             }
-            if (controllerClass.isAnnotationPresent(UseEncryptionKey.class) ||
-                    handlerMethod.getBeanType().isAnnotationPresent(UseEncryptionKey.class)) {
+            if (controllerClass.isAnnotationPresent(RequireEncryptionKey.class) ||
+                    handlerMethod.getBeanType().isAnnotationPresent(RequireEncryptionKey.class)) {
                 var header = new Parameter()
                         .in("header")
                         .name(ApplicationConstants.ENCRYPTION_KEY_HEADER)
-                        .required(false)
+                        .required(true)
                         .schema(new StringSchema())
                         .description("Encryption key");
                 operation.addParametersItem(header);

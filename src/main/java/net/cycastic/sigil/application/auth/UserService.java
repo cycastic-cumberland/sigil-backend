@@ -89,7 +89,7 @@ public class UserService {
     }
 
     @SneakyThrows
-    private void reEnrollKeyPair(User user, KeyDerivationFunction.KeyDerivationResult keyEncryptionKey){
+    private void enrollUserKeyPair(User user, KeyDerivationFunction.KeyDerivationResult keyEncryptionKey){
        var keyPair = RSAKeyGenerator.INSTANCE.generate();
         user.setPublicRsaKey(keyPair.getPublicKey().getEncoded());
         var hash = keyEncryptionKey.getHash();
@@ -130,7 +130,7 @@ public class UserService {
                 .lastInvitationSent(OffsetDateTime.now())
                 .emailVerified(emailVerified)
                 .build();
-        reEnrollKeyPair(user, keyEncryptionKey);
+        enrollUserKeyPair(user, keyEncryptionKey);
         refreshSecurityStamp(user);
         userRepository.save(user);
         tenantService.createTenant(user, user.getLastName() + "'s tenant", usageType);
@@ -146,7 +146,7 @@ public class UserService {
                                           @NotNull UsageType usageType,
                                           boolean emailVerified){
         if (!ApplicationUtilities.isEmail(email)){
-            throw new RequestException(400, "Malformed email address");
+            throw RequestException.withExceptionCode("C400T000");
         }
         passwordValidator.validate(password);
         var passwordKdf = keyDerivationFunction.encode(password);
@@ -204,7 +204,7 @@ public class UserService {
     private CredentialDto wasteComputePower(){
         keyDerivationFunction.matches(DUMMY_TEXT, dummyHash);
         jwtIssuer.generateTokens("", null);
-        throw new RequestException(401, "Incorrect credential");
+        throw RequestException.withExceptionCode("C401T000");
     }
 
     private CredentialDto generateCredential(User user, String password){
@@ -213,14 +213,14 @@ public class UserService {
         }
         if (!keyDerivationFunction.matches(password, user.getPassword())){
             jwtIssuer.generateTokens("", null);
-            throw new RequestException(401, "Incorrect credential");
+            throw RequestException.withExceptionCode("C401T000");
         }
         if (!user.isEmailVerified()){
             var now = OffsetDateTime.now();
             if (user.getLastInvitationSent() != null){
                 var secondsElapsed = Duration.between(user.getLastInvitationSent(), now).getSeconds();
                 if (secondsElapsed < registrationConfigurations.getResendVerificationLimitSeconds()){
-                    throw new RequestException(401, "Email not verified, please restart registration");
+                    throw RequestException.withExceptionCode("C401T001");
                 }
             }
 
@@ -261,7 +261,7 @@ public class UserService {
                 .queryParam("securityStamp", ApplicationUtilities.encodeURIComponent(securityStamp))
                 .queryParam("notValidBefore", notValidBefore.toInstant().getEpochSecond())
                 .queryParam("notValidAfter", notValidAfter.toInstant().getEpochSecond())
-                .build()
+                .build(true)
                 .toUri();
         return uriPresigner.signUri(backendCompletionUri);
     }

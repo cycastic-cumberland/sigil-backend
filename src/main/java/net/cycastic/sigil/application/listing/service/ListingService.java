@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.configuration.S3Configurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
+import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Partition;
 import net.cycastic.sigil.domain.model.listing.ListingType;
@@ -19,7 +19,7 @@ import net.cycastic.sigil.domain.repository.listing.*;
 import net.cycastic.sigil.domain.dto.listing.ListingDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
-import net.cycastic.sigil.service.LoggedUserAccessor;
+import net.cycastic.sigil.service.LimitProvider;
 import net.cycastic.sigil.service.StorageProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -40,8 +40,6 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ListingService {
-    public static final String TEMP_FILE_PREFIX = "tmp/";
-
     private static final Cache<String, Pattern> PATTERN_CACHE = Caffeine.newBuilder()
             .maximumSize(512) // TODO: Ways to override this
             .build();
@@ -52,6 +50,7 @@ public class ListingService {
     private final List<ListingResolver> resolvers;
     private final StorageProvider storageProvider;
     private final DeferrableStorageProvider deferrableStorageProvider;
+    private final LimitProvider limitProvider;
 
     private final PartitionService partitionService;
     private final AttachmentListingRepository attachmentListingRepository;
@@ -142,11 +141,13 @@ public class ListingService {
                 .createdAt(OffsetDateTime.now())
                 .build();
         var fileExt = FilenameUtils.getExtension(path);
+        var objectUuid = fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s.%s", UUID.randomUUID(), fileExt);
+        objectUuid = ApplicationUtilities.shardObjectKey(objectUuid);
         var attachmentListing = AttachmentListing.builder()
                 .listing(listing)
                 .bucketName(s3Configurations.getAttachmentBucketName())
                 .bucketRegion(s3Configurations.getRegionName())
-                .objectKey(fileExt.isEmpty() ? UUID.randomUUID().toString() : String.format("%s%s.%s", TEMP_FILE_PREFIX, UUID.randomUUID(), fileExt))
+                .objectKey(objectUuid)
                 .mimeType(mimeType)
                 .contentLength(contentLength)
                 .build();
@@ -160,7 +161,7 @@ public class ListingService {
             attachment.setUploadCompleted(false);
             attachmentListingRepository.save(attachment);
 
-            var size = storageProvider.getBucket(attachment.getBucketName()).getObjectSize(attachment.getObjectKey());
+            var size = attachment.getContentLength();
             var project = listing.getPartition().getTenant();
             project.setAccumulatedAttachmentStorageUsage(project.getAccumulatedAttachmentStorageUsage() - size);
             deferrableStorageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
@@ -184,5 +185,48 @@ public class ListingService {
                 deleteListingNoTransaction(listing, attachment);
             }
         }
+    }
+
+    @Transactional
+    public void markAttachmentUploadAsCompleted(AttachmentListing listing, boolean performCheck){
+        var tenant = tenantRepository.findByAttachmentListing(listing)
+                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
+        if (listing.isUploadCompleted()){
+            return;
+        }
+
+        if (performCheck){
+            var objectExists = false;
+            try {
+                objectExists = storageProvider.getBucket(listing.getBucketName()).exists(listing.getObjectKey());
+            } catch (software.amazon.awssdk.services.s3.model.S3Exception e){
+                if (e.statusCode() != 400){
+                    throw new RequestException(e.statusCode(), e, e.getLocalizedMessage());
+                }
+
+                objectExists = true;
+            }
+
+            if (!objectExists){
+                throw RequestException.withExceptionCode("C400T007");
+            }
+        }
+
+        var size = listing.getContentLength();
+        var limit = limitProvider.extractUsageDetails(tenant);
+        if (limit.getPerAttachmentSize() != null && size > limit.getPerAttachmentSize()){
+            logger.error("File is larger than permitted limit. Size: {} byte(s), limit: {} byte(s)",
+                    size, limit.getPerAttachmentSize());
+            throw new RequestException(413, "File is larger than permitted limit");
+        }
+        var acc = tenant.getAccumulatedAttachmentStorageUsage() + size;
+        if (limit.getAllAttachmentSize() != null && acc > limit.getAllAttachmentSize()){
+            throw new RequestException(413, "Accumulated storage usage exceeded");
+        }
+
+        listing.setUploadCompleted(true);
+        attachmentListingRepository.save(listing);
+        tenant.setAccumulatedAttachmentStorageUsage(acc);
+        tenantRepository.save(tenant);
     }
 }

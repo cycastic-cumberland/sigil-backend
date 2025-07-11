@@ -31,7 +31,7 @@ public class CompleteUserRegistrationCommandHandler implements Command.Handler<C
     public @Null Object handle(CompleteUserRegistrationCommand command) {
         var url = loggedUserAccessor.getRequestPath();
         if (!uriPresigner.verifyUri(URI.create(url))){
-            throw new RequestException(401, "Signature verification failed");
+            throw RequestException.withExceptionCode("C403T002");
         }
 
         var now = OffsetDateTime.now();

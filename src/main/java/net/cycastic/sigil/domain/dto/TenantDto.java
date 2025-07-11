@@ -17,6 +17,8 @@ public class TenantDto {
     @NotNull
     private Integer id;
 
+    private String tenantName;
+
     @NotNull
     private long accumulatedAttachmentStorageUsage;
 
@@ -30,6 +32,7 @@ public class TenantDto {
     public static TenantDto fromDomain(Tenant tenant){
         return TenantDto.builder()
                 .id(tenant.getId())
+                .tenantName(tenant.getName())
                 .createdAt(tenant.getCreatedAt())
                 .updatedAt(tenant.getUpdatedAt())
                 .removedAt(tenant.getRemovedAt())

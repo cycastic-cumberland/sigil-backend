@@ -36,6 +36,12 @@ public class Partition {
     @JoinColumn(name = "server_partition_key_id")
     private Cipher serverPartitionKey;
 
+    @Column(name = "md5Digest", columnDefinition = "BINARY(16)", nullable = false)
+    private byte[] keyMd5Digest;
+
+    @Column(name = "sha256Digest", columnDefinition = "BINARY(32)", nullable = false)
+    private byte[] keySha256Digest;
+
     @OneToMany(mappedBy = "partition")
     private Set<Listing> listings;
 

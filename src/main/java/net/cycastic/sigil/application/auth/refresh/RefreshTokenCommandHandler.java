@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.User;
 import net.cycastic.sigil.domain.repository.UserRepository;
@@ -29,13 +28,13 @@ public class RefreshTokenCommandHandler implements Command.Handler<RefreshTokenC
 
     private static void verifyCurrentStatus(Claims claims, User user){
         if (!user.isEnabled()){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
         var currentStamp = Base64.getEncoder().encodeToString(user.getSecurityStamp());
         if (!claims.containsKey(ApplicationConstants.SECURITY_STAMP_ENTRY) ||
             !(claims.get(ApplicationConstants.SECURITY_STAMP_ENTRY) instanceof String claimedStamp) ||
             !currentStamp.equals(claimedStamp)){
-            throw new ForbiddenException("For your account's safety, please sign in again");
+            throw RequestException.withExceptionCode("C403T001");
         }
     }
 

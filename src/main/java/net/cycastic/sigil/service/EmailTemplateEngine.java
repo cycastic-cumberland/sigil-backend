@@ -22,14 +22,14 @@ public interface EmailTemplateEngine {
         HashMap<String, Object> map = HashMap.newHashMap(emailParameterDtos.length);
         for (var parameter: emailParameterDtos){
             if (map.containsKey(parameter.getName())){
-                throw new RequestException(400, "Email parameter %s already declared", parameter.getName());
+                throw RequestException.withExceptionCode("C400T001", parameter.getName());
             }
 
             if (parameter.getType() == EmailParameterType.DECIMAL){
                 try {
                     map.put(parameter.getName(), Double.parseDouble(parameter.getValue()));
                 } catch (NumberFormatException e){
-                    throw new RequestException(400, "Undefined decimal format: %s", parameter.getValue());
+                    throw RequestException.withExceptionCode("C400T002", parameter.getValue());
                 }
 
                 continue;

@@ -16,9 +16,10 @@ public class AttachmentDto extends ListingDto{
     private String bucketRegion;
     private String objectKey;
     private String mimeType;
+    private long contentLength;
 
     public static AttachmentDto fromDomain(AttachmentListing domain, Listing originalListing){
-        var dto = new AttachmentDto(domain.getBucketName(), domain.getBucketRegion(), domain.getObjectKey(), domain.getMimeType());
+        var dto = new AttachmentDto(domain.getBucketName(), domain.getBucketRegion(), domain.getObjectKey(), domain.getMimeType(), domain.getContentLength());
         dto.fromListing(originalListing);
 
         return dto;

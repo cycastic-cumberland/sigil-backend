@@ -4,7 +4,6 @@ import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.dto.IdDto;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.repository.TenantRepository;
@@ -50,7 +49,7 @@ public class SaveTenantCommandHandler implements Command.Handler<SaveTenantComma
             if (userId == null){
                 command.setUserId(loggedUserAccessor.getUserId());
             } else if (!loggedUserAccessor.isAdmin()){ // only admins can have multiple tenants
-                throw new ForbiddenException();
+                throw RequestException.forbidden();
             }
             return new IdDto(createTenant(command));
         }
@@ -60,7 +59,7 @@ public class SaveTenantCommandHandler implements Command.Handler<SaveTenantComma
                 .orElseThrow(() -> new RequestException(404, "Could not find tenant"));
         if (!loggedUserAccessor.isAdmin() &&
                 !project.getOwner().getId().equals(userId)){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
 
         return new IdDto(updateTenant(command, project));

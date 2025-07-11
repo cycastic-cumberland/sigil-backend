@@ -7,6 +7,11 @@ import net.cycastic.sigil.service.InputStreamResponse;
 
 @Data
 public class DownloadAttachmentCommand implements Command<InputStreamResponse> {
+    private int listingId;
     @NotNull
-    private String listingPath;
+    private String encryptionKey;
+    @NotNull
+    private String fileName;
+    private long notValidBefore;
+    private long notValidAfter;
 }

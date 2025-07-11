@@ -4,7 +4,6 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.dto.PartitionDto;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
@@ -24,10 +23,10 @@ public class GetPartitionCommandHandler implements Command.Handler<GetPartitionC
                 .orElseThrow(() -> new RequestException(404, "Partition not found"));
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(partition.getId(),
                         loggedUserAccessor.getUserId())
-                .orElseThrow(ForbiddenException::new);
+                .orElseThrow(RequestException::forbidden);
         var partitionDto = PartitionDto.fromDomain(partition);
         var cipher = CipherDto.fromDomain(partitionUser.getPartitionUserKey());
         partitionDto.setUserPartitionKey(cipher);
-        return null;
+        return partitionDto;
     }
 }

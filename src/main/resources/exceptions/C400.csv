@@ -1,0 +1,11 @@
+exceptionCode,statusCode,en,vi
+C400T000,400,Malformed email address,
+C400T001,400,Email parameter %s already declared,
+C400T002,400,Undefined decimal format: %s,
+C400T003,400,Data is too long,
+C400T004,400,Please retry in %d second(s),
+C400T005,400,Partition has server-managed key and can only be accessed by submitting your partition key,
+C400T006,400,Invalid partition key checksum,
+C400T007,400,Object not uploaded,
+C400T008,400,Partition does not have server-managed key and can only be accessed directly,
+C400T009,400,Partition key is not supplied,

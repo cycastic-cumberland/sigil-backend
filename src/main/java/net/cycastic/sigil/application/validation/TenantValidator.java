@@ -2,7 +2,7 @@ package net.cycastic.sigil.application.validation;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
+import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
@@ -23,7 +23,7 @@ public class TenantValidator implements CommandValidator{
         }
 
         if (!tenantUserRepository.existsByTenant_IdAndUser_Id(tenantIdOpt.getAsInt(), loggedUserAccessor.getUserId())){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
 
         var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
@@ -33,7 +33,7 @@ public class TenantValidator implements CommandValidator{
         if (!partitionUserRepository.existsByPartition_Tenant_IdAndPartition_IdAndUser_Id(tenantIdOpt.getAsInt(),
                 partitionIdOpt.getAsInt(),
                 loggedUserAccessor.getUserId())){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
     }
 

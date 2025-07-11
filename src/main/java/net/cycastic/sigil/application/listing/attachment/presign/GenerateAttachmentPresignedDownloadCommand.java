@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.listing.attachment.download;
+package net.cycastic.sigil.application.listing.attachment.presign;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +10,8 @@ import org.springframework.lang.Nullable;
 public class GenerateAttachmentPresignedDownloadCommand implements Command<AttachmentPresignedDto> {
     @NotNull
     private String listingPath;
+    @NotNull
+    private PresignType presignType;
     @Nullable
     private String keyMd5;
 }

@@ -12,6 +12,8 @@ import net.cycastic.sigil.service.StorageProvider;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +27,12 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
         var partition = partitionService.getPartition();
         if (partition.getServerPartitionKey() != null){
-            throw new RequestException(400, "Partition has server-managed key and can only be uploaded by submitting your partition key");
+            throw RequestException.withExceptionCode("C400T005");
+        }
+
+        var submittedMd5 = Base64.getDecoder().decode(command.getKeyMd5());
+        if (!Arrays.equals(submittedMd5, partition.getKeyMd5Digest())){
+            throw RequestException.withExceptionCode("C400T006");
         }
 
         var path = command.getPath();
@@ -39,7 +46,7 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
                         path,
                         OffsetDateTime.now().plusMinutes(2),
                         command.getContentLength(),
-                        command.getKeyMd5());
+                        submittedMd5);
         return AttachmentPresignedDto.builder()
                 .id(incompleteAttachment.getId())
                 .url(uploadUrl)

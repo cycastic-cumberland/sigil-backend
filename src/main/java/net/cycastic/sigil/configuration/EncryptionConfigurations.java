@@ -1,9 +1,7 @@
 package net.cycastic.sigil.configuration;
 
 import net.cycastic.sigil.configuration.auth.JwtConfiguration;
-import net.cycastic.sigil.service.DecryptionProvider;
-import net.cycastic.sigil.service.EncryptionProvider;
-import net.cycastic.sigil.service.Presigner;
+import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.AsymmetricJwtVerifier;
 import net.cycastic.sigil.service.auth.JwtIssuer;
 import net.cycastic.sigil.service.auth.JwtVerifier;
@@ -24,6 +22,8 @@ public class EncryptionConfigurations {
     private final Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider;
     private final Lazy<EncryptionProvider> encryptionProvider;
     private final Lazy<DecryptionProvider> decryptionProvider;
+    private final Lazy<AsymmetricEncryptionProvider> asymmetricEncryptionProviderLazy;
+    private final Lazy<AsymmetricDecryptionProvider> asymmetricDecryptionProviderLazy;
     private final Lazy<StandardJwtService> jwtService;
     private final Lazy<HashicorpVaultPresigner> hashicorpVaultPresigner;
     private final Lazy<SymmetricPresigner> symmetricPresigner;
@@ -40,6 +40,8 @@ public class EncryptionConfigurations {
         Lazy<SymmetricEncryptionProvider> symmetricEncryptionProvider = null;
         Lazy<EncryptionProvider> encryptionProvider = null;
         Lazy<DecryptionProvider> decryptionProvider = null;
+        Lazy<AsymmetricEncryptionProvider> asymmetricEncryptionProviderLazy = null;
+        Lazy<AsymmetricDecryptionProvider> asymmetricDecryptionProviderLazy = null;
         Lazy<StandardJwtService> jwtService = null;
         Lazy<HashicorpVaultPresigner> hashicorpVaultPresigner = null;
         Lazy<SymmetricPresigner> symmetricPresigner = null;
@@ -50,6 +52,8 @@ public class EncryptionConfigurations {
             hashicorpVaultEphemeralAsymmetricEncryptionProvider = Lazy.of(() -> new HashicorpVaultEphemeralAsymmetricEncryptionProvider(hashicorpVaultConfiguration));
             encryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
             decryptionProvider = Lazy.of(hashicorpVaultEncryptionProvider);
+            asymmetricEncryptionProviderLazy = Lazy.of(hashicorpVaultEphemeralAsymmetricEncryptionProvider);
+            asymmetricDecryptionProviderLazy = Lazy.of(hashicorpVaultEphemeralAsymmetricEncryptionProvider);
 
             hashicorpVaultPresigner = Lazy.of(() -> new HashicorpVaultPresigner(hashicorpVaultConfiguration));
             presigners.add(hashicorpVaultPresigner);
@@ -76,12 +80,14 @@ public class EncryptionConfigurations {
             presigners.add(symmetricPresigner);
         }
 
-        if (encryptionProvider == null || decryptionProvider == null){
+        if (encryptionProvider == null || decryptionProvider == null || asymmetricDecryptionProviderLazy == null || asymmetricDecryptionProviderLazy == null){
             throw new IllegalStateException("No encryption setting configured");
         }
 
         this.encryptionProvider = encryptionProvider;
         this.decryptionProvider = decryptionProvider;
+        this.asymmetricEncryptionProviderLazy = asymmetricEncryptionProviderLazy;
+        this.asymmetricDecryptionProviderLazy = asymmetricDecryptionProviderLazy;
         this.hashicorpVaultEncryptionProvider = hashicorpVaultEncryptionProvider == null
                 ? Lazy.of(() -> { throw new UnsupportedOperationException("This encryption provider is not supported");})
                 : hashicorpVaultEncryptionProvider;
@@ -156,6 +162,16 @@ public class EncryptionConfigurations {
     @Bean
     public synchronized HashicorpVaultEphemeralAsymmetricEncryptionProvider hashicorpVaultEphemeralAsymmetricEncryptionProvider(){
         return hashicorpVaultEphemeralAsymmetricEncryptionProvider.get();
+    }
+
+    @Bean
+    public synchronized AsymmetricEncryptionProvider asymmetricEncryptionProvider(){
+        return asymmetricEncryptionProviderLazy.get();
+    }
+
+    @Bean
+    public synchronized AsymmetricDecryptionProvider asymmetricDecryptionProvider(){
+        return asymmetricDecryptionProviderLazy.get();
     }
 
     @Bean

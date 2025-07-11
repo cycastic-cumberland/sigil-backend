@@ -14,7 +14,9 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.http.ContentStreamProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -27,6 +29,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 @Lazy
 @Component
@@ -53,7 +56,7 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
 
         @Override
         @HandleS3Exception
-        public String generatePresignedUploadPath(String fileKey, String fileName, OffsetDateTime expiration, long objectLength, String encryptionKeyMd5Checksum) {
+        public String generatePresignedUploadPath(String fileKey, String fileName, OffsetDateTime expiration, long objectLength, byte[] encryptionKeyMd5Checksum) {
             var ttl = Duration.between(OffsetDateTime.now(), expiration);
             var requestBuilder = PutObjectRequest.builder()
                     .bucket(bucketName)
@@ -63,7 +66,7 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
             if (encryptionKeyMd5Checksum != null){
                 requestBuilder = requestBuilder
                         .sseCustomerAlgorithm(DEFAULT_SSE_C_ALGORITHM)
-                        .sseCustomerKeyMD5(encryptionKeyMd5Checksum);
+                        .sseCustomerKeyMD5(Base64.getEncoder().encodeToString(encryptionKeyMd5Checksum));
             }
 
             var request = requestBuilder.build();
@@ -104,6 +107,26 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
                     r.signatureDuration(ttl).getObjectRequest(getReq)
             );
             return presignedGet.url().toString();
+        }
+
+        @Override
+        public void upload(String fileKey, String contentType, long contentLength, Supplier<InputStream> streamSupplier, byte[] decryptionKey) {
+            var requestBuilder = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .contentType(contentType)
+                    .contentLength(contentLength);
+            if (decryptionKey != null){
+                var keyChecksum = CryptographicUtilities.digestMd5(decryptionKey);
+                var decryptionKeyBase64 = Base64.getEncoder().encodeToString(decryptionKey);
+                var keyChecksumBase64 = Base64.getEncoder().encodeToString(keyChecksum);
+                requestBuilder = requestBuilder
+                        .sseCustomerAlgorithm(DEFAULT_SSE_C_ALGORITHM)
+                        .sseCustomerKeyMD5(keyChecksumBase64)
+                        .sseCustomerKey(decryptionKeyBase64);
+            }
+
+            provider.s3Client.putObject(requestBuilder.build(), RequestBody.fromContentProvider(streamSupplier::get, contentType));
         }
 
         @Override

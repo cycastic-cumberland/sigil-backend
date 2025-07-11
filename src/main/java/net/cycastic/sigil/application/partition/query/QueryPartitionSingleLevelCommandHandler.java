@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.partition.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.domain.dto.FolderItemDto;
 import net.cycastic.sigil.domain.dto.FolderItemType;
@@ -14,9 +15,13 @@ import org.springframework.stereotype.Component;
 public class QueryPartitionSingleLevelCommandHandler implements Command.Handler<QueryPartitionSingleLevelCommand, PageResponseDto<FolderItemDto>> {
     private final PartitionRepository partitionRepository;
     private final TenantService tenantService;
+    private final UserService userService;
 
     @Override
     public PageResponseDto<FolderItemDto> handle(QueryPartitionSingleLevelCommand command) {
+        if (command.getOrderBy() != null){
+            command.setOrderBy(command.getOrderBy().replaceAll("type:", "isPartition:"));
+        }
         var folder = command.getFolder();
         if (!folder.startsWith("/")){
             folder = '/' + folder;
@@ -25,11 +30,11 @@ public class QueryPartitionSingleLevelCommandHandler implements Command.Handler<
             folder = folder + '/';
         }
 
-        var page = partitionRepository.findItems(tenantService.getTenant(), folder, command.toPageable());
+        var page = partitionRepository.findItems(tenantService.getTenant(), folder, userService.getUser(), command.toPageable());
         return PageResponseDto.fromDomain(page,
                 f -> new FolderItemDto(f.getName(),
                         f.getModifiedAt(),
-                        f.getIsFolder() ? FolderItemType.FOLDER : FolderItemType.PARTITION,
+                        f.getIsPartition() ? FolderItemType.PARTITION : FolderItemType.FOLDER,
                         false));
     }
 }

@@ -41,9 +41,9 @@ public class SigilApplication implements CommandLineRunner {
         public UserDetailsService userDetailsService(){
             return username -> {
                 var id = ApplicationUtilities.tryParseInt(username)
-                        .orElseThrow(() -> new RequestException(404, "Could not find user"));
+                        .orElseThrow(() -> RequestException.withExceptionCode("C404T000"));
                 return userRepository.findById(id)
-                        .orElseThrow(() -> new RequestException(404, "Could not find user"));
+                        .orElseThrow(() -> RequestException.withExceptionCode("C404T000"));
             };
         }
     }

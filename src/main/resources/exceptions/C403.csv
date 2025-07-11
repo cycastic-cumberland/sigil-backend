@@ -1,0 +1,4 @@
+exceptionCode,statusCode,en,vi
+C403T000,403,Not enough permission to perform this action,
+C403T001,403,"For your account's safety, please sign in again",
+C403T002,403,Signature verification failed,

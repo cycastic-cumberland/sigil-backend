@@ -12,6 +12,7 @@ public class PartitionDto {
     private int id;
     private String partitionPath;
     private CipherDto userPartitionKey;
+    private boolean serverSideKeyDerivation;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -20,6 +21,7 @@ public class PartitionDto {
         return PartitionDto.builder()
                 .id(partition.getId())
                 .partitionPath(partition.getPartitionPath())
+                .serverSideKeyDerivation(partition.getServerPartitionKey() != null)
                 .createdAt(partition.getCreatedAt())
                 .updatedAt(partition.getUpdatedAt())
                 .build();

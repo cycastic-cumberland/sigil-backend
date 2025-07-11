@@ -57,6 +57,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers(new RequestMatcher[]{
                         new AntPathRequestMatcher("/api/auth/**"),
+                        new AntPathRequestMatcher("/api/presigned/**"),
                         new AntPathRequestMatcher("/api/storage/**"),
                         new AntPathRequestMatcher("/.well-known/**"),
                         new AntPathRequestMatcher("/v2/api-docs"),

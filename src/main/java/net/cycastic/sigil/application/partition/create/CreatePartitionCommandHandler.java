@@ -55,14 +55,15 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
 
         tenantService.checkPermission(ApplicationConstants.TenantPermissions.CREATE_PARTITIONS);
         var tenant = tenantService.getTenant();
+
         var partition = Partition.builder()
                 .tenant(tenant)
                 .partitionPath(command.getPartitionPath())
                 .createdAt(OffsetDateTime.now())
                 .build();
-
         var partitionKey = new byte[CryptographicUtilities.KEY_LENGTH];
         CryptographicUtilities.generateRandom(partitionKey);
+        var listingKey = partitionKey;
 
         var user = userService.getUser();
         PublicKey userPublicKey;
@@ -76,11 +77,14 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
         if (command.isServerSideKeyDerivation()){
             var serverPartitionKey = new byte[CryptographicUtilities.KEY_LENGTH];
             CryptographicUtilities.generateRandom(serverPartitionKey);
+            listingKey = CryptographicUtilities.deriveKey(CryptographicUtilities.KEY_LENGTH, partitionKey, serverPartitionKey);
             var serverPartitionCipher = cipherService.createServerManagedKey(serverPartitionKey);
 
             cipherRepository.save(serverPartitionCipher);
             partition.setServerPartitionKey(serverPartitionCipher);
         }
+        partition.setKeyMd5Digest(CryptographicUtilities.digestMd5(listingKey));
+        partition.setKeySha256Digest(CryptographicUtilities.digestSha256(listingKey));
 
         cipherRepository.save(partitionUserKey);
         partitionRepository.save(partition);

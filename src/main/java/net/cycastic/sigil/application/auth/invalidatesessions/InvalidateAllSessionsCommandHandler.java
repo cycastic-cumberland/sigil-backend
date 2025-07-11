@@ -4,7 +4,6 @@ import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.auth.UserService;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
@@ -24,7 +23,7 @@ public class InvalidateAllSessionsCommandHandler implements Command.Handler<Inva
         var currentUserId = loggedUserAccessor.getUserId();
         if (!loggedUserAccessor.isAdmin() &&
             currentUserId != command.getUserId()){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
 
         var user = userRepository.findById(command.getUserId())

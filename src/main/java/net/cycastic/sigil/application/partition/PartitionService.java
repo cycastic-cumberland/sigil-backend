@@ -1,7 +1,6 @@
 package net.cycastic.sigil.application.partition;
 
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.Partition;
@@ -22,7 +21,7 @@ public class PartitionService {
     public void checkPermission(int mask){
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
                 loggedUserAccessor.getUserId())
-                .orElseThrow(ForbiddenException::new);
+                .orElseThrow(RequestException::forbidden);
         var tenant = tenantRepository.findByPartitionUser(partitionUser)
                 .orElseThrow(() -> new RequestException(404, "Tenant not found"));
         if (tenant.getOwner().getId().equals(partitionUser.getUser().getId())){
@@ -30,15 +29,8 @@ public class PartitionService {
         }
 
         if ((partitionUser.getPermissions() & mask) != mask){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
-    }
-
-    public Cipher getPartitionCipher(){
-        var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
-                        loggedUserAccessor.getUserId())
-                .orElseThrow(ForbiddenException::new);
-        return partitionUser.getPartitionUserKey();
     }
 
     public Partition getPartition(){

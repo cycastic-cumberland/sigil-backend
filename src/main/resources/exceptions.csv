@@ -1,0 +1,6 @@
+exceptionCode,statusCode,en,vi
+C400T000,400,Malformed email address,
+C401T000,401,Incorrect credential,
+C401T001,401,"Email not verified, please restart registration",
+C403T000,403,Not enough permission to perform this action,
+C404T000,404,Could not find user,

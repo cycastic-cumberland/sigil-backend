@@ -2,7 +2,6 @@ package net.cycastic.sigil.application.tenant.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.domain.repository.UserRepository;
@@ -24,7 +23,7 @@ public class QueryTenantCommandHandler implements Command.Handler<QueryTenantCom
         if (userId != null &&
                 !loggedUserAccessor.isAdmin() &&
                 !userId.equals(loggedUserAccessor.getUserId())){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
 
         if (userId == null){

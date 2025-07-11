@@ -3,7 +3,6 @@ package net.cycastic.sigil.application.tenant.delete;
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.TenantRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
@@ -24,7 +23,7 @@ public class DeleteTenantCommandHandler implements Command.Handler<DeleteTenantC
                 .orElseThrow(() -> new RequestException(404, "Could not find tenant"));
         if (!loggedUserAccessor.isAdmin() &&
                 !project.getOwner().getId().equals(userId)){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
 
         project.setRemovedAt(OffsetDateTime.now());

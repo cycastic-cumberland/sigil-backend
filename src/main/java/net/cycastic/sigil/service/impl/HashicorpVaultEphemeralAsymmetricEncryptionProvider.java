@@ -6,6 +6,8 @@ import net.cycastic.sigil.configuration.HashicorpVaultConfiguration;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.dto.PemDto;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.service.AsymmetricDecryptionProvider;
+import net.cycastic.sigil.service.AsymmetricEncryptionProvider;
 import net.cycastic.sigil.service.DecryptionProvider;
 import net.cycastic.sigil.service.EncryptionProvider;
 import org.slf4j.Logger;
@@ -20,7 +22,7 @@ import java.util.Base64;
 import java.util.Map;
 
 
-public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends HashicorpVaultEncryptionProvider implements EncryptionProvider, DecryptionProvider {
+public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends HashicorpVaultEncryptionProvider implements AsymmetricEncryptionProvider, AsymmetricDecryptionProvider {
     private static final Logger logger = LoggerFactory.getLogger(HashicorpVaultEphemeralAsymmetricEncryptionProvider.class);
     private final int latestVersion;
     private final String publicKeyPem;

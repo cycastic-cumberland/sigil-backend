@@ -2,7 +2,6 @@ package net.cycastic.sigil.application.tenant;
 
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.exception.ForbiddenException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.*;
 import net.cycastic.sigil.domain.repository.TenantRepository;
@@ -46,9 +45,9 @@ public class TenantService {
         }
 
         var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
-                .orElseThrow(ForbiddenException::new);
+                .orElseThrow(RequestException::forbidden);
         if ((tenantUser.getPermissions() & mask) != mask){
-            throw new ForbiddenException();
+            throw RequestException.forbidden();
         }
     }
 

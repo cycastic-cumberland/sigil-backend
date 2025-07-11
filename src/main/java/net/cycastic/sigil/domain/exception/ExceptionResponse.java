@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 public class ExceptionResponse {
     private OffsetDateTime timestamp;
     private int status;
+    private String exceptionCode;
     private String message;
     private String path;
     private String stackTrace;

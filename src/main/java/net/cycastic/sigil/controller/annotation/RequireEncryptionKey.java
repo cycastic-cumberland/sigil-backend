@@ -16,7 +16,8 @@ import java.lang.annotation.Target;
         @Parameter(
                 name = ApplicationConstants.ENCRYPTION_KEY_HEADER,
                 in = ParameterIn.HEADER,
-                description = "May require encryption key"
+                required = true,
+                description = "Require encryption key"
         )
 })
-public @interface UseEncryptionKey { }
+public @interface RequireEncryptionKey { }

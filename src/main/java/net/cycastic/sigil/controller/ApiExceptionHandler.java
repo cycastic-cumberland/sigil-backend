@@ -52,6 +52,7 @@ public class ApiExceptionHandler {
         var includeStackTrace = configurations.isShowStackTrace();
         var errorBuilder = ExceptionResponse.builder()
                 .timestamp(currentDateTime)
+                .exceptionCode(ex.getExceptionCode())
                 .status(ex.getResponseCode())
                 .message(ex.getMessage())
                 .path(request.getRequestURI());
@@ -66,9 +67,9 @@ public class ApiExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleJpaViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
         var root = ex.getRootCause();
         if (root != null && root.getMessage() != null && DATA_TOO_LONG_PATTERN.matcher(root.getMessage()).find()) {
-            return handleGeneric(new RequestException(400, "Data is too long"), request);
+            return handleGeneric(RequestException.withExceptionCode("C400T003", ex), request);
         } else {
-            return handleGeneric(new RequestException(409, "Data conflict detected"), request);
+            return handleGeneric(RequestException.withExceptionCode("C409T000", ex), request);
         }
     }
 

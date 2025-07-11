@@ -16,7 +16,7 @@ public class QueryPartitionSingleLevelCommand extends PageRequestDto implements 
 
     @Override
     protected Sort getDefaultSort() {
-        return Sort.by("type").ascending()
+        return Sort.by("isPartition").ascending()
                 .and(Sort.by("name").ascending());
     }
 }
