@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
                 name = ApplicationConstants.TENANT_ID_HEADER,
                 in = ParameterIn.HEADER,
                 required = true,
-                description = "Requires project ID"
+                description = "Requires tenant ID"
         )
 })
-public @interface RequireProjectId { }
+public @interface RequireTenantId { }

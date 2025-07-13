@@ -47,7 +47,7 @@ public interface PartitionRepository extends JpaRepository<Partition, Integer> {
                    END AS modifiedAt
                    FROM PartitionUser pu
                    WHERE pu.partition.tenant = :tenant
-                      AND (LOCATE('/', pu.partition.partitionPath, LENGTH(:folder) + 1) != 0 OR pu.user = :user)
+                      AND pu.user = :user
                       AND pu.partition.partitionPath LIKE CONCAT(:folder, '%')
                       AND LENGTH(pu.partition.partitionPath) > LENGTH(:folder)
                       AND pu.partition.removedAt IS NULL
@@ -67,7 +67,7 @@ public interface PartitionRepository extends JpaRepository<Partition, Integer> {
                            )
                            FROM PartitionUser pu
                            WHERE pu.partition.tenant = :tenant
-                              AND (LOCATE('/', pu.partition.partitionPath, LENGTH(:folder) + 1) != 0 OR pu.user = :user)
+                              AND pu.user = :user
                               AND pu.partition.partitionPath LIKE CONCAT(:folder, '%')
                               AND LENGTH(pu.partition.partitionPath) > LENGTH(:folder)
                               AND pu.partition.removedAt IS NULL

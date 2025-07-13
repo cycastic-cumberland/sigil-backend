@@ -5,6 +5,7 @@ import lombok.Data;
 import net.cycastic.sigil.domain.model.Partition;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -13,6 +14,7 @@ public class PartitionDto {
     private String partitionPath;
     private CipherDto userPartitionKey;
     private boolean serverSideKeyDerivation;
+    private List<String> permissions;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;

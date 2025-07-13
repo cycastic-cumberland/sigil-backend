@@ -13,7 +13,7 @@ import net.cycastic.sigil.application.listing.attachment.presign.GenerateAttachm
 import net.cycastic.sigil.application.listing.get.GetListingCommand;
 import net.cycastic.sigil.application.listing.query.QueryListingSingleLevelCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
-import net.cycastic.sigil.controller.annotation.RequireProjectId;
+import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.controller.annotation.RequireEncryptionKey;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
@@ -28,7 +28,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 @RestController
-@RequireProjectId
+@RequireTenantId
 @RequirePartitionId
 @RequiredArgsConstructor
 @RequestMapping("api/listings")

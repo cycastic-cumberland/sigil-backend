@@ -12,6 +12,7 @@ import net.cycastic.sigil.application.auth.register.CompleteUserRegistrationComm
 import net.cycastic.sigil.application.auth.register.RegisterUserCommand;
 import net.cycastic.sigil.application.auth.self.GetSelfCommand;
 import net.cycastic.sigil.application.auth.signin.SignInCommand;
+import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.CredentialDto;
 import net.cycastic.sigil.domain.dto.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.PemDto;
@@ -60,6 +61,7 @@ public class AuthController {
     }
 
     @GetMapping
+    @RequireTenantId
     public UserDto getUser(GetUserCommand command){
         return pipelinr.send(command);
     }

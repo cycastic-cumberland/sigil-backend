@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
+import static net.cycastic.sigil.domain.ApplicationConstants.TenantPermissions.MODERATE;
 
 @Data
 @Builder
@@ -26,4 +28,7 @@ public class TenantUser {
     private User user;
 
     private int permissions;
+
+    @Formula("permissions & " + MODERATE + " = " + MODERATE)
+    private boolean isModerator;
 }

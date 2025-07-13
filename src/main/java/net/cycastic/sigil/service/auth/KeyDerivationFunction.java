@@ -93,12 +93,16 @@ public abstract class KeyDerivationFunction implements PasswordEncoder {
         };
     }
 
-    public String encode(byte[] ikm, Parameters parameters){
-        var salt = new byte[SALT_SIZE];
-        CryptographicUtilities.generateRandom(salt);
+    public String encode(byte[] ikm, byte[] salt, Parameters parameters){
         var result = derive(ikm, salt, parameters);
         var encoder = Base64.getEncoder();
         return String.join("$", encodeSettings(result), encoder.encodeToString(result.getHash()));
+    }
+
+    public String encode(byte[] ikm, Parameters parameters){
+        var salt = new byte[SALT_SIZE];
+        CryptographicUtilities.generateRandom(salt);
+        return encode(ikm, salt, parameters);
     }
 
     public String encode(byte[] ikm){

@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
+
+import static net.cycastic.sigil.domain.ApplicationConstants.PartitionPermissions.MODERATE;
 
 @Data
 @Builder
@@ -30,6 +33,9 @@ public class PartitionUser {
     private Cipher partitionUserKey;
 
     private int permissions;
+
+    @Formula("permissions & " + MODERATE + " = " + MODERATE)
+    private boolean isModerator;
 
     @Version
     private long version;

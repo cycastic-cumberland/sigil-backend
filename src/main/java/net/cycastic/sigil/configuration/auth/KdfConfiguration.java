@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "application.auth.pbkdf2")
-public class Pbkdf2Configuration {
-    private int iterations = 310_000;
+@ConfigurationProperties(prefix = "application.auth.kdf")
+public class KdfConfiguration {
+    private String maskingSalt;
 }

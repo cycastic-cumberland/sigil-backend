@@ -4,8 +4,10 @@ import an.awesome.pipelinr.Pipelinr;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.tenant.delete.DeleteTenantCommand;
 import net.cycastic.sigil.application.tenant.get.GetTenantCommand;
+import net.cycastic.sigil.application.tenant.members.search.SearchTenantMemberEmailByPrefixCommand;
 import net.cycastic.sigil.application.tenant.query.QueryTenantCommand;
 import net.cycastic.sigil.application.tenant.save.SaveTenantCommand;
+import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.dto.TenantDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
@@ -34,6 +36,12 @@ public class TenantsController {
 
     @GetMapping
     public PageResponseDto<TenantDto> queryTenants(QueryTenantCommand command){
+        return pipelinr.send(command);
+    }
+
+    @GetMapping("members/prefix")
+    @RequireTenantId
+    public PageResponseDto<String> getTenantUserEmailByPrefix(SearchTenantMemberEmailByPrefixCommand command){
         return pipelinr.send(command);
     }
 }

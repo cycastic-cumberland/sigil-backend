@@ -42,7 +42,4 @@ public class AttachmentListing {
 
     @Version
     private long version;
-
-    @Column(columnDefinition = "BINARY(32)")
-    private byte[] encryptionKeyId;
 }

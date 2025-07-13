@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.partition.get;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.dto.PartitionDto;
 import net.cycastic.sigil.domain.exception.RequestException;
@@ -27,6 +28,7 @@ public class GetPartitionCommandHandler implements Command.Handler<GetPartitionC
         var partitionDto = PartitionDto.fromDomain(partition);
         var cipher = CipherDto.fromDomain(partitionUser.getPartitionUserKey());
         partitionDto.setUserPartitionKey(cipher);
+        partitionDto.setPermissions(ApplicationConstants.PartitionPermissions.toReadablePermissions(partitionUser.getPermissions()));
         return partitionDto;
     }
 }

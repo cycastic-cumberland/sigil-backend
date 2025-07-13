@@ -39,4 +39,14 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
                    """,
            countQuery = "SELECT COUNT(1) FROM PartitionUser pu WHERE pu.partition.id = :partitionId")
     Page<PartitionUserResult> queryByPartition(@Param("partitionId") int partitionId, Pageable pageable);
+
+
+    @Query(value = """
+                   SELECT pu.user.firstName AS firstName,
+                   pu.user.lastName AS lastName,
+                   pu.user.email AS email,
+                   pu.permissions AS permissions
+                   FROM PartitionUser pu WHERE pu.partition.id = :partitionId AND pu.user.id = :userId
+                   """)
+    Optional<PartitionUserResult> getByPartitionAndUser(@Param("partitionId") int partitionId, @Param("userId") int userId);
 }

@@ -22,8 +22,7 @@ public class PartitionService {
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
                 loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);
-        var tenant = tenantRepository.findByPartitionUser(partitionUser)
-                .orElseThrow(() -> new RequestException(404, "Tenant not found"));
+        var tenant = tenantRepository.findByPartitionUser(partitionUser);
         if (tenant.getOwner().getId().equals(partitionUser.getUser().getId())){
             return;
         }

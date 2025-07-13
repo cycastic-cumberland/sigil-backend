@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 
 @Data
@@ -29,5 +30,9 @@ public class PageResponseDto<T> {
 
     public static <T> PageResponseDto<T> fromDomain(Page<T> page){
         return fromDomain(page, r -> r);
+    }
+
+    public static <T> PageResponseDto<T> empty(int page) {
+        return new PageResponseDto<>(Collections.emptySet(), page, 0, 0, 0);
     }
 }

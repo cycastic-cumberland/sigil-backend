@@ -38,15 +38,19 @@ public class TenantService {
         tenantUserRepository.save(tenantUser);
     }
 
+    public int getTenantUserPermissions() {
+        var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
+                .orElseThrow(RequestException::forbidden);
+        return tenantUser.getPermissions();
+    }
+
     public void checkPermission(int mask){
         var tenant = getTenant();
         if (tenant.getOwner().getId().equals(loggedUserAccessor.getUserId())){
             return;
         }
 
-        var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
-                .orElseThrow(RequestException::forbidden);
-        if ((tenantUser.getPermissions() & mask) != mask){
+        if ((getTenantUserPermissions() & mask) != mask){
             throw RequestException.forbidden();
         }
     }

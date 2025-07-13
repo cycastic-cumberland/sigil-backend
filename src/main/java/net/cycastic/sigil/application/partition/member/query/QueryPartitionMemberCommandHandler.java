@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.partition.member.query;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.dto.PartitionUserDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
@@ -21,8 +22,8 @@ public class QueryPartitionMemberCommandHandler implements Command.Handler<Query
                 p -> PartitionUserDto.builder()
                         .firstName(p.getFirstName())
                         .lastName(p.getLastName())
-                        .email(p.getLastName())
-                        .permissions(p.getPermissions())
+                        .email(p.getEmail())
+                        .permissions(ApplicationConstants.PartitionPermissions.toReadablePermissions(p.getPermissions()))
                         .build());
     }
 }

@@ -36,9 +36,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -346,12 +343,5 @@ public class UserService {
     public User getUser(){
         return userRepository.findById(loggedUserAccessor.getUserId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
-    }
-
-    @SneakyThrows
-    public PublicKey getUserPublicKey(){
-        var keyEncoded = getUser().getPublicRsaKey();
-        var kf = KeyFactory.getInstance("RSA", "BC");
-        return kf.generatePublic(new X509EncodedKeySpec(keyEncoded));
     }
 }

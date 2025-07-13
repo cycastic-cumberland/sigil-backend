@@ -6,7 +6,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
-import net.cycastic.sigil.controller.annotation.RequireProjectId;
+import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.controller.annotation.RequireEncryptionKey;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import org.springdoc.core.customizers.OperationCustomizer;
@@ -47,14 +47,14 @@ public class SpringDocConfiguration {
     public OperationCustomizer requireHeaderWhenAnnotated() {
         return (Operation operation, HandlerMethod handlerMethod) -> {
             var controllerClass = handlerMethod.getBeanType();
-            if (controllerClass.isAnnotationPresent(RequireProjectId.class) ||
-                    handlerMethod.getBeanType().isAnnotationPresent(RequireProjectId.class)) {
+            if (controllerClass.isAnnotationPresent(RequireTenantId.class) ||
+                    handlerMethod.getBeanType().isAnnotationPresent(RequireTenantId.class)) {
                 var header = new Parameter()
                         .in("header")
                         .name(ApplicationConstants.TENANT_ID_HEADER)
                         .required(true)
                         .schema(new StringSchema())
-                        .description("Requires project ID");
+                        .description("Requires tenant ID");
                 operation.addParametersItem(header);
             }
             if (controllerClass.isAnnotationPresent(RequirePartitionId.class) ||

@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 @Component
 @RequiredArgsConstructor
 public class CreatePartitionCommandHandler implements Command.Handler<CreatePartitionCommand, IdDto> {
-    private static final Pattern INVALID_PATH = Pattern.compile("/{2}|\\p{Cntrl}|/_/");
+    private static final Pattern INVALID_PATH = Pattern.compile("/{2}|_|%");
 
     private final TenantService tenantService;
     private final CipherService cipherService;

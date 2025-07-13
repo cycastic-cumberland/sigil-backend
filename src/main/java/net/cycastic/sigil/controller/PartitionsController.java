@@ -9,9 +9,10 @@ import net.cycastic.sigil.application.partition.member.add.AddPartitionMemberCom
 import net.cycastic.sigil.application.partition.member.modify.ModifyPartitionMemberCommand;
 import net.cycastic.sigil.application.partition.member.query.QueryPartitionMemberCommand;
 import net.cycastic.sigil.application.partition.member.remove.RemovePartitionMemberCommand;
+import net.cycastic.sigil.application.partition.member.self.GetSelfPartitionUserCommand;
 import net.cycastic.sigil.application.partition.query.QueryPartitionSingleLevelCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
-import net.cycastic.sigil.controller.annotation.RequireProjectId;
+import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.FolderItemDto;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.dto.PartitionDto;
@@ -20,7 +21,7 @@ import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequireProjectId
+@RequireTenantId
 @RequiredArgsConstructor
 @RequestMapping("api/partitions")
 public class PartitionsController {
@@ -69,5 +70,11 @@ public class PartitionsController {
     @RequirePartitionId
     public PageResponseDto<PartitionUserDto> queryMembers(QueryPartitionMemberCommand command){
         return pipelinr.send(command);
+    }
+
+    @GetMapping("members/self")
+    @RequirePartitionId
+    public PartitionUserDto getSelf(){
+        return pipelinr.send(GetSelfPartitionUserCommand.INSTANCE);
     }
 }

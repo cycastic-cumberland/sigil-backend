@@ -1,6 +1,8 @@
 package net.cycastic.sigil.domain;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ApplicationConstants {
@@ -19,17 +21,49 @@ public class ApplicationConstants {
     }
 
     public static class TenantPermissions {
-        public static int MEMBER = 0;
-        public static int CREATE_PARTITIONS = 1;
-        public static int DELETE_PARTITIONS = 2;
-        public static int MODERATOR = 4;
-        public static int LIST_USERS = 8;
+        public static final int MEMBER = 0;
+        public static final int CREATE_PARTITIONS = 1;
+        public static final int DELETE_PARTITIONS = 2;
+        public static final int MODERATE = 4;
+        public static final int LIST_USERS = 8;
+
+        public static List<String> toReadablePermissions(int permissions){
+            var readablePermissions = new ArrayList<String>();
+            readablePermissions.add("MEMBER");
+            if ((permissions & CREATE_PARTITIONS) == CREATE_PARTITIONS){
+                readablePermissions.add("CREATE_PARTITIONS");
+            }
+            if ((permissions & DELETE_PARTITIONS) == DELETE_PARTITIONS){
+                readablePermissions.add("DELETE_PARTITIONS");
+            }
+            if ((permissions & MODERATE) == MODERATE){
+                readablePermissions.add("MODERATE");
+            }
+            if ((permissions & LIST_USERS) == LIST_USERS){
+                readablePermissions.add("LIST_USERS");
+            }
+
+            return readablePermissions;
+        }
     }
 
     public static class PartitionPermissions {
-        public static int READ = 0;
-        public static int WRITE = 1;
-        public static int MODERATE = 2;
+        public static final int READ = 0;
+        public static final int WRITE = 1;
+        public static final int MODERATE = 2;
+
+        public static List<String> toReadablePermissions(int permissions){
+            var readablePermissions = new ArrayList<String>();
+            readablePermissions.add("READ");
+            if ((permissions & WRITE) == WRITE){
+                readablePermissions.add("WRITE");
+            }
+            if ((permissions & MODERATE) == MODERATE){
+                readablePermissions.add("MODERATE");
+            }
+
+            return readablePermissions;
+        }
     }
 
     public static final String TENANT_ID_HEADER = "X-Tenant-Id";
