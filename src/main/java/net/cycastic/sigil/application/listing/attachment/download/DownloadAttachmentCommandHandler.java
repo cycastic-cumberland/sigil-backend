@@ -9,14 +9,9 @@ import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.service.*;
-import net.cycastic.sigil.service.impl.UriPresigner;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.net.URI;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -28,31 +23,9 @@ public class DownloadAttachmentCommandHandler implements Command.Handler<Downloa
     private final PartitionRepository partitionRepository;
     private final StorageProvider storageProvider;
     private final CipherService cipherService;
-    private final UriPresigner uriPresigner;
-    private final LoggedUserAccessor loggedUserAccessor;
-
-    private void verifyRequestValidity(DownloadAttachmentCommand command){
-        var url = loggedUserAccessor.getRequestPath();
-        if (!uriPresigner.verifyUri(URI.create(url))){
-            throw RequestException.withExceptionCode("C403T002");
-        }
-
-        var now = OffsetDateTime.now();
-        var nvb = OffsetDateTime.ofInstant(Instant.ofEpochSecond(command.getNotValidBefore()), ZoneOffset.UTC);
-        var nva = OffsetDateTime.ofInstant(Instant.ofEpochSecond(command.getNotValidAfter()), ZoneOffset.UTC);
-        if (now.isBefore(nvb)){
-            throw RequestException.forbidden();
-        }
-
-        if (now.isAfter(nva)){
-            throw RequestException.forbidden();
-        }
-    }
 
     @Override
     public InputStreamResponse handle(DownloadAttachmentCommand command) {
-        verifyRequestValidity(command);
-
         var listing = attachmentListingRepository.findById(command.getListingId())
                 .orElseThrow(RequestException::forbidden);
         var partition = partitionRepository.findByAttachmentListing(listing);

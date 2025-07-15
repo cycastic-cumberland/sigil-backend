@@ -6,6 +6,7 @@ import net.cycastic.sigil.application.partition.create.CreatePartitionCommand;
 import net.cycastic.sigil.application.partition.delete.DeletePartitionCommand;
 import net.cycastic.sigil.application.partition.get.GetPartitionCommand;
 import net.cycastic.sigil.application.partition.member.add.AddPartitionMemberCommand;
+import net.cycastic.sigil.application.partition.member.get.GetPartitionMemberCommand;
 import net.cycastic.sigil.application.partition.member.modify.ModifyPartitionMemberCommand;
 import net.cycastic.sigil.application.partition.member.query.QueryPartitionMemberCommand;
 import net.cycastic.sigil.application.partition.member.remove.RemovePartitionMemberCommand;
@@ -76,5 +77,11 @@ public class PartitionsController {
     @RequirePartitionId
     public PartitionUserDto getSelf(){
         return pipelinr.send(GetSelfPartitionUserCommand.INSTANCE);
+    }
+
+    @GetMapping("members/member")
+    @RequirePartitionId
+    public PartitionUserDto getMember(GetPartitionMemberCommand command){
+        return pipelinr.send(command);
     }
 }

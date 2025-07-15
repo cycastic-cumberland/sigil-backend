@@ -10,4 +10,6 @@ public class KdfDetailsDto {
     private String algorithm;
     private KeyDerivationFunction.Parameters parameters;
     private String salt;
+    private CipherDto wrappedUserKey;
+    private long signatureVerificationWindow;
 }

@@ -3,18 +3,17 @@ package net.cycastic.sigil.command;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
-import net.cycastic.sigil.domain.dto.CredentialDto;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 
 @Component
@@ -36,35 +35,41 @@ public class VerifyPassword implements Callable<Integer> {
         this.keyDerivationFunction = keyDerivationFunction;
     }
 
-    private byte[] deriveKey(CredentialDto credential, String password){
-        var settings = keyDerivationFunction.decodeSettings(credential.getKdfSettings());
+    private byte[] deriveKey(KeyDerivationFunction.KeyDerivationSettings settings, String password){
         return keyDerivationFunction.derive(password.getBytes(StandardCharsets.UTF_8), settings.getSalt(), settings.getParameters())
                 .getHash();
     }
 
-    @SneakyThrows
-    private void verifyDecryptionKey(CredentialDto credential, String password){
-        final var sampleText = "Hello World!";
-        var wrapKey = new SecretKeySpec(deriveKey(credential, password), "AES");
-        var unwrappedPrivateKey = CryptographicUtilities.decrypt(wrapKey,
-                Base64.getDecoder().decode(credential.getWrappedUserKey().getIv()),
-                Base64.getDecoder().decode(credential.getWrappedUserKey().getCipher()));
-        var kf = KeyFactory.getInstance("RSA", "BC");
-        var publicKey = kf.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(credential.getPublicRsaKey())));
-        var privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(unwrappedPrivateKey));
-        var ciphertext = CryptographicUtilities.encrypt(publicKey, sampleText.getBytes(StandardCharsets.UTF_8)).getCipher();
-        var plaintext = CryptographicUtilities.decrypt(privateKey, ciphertext);
-        assert new String(plaintext, StandardCharsets.UTF_8).equals(sampleText);
-    }
-
     @Override
+    @SneakyThrows
     public Integer call() {
+        final var signingAlgorithm = "SHA256withRSA/PSS";
         var user = userRepository.getByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
-        var kdfSettings = keyDerivationFunction.decodeSettings(user.getHashedPassword());
-        var result = keyDerivationFunction.derive(password.getBytes(StandardCharsets.UTF_8), kdfSettings.getSalt(), kdfSettings.getParameters());
-        var cred = userService.generateCredential(email, result.getHash());
-        verifyDecryptionKey(cred, password);
+        var cipher = user.getWrappedUserKey();
+        KeyDerivationFunction.Parameters parameters;
+        try (var stream = new ByteArrayInputStream(user.getKdfSettings())){
+            parameters = keyDerivationFunction.getParameters(stream);
+        }
+        var wrapKey = new SecretKeySpec(deriveKey(new KeyDerivationFunction.KeyDerivationSettings() {
+            @Override
+            public byte[] getSalt() {
+                return user.getKdfSalt();
+            }
+
+            @Override
+            public KeyDerivationFunction.Parameters getParameters() {
+                return parameters;
+            }
+        }, password), "AES");
+        var decryptedPrivateKey = CryptographicUtilities.decrypt(wrapKey, cipher.getIv(), cipher.getCipher());
+        var kf = KeyFactory.getInstance("RSA", "BC");
+        var privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKey));
+
+        var timeStep = CryptographicUtilities.TOTP.getTimeStamp(Instant.now().getEpochSecond(), UserService.SIGNATURE_VERIFICATION_WINDOW);
+        var payload = String.format("%s:%d", user.getNormalizedEmail(), timeStep);
+        var signature = CryptographicUtilities.sign(privateKey, payload.getBytes(StandardCharsets.UTF_8), signingAlgorithm);
+        userService.generateCredential(payload, signingAlgorithm, signature);
         return 0;
     }
 }

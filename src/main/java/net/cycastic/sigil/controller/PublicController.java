@@ -16,8 +16,8 @@ import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/presigned")
-public class PresignedController {
+@RequestMapping("api/public")
+public class PublicController {
     private final Pipelinr pipelinr;
 
     @GetMapping("download")

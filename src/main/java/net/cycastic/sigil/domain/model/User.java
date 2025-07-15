@@ -34,8 +34,6 @@ public class User implements UserDetails {
 
     private String lastName;
 
-    private String hashedPassword;
-
     @Column(nullable = false)
     private String roles;
 
@@ -72,6 +70,10 @@ public class User implements UserDetails {
     @JoinColumn(name = "wrapped_user_key_id")
     private Cipher wrappedUserKey;
 
+    @OneToOne
+    @JoinColumn(name = "webauthn_key_id")
+    private Cipher webAuthnKey;
+
     @Override
     public boolean isEnabled() {
         return status == UserStatus.ACTIVE;
@@ -86,7 +88,7 @@ public class User implements UserDetails {
 
     @Override
     public String getPassword() {
-        return hashedPassword;
+        return null;
     }
 
     @Override

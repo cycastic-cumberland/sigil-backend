@@ -12,9 +12,14 @@ import java.security.KeyPairGenerator;
 @Service
 public class ECAsymmetricKeyGenerator implements AsymmetricKeyGenerator {
     @Override
+    public String algorithm() {
+        return "EC";
+    }
+
+    @Override
     @SneakyThrows
     public @NonNull KeyPair generate() {
-        var kpg = KeyPairGenerator.getInstance("EC");
+        var kpg = KeyPairGenerator.getInstance(algorithm());
         var kp = kpg.generateKeyPair();
         return new KeyPair(kp.getPublic(), kp.getPrivate());
     }

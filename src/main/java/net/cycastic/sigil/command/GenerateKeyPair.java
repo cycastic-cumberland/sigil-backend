@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -17,16 +18,23 @@ import java.util.concurrent.Callable;
 public class GenerateKeyPair implements Callable<Integer> {
     private static final Logger logger = LoggerFactory.getLogger(GenerateKeyPair.class);
 
-    private final AsymmetricKeyGenerator asymmetricKeyGenerator;
+    @CommandLine.Option(names = "--algorithm", required = true)
+    private String algorithm;
+
+    private final List<AsymmetricKeyGenerator> asymmetricKeyGenerators;
     private final Optional<EncryptionProvider> encryptionProvider;
 
-    public GenerateKeyPair(AsymmetricKeyGenerator asymmetricKeyGenerator, Optional<EncryptionProvider> encryptionProvider) {
-        this.asymmetricKeyGenerator = asymmetricKeyGenerator;
+    public GenerateKeyPair(List<AsymmetricKeyGenerator> asymmetricKeyGenerators, Optional<EncryptionProvider> encryptionProvider) {
+        this.asymmetricKeyGenerators = asymmetricKeyGenerators;
         this.encryptionProvider = encryptionProvider;
     }
 
     @Override
     public Integer call() {
+        var asymmetricKeyGenerator = asymmetricKeyGenerators.stream()
+                .filter(k -> k.algorithm().equals(algorithm))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Could not find algorithm: " + algorithm));
         var keyPair = asymmetricKeyGenerator.generate();
         var privateKey = Base64.getEncoder().encodeToString(keyPair.getPrivateKey().getEncoded());
         logger.info("Public key: {}", Base64.getEncoder().encodeToString(keyPair.getPublicKey().getEncoded()));

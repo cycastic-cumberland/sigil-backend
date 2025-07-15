@@ -1,11 +1,8 @@
-package net.cycastic.sigil.application.partition.member.remove;
+package net.cycastic.sigil.application.partition.member.get;
 
 import an.awesome.pipelinr.Command;
-import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.application.partition.PartitionService;
-import net.cycastic.sigil.domain.ApplicationConstants;
+import net.cycastic.sigil.domain.dto.PartitionUserDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.UserRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
@@ -14,19 +11,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RemovePartitionMemberCommandHandler implements Command.Handler<RemovePartitionMemberCommand, @Null Object> {
-    private final PartitionService partitionService;
+public class GetPartitionMemberCommandHandler implements Command.Handler<GetPartitionMemberCommand, PartitionUserDto> {
     private final UserRepository userRepository;
     private final PartitionUserRepository partitionUserRepository;
     private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
-    @Transactional
-    public @Null Object handle(RemovePartitionMemberCommand command) {
-        partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE);
+    public PartitionUserDto handle(GetPartitionMemberCommand command) {
         var user = userRepository.findByEmailAndTenantId(command.getEmail(), loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
-        partitionUserRepository.removeByPartitionAndUser(partitionService.getPartition(), user);
-        return null;
+
+        var partitionUser = partitionUserRepository.getByPartitionAndUser(loggedUserAccessor.getPartitionId(), user.getId())
+                .orElseThrow(() -> new RequestException(404, "User is not a member of partition"));
+        return PartitionUserDto.fromDomain(partitionUser);
     }
 }

@@ -3,17 +3,14 @@ package net.cycastic.sigil.domain.repository;
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
 import net.cycastic.sigil.domain.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
+    @EntityGraph(attributePaths = "wrappedUserKey")
     Optional<User> findByNormalizedEmail(@NotNull String normalizedEmail);
 
     @Query("SELECT tu.user FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.normalizedEmail = UPPER(:normalizedEmail)")

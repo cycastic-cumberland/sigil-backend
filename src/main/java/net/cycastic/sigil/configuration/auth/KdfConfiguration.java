@@ -8,5 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "application.auth.kdf")
 public class KdfConfiguration {
-    private String maskingSalt;
+    private String maskingKey;
+    private String maskingRsaPublicKey;
+    private String maskingRsaPrivateKey;
 }

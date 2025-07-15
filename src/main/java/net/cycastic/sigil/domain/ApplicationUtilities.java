@@ -13,12 +13,15 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.regex.Pattern;
 
 public class ApplicationUtilities {
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     );
+
+    private static volatile Object blackhole;
 
     public static String getMimeType(String fileName) {
         return URLConnection.guessContentTypeFromName(fileName);
@@ -29,6 +32,14 @@ public class ApplicationUtilities {
             return OptionalInt.of(Integer.parseInt(str));
         } catch (NumberFormatException e){
             return OptionalInt.empty();
+        }
+    }
+
+    public static OptionalLong tryParseLong(String str){
+        try {
+            return OptionalLong.of(Long.parseLong(str));
+        } catch (NumberFormatException e){
+            return OptionalLong.empty();
         }
     }
 
@@ -93,5 +104,9 @@ public class ApplicationUtilities {
 
     public static boolean isEmail(@NotNull String input){
         return EMAIL_PATTERN.matcher(input).matches();
+    }
+
+    public static <T> void deoptimize(T value){
+        blackhole = value;
     }
 }

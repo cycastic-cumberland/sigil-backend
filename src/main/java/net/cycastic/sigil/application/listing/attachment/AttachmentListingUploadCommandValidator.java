@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class AttachmentListingUploadCommandValidator implements CommandValidator {
     private static final Logger logger = LoggerFactory.getLogger(AttachmentListingUploadCommandValidator.class);
-    private static final Pattern INVALID_PATH = Pattern.compile("/{2}|_|%");
+    private static final Pattern INVALID_PATH = Pattern.compile("\\\\|/{2}|_|%");
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantRepository tenantRepository;
     private final TenantUserRepository tenantUserRepository;
@@ -41,7 +41,7 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
             throw new RequestException(400, "Listing path must not end with a forward slash");
         }
         if (INVALID_PATH.matcher(path).find()) {
-            throw new RequestException(400, "Path must not contain //, _ or %");
+            throw new RequestException(400, "Path must not contain \\, //, _ or %");
         }
         if (command.getContentLength() <= 0){
             throw new RequestException(400, "Invalid content length");

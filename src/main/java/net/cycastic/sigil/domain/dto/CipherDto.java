@@ -14,7 +14,6 @@ import java.util.Base64;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CipherDto {
-    private long id;
     private CipherDecryptionMethod decryptionMethod;
     private String kid;
     private String iv;
@@ -23,7 +22,6 @@ public class CipherDto {
     public static CipherDto fromDomain(Cipher cipher){
         var encoder = Base64.getEncoder();
         return CipherDto.builder()
-                .id(cipher.getId())
                 .decryptionMethod(cipher.getDecryptionMethod())
                 .kid(encoder.encodeToString(cipher.getKid()))
                 .iv(cipher.getIv() == null ? null : encoder.encodeToString(cipher.getIv()))

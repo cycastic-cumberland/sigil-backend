@@ -71,7 +71,7 @@ public class GenerateAttachmentPresignedDownloadCommandHandler implements Comman
         var nvb = OffsetDateTime.now();
         var nva = nvb.plusMinutes(2);
         var downloadUrl = UriComponentsBuilder.fromUriString(urlAccessor.getBackendOrigin())
-                .path("/api/presigned/download")
+                .path("/api/public/download")
                 .queryParam("listingId", listing.getId())
                 .queryParam("encryptionKey", ApplicationUtilities.encodeURIComponent(wrappedPartitionKey))
                 .queryParam("fileName", ApplicationUtilities.encodeURIComponent(new File(listing.getListingPath()).getName()))

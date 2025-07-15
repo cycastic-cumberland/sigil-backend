@@ -15,5 +15,7 @@ public interface AsymmetricKeyGenerator {
         private PrivateKey privateKey;
     }
 
+    String algorithm();
+
     @NonNull KeyPair generate();
 }

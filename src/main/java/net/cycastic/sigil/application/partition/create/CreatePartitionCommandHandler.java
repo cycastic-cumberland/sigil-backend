@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 @Component
 @RequiredArgsConstructor
 public class CreatePartitionCommandHandler implements Command.Handler<CreatePartitionCommand, IdDto> {
-    private static final Pattern INVALID_PATH = Pattern.compile("/{2}|_|%");
+    private static final Pattern INVALID_PATH = Pattern.compile("\\\\|/{2}|_|%|/_/");
 
     private final TenantService tenantService;
     private final CipherService cipherService;
@@ -50,7 +50,7 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
             throw new RequestException(400, "Partition path must not end with a forward slash");
         }
         if (INVALID_PATH.matcher(path).find()) {
-            throw new RequestException(400, "Path must not contain //, _, % or /_/");
+            throw new RequestException(400, "Path must not contain \\, //, _, % or /_/");
         }
 
         tenantService.checkPermission(ApplicationConstants.TenantPermissions.CREATE_PARTITIONS);
