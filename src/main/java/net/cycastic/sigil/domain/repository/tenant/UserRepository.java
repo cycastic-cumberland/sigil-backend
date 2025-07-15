@@ -1,8 +1,8 @@
-package net.cycastic.sigil.domain.repository;
+package net.cycastic.sigil.domain.repository.tenant;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
-import net.cycastic.sigil.domain.model.User;
+import net.cycastic.sigil.domain.model.tenant.User;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 

@@ -2,9 +2,8 @@ package net.cycastic.sigil.domain.repository.listing;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
-import net.cycastic.sigil.domain.model.Partition;
+import net.cycastic.sigil.domain.model.listing.Partition;
 import net.cycastic.sigil.domain.model.listing.ListingType;
-import net.cycastic.sigil.domain.model.Tenant;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import net.cycastic.sigil.domain.model.listing.Listing;
 import org.springframework.data.domain.Page;

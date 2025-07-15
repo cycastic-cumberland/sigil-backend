@@ -2,11 +2,10 @@ package net.cycastic.sigil.application.partition;
 
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.Cipher;
-import net.cycastic.sigil.domain.model.Partition;
+import net.cycastic.sigil.domain.model.listing.Partition;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
-import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Service;
 

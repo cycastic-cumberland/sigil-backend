@@ -5,9 +5,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.Tenant;
-import net.cycastic.sigil.domain.repository.TenantRepository;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
+import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

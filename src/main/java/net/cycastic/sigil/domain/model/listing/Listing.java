@@ -3,8 +3,6 @@ package net.cycastic.sigil.domain.model.listing;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import net.cycastic.sigil.domain.model.Partition;
-import net.cycastic.sigil.domain.model.Tenant;
 
 import java.time.OffsetDateTime;
 

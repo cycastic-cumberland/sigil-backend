@@ -1,8 +1,8 @@
 package net.cycastic.sigil.domain.repository.listing;
 
-import net.cycastic.sigil.domain.model.Partition;
-import net.cycastic.sigil.domain.model.Tenant;
-import net.cycastic.sigil.domain.model.User;
+import net.cycastic.sigil.domain.model.listing.Partition;
+import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

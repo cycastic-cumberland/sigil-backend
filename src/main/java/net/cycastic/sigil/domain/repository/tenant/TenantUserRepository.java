@@ -1,7 +1,7 @@
-package net.cycastic.sigil.domain.repository;
+package net.cycastic.sigil.domain.repository.tenant;
 
-import net.cycastic.sigil.domain.model.Tenant;
-import net.cycastic.sigil.domain.model.TenantUser;
+import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.model.tenant.TenantUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

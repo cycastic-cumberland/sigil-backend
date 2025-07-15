@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
-import net.cycastic.sigil.domain.repository.TenantUserRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

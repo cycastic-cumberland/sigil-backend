@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.model.Tenant;
-import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 
 import java.time.OffsetDateTime;
 import java.util.List;

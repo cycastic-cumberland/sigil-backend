@@ -8,7 +8,7 @@ import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.dto.KdfDetailsDto;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

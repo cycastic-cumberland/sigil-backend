@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
-import net.cycastic.sigil.domain.repository.TenantUserRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

@@ -3,7 +3,7 @@ package net.cycastic.sigil.command;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;

@@ -1,4 +1,4 @@
-package net.cycastic.sigil.domain.model;
+package net.cycastic.sigil.domain.model.tenant;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

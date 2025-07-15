@@ -3,9 +3,12 @@ package net.cycastic.sigil.application.tenant;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.*;
-import net.cycastic.sigil.domain.repository.TenantRepository;
-import net.cycastic.sigil.domain.repository.TenantUserRepository;
+import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.model.tenant.TenantUser;
+import net.cycastic.sigil.domain.model.tenant.UsageType;
+import net.cycastic.sigil.domain.model.tenant.User;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Service;
 

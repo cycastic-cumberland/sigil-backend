@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 

@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.TenantRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.DeferrableStorageProvider;

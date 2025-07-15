@@ -1,9 +1,8 @@
-package net.cycastic.sigil.domain.model;
+package net.cycastic.sigil.domain.model.tenant;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import net.cycastic.sigil.domain.model.listing.Listing;
 import org.hibernate.annotations.Where;
 
 import java.time.OffsetDateTime;

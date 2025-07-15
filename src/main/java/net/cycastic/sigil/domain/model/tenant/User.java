@@ -1,7 +1,8 @@
-package net.cycastic.sigil.domain.model;
+package net.cycastic.sigil.domain.model.tenant;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import net.cycastic.sigil.domain.model.Cipher;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

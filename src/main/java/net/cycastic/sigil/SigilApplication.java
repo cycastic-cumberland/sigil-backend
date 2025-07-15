@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.command.*;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

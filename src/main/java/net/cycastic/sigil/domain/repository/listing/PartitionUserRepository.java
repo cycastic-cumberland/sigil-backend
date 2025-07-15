@@ -1,9 +1,9 @@
 package net.cycastic.sigil.domain.repository.listing;
 
 import jakarta.validation.constraints.NotNull;
-import net.cycastic.sigil.domain.model.Partition;
-import net.cycastic.sigil.domain.model.PartitionUser;
-import net.cycastic.sigil.domain.model.User;
+import net.cycastic.sigil.domain.model.listing.Partition;
+import net.cycastic.sigil.domain.model.listing.PartitionUser;
+import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

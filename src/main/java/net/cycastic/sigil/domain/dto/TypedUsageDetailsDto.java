@@ -3,7 +3,7 @@ package net.cycastic.sigil.domain.dto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import net.cycastic.sigil.domain.model.UsageType;
+import net.cycastic.sigil.domain.model.tenant.UsageType;
 
 @Data
 @NoArgsConstructor

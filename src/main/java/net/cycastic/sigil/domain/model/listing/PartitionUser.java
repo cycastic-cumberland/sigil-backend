@@ -1,10 +1,12 @@
-package net.cycastic.sigil.domain.model;
+package net.cycastic.sigil.domain.model.listing;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.sigil.domain.model.Cipher;
+import net.cycastic.sigil.domain.model.tenant.User;
 import org.hibernate.annotations.Formula;
 
 import static net.cycastic.sigil.domain.ApplicationConstants.PartitionPermissions.MODERATE;

@@ -8,16 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
-import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.UsageType;
-import net.cycastic.sigil.domain.model.UserStatus;
-import net.cycastic.sigil.domain.repository.UserRepository;
+import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
