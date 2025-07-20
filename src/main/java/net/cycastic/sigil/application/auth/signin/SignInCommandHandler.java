@@ -3,7 +3,7 @@ package net.cycastic.sigil.application.auth.signin;
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.auth.UserService;
-import net.cycastic.sigil.domain.dto.CredentialDto;
+import net.cycastic.sigil.domain.dto.auth.CredentialDto;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;

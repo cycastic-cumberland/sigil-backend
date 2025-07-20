@@ -4,20 +4,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.HashicorpVaultConfiguration;
 import net.cycastic.sigil.domain.ApplicationUtilities;
-import net.cycastic.sigil.domain.dto.PemDto;
+import net.cycastic.sigil.domain.CryptographicUtilities;
+import net.cycastic.sigil.domain.dto.auth.PemDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.AsymmetricDecryptionProvider;
 import net.cycastic.sigil.service.AsymmetricEncryptionProvider;
-import net.cycastic.sigil.service.DecryptionProvider;
-import net.cycastic.sigil.service.EncryptionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Map;
 
@@ -43,8 +40,7 @@ public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends Hashico
                 .replace("-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s", "");
-        var kf = KeyFactory.getInstance("RSA", "BC");
-        publicKey = kf.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(cleanPem)));
+        publicKey = CryptographicUtilities.Keys.decodeRSAPublicKey(Base64.getDecoder().decode(cleanPem));
     }
 
     @Override

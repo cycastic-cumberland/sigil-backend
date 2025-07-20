@@ -1,4 +1,4 @@
-package net.cycastic.sigil.domain.dto;
+package net.cycastic.sigil.domain.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +14,5 @@ public class CredentialDto {
     private String userEmail;
     private String publicRsaKey;
     private String kdfSettings;
-    private CipherDto wrappedUserKey;
     private String authToken;
 }

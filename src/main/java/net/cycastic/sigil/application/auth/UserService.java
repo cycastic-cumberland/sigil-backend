@@ -10,7 +10,7 @@ import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CipherDto;
-import net.cycastic.sigil.domain.dto.CredentialDto;
+import net.cycastic.sigil.domain.dto.auth.CredentialDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.*;
@@ -38,9 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -114,8 +112,7 @@ public class UserService {
                 .lastInvitationSent(OffsetDateTime.now())
                 .emailVerified(emailVerified)
                 .build();
-        var cipher = new Cipher(decoder.decode(privateRsaKey.getKid()),
-                CipherDecryptionMethod.USER_PASSWORD,
+        var cipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD,
                 decoder.decode(privateRsaKey.getIv()),
                 decoder.decode(privateRsaKey.getCipher()));
         cipherRepository.save(cipher);
@@ -188,7 +185,6 @@ public class UserService {
                 .authToken(authToken)
                 .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .kdfSettings(getKdfSettings(user))
-                .wrappedUserKey(CipherDto.fromDomain(user.getWrappedUserKey()))
                 .build();
     }
 
@@ -212,8 +208,7 @@ public class UserService {
 
     @SneakyThrows
     private CredentialDto wasteComputePower(String payload, String signatureAlgorithm, byte[] submittedSignature){
-        var kf = KeyFactory.getInstance("RSA", "BC");
-        var publicKey = kf.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(kdfConfiguration.getMaskingRsaPublicKey())));
+        var publicKey = CryptographicUtilities.Keys.decodeRSAPublicKey(Base64.getDecoder().decode(kdfConfiguration.getMaskingRsaPublicKey()));
         var result = checkSignInPayloadValidity(payload, signatureAlgorithm, submittedSignature, publicKey);
         ApplicationUtilities.deoptimize(result);
 
@@ -231,8 +226,7 @@ public class UserService {
         if (!user.isEnabled()){
             return wasteComputePower(user.getNormalizedEmail(), signatureAlgorithm, submittedSignature);
         }
-        var kf = KeyFactory.getInstance("RSA", "BC");
-        var publicKey = kf.generatePublic(new X509EncodedKeySpec(user.getPublicRsaKey()));
+        var publicKey = CryptographicUtilities.Keys.decodeRSAPublicKey(user.getPublicRsaKey());
         if (!checkSignInPayloadValidity(payload, signatureAlgorithm, submittedSignature, publicKey)){
             jwtIssuer.generateTokens("", null);
             throw RequestException.withExceptionCode("C401T000");

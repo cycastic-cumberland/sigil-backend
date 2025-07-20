@@ -8,7 +8,7 @@ import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
-import net.cycastic.sigil.domain.dto.CredentialDto;
+import net.cycastic.sigil.domain.dto.auth.CredentialDto;
 import net.cycastic.sigil.service.auth.JwtIssuer;
 import net.cycastic.sigil.service.auth.JwtVerifier;
 import org.slf4j.Logger;

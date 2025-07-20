@@ -11,8 +11,6 @@ import picocli.CommandLine;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.util.concurrent.Callable;
 
@@ -63,8 +61,7 @@ public class VerifyPassword implements Callable<Integer> {
             }
         }, password), "AES");
         var decryptedPrivateKey = CryptographicUtilities.decrypt(wrapKey, cipher.getIv(), cipher.getCipher());
-        var kf = KeyFactory.getInstance("RSA", "BC");
-        var privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKey));
+        var privateKey = CryptographicUtilities.Keys.decodeRSAPrivateKey(decryptedPrivateKey);
 
         var timeStep = CryptographicUtilities.TOTP.getTimeStamp(Instant.now().getEpochSecond(), UserService.SIGNATURE_VERIFICATION_WINDOW);
         var payload = String.format("%s:%d", user.getNormalizedEmail(), timeStep);

@@ -71,7 +71,6 @@ public class CreateUser implements Callable<Integer> {
 
         var encoder = Base64.getEncoder();
         var privateRsaKey = CipherDto.builder()
-                .kid(encoder.encodeToString(CryptographicUtilities.digestSha256(keyEncryptionKey)))
                 .iv(encoder.encodeToString(wrappedPrivateKey.getIv()))
                 .cipher(encoder.encodeToString(wrappedPrivateKey.getCipher()))
                 .decryptionMethod(CipherDecryptionMethod.USER_PASSWORD)

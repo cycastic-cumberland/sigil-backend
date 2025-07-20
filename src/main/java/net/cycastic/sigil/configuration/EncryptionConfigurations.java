@@ -1,6 +1,7 @@
 package net.cycastic.sigil.configuration;
 
 import net.cycastic.sigil.configuration.auth.JwtConfiguration;
+import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.AsymmetricJwtVerifier;
 import net.cycastic.sigil.service.auth.JwtIssuer;
@@ -13,6 +14,7 @@ import org.springframework.data.util.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Base64;
 
 @Component
 @org.springframework.context.annotation.Lazy
@@ -62,8 +64,8 @@ public class EncryptionConfigurations {
                 jwtService = Lazy.of(() -> {
                     var privateKeyEncrypted = hashicorpVaultConfiguration.getSigningPrivateKeyWrapped();
                     var privateKeyBase64 = new HashicorpVaultEncryptionProvider(hashicorpVaultConfiguration).decrypt(privateKeyEncrypted);
-                    var privateKey = StandardJwtService.decodePrivateKey(privateKeyBase64);
-                    var publicKey = StandardJwtService.decodePublicKey(hashicorpVaultConfiguration.getSigningPublicKey());
+                    var privateKey = CryptographicUtilities.Keys.decodeECPrivateKey(Base64.getDecoder().decode(privateKeyBase64));
+                    var publicKey = CryptographicUtilities.Keys.decodeECPublicKey(Base64.getDecoder().decode(hashicorpVaultConfiguration.getSigningPublicKey()));
                     return new StandardJwtService(jwtConfiguration, privateKey, publicKey);
                 });
             }

@@ -1,4 +1,4 @@
-package net.cycastic.sigil.domain.dto;
+package net.cycastic.sigil.domain.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

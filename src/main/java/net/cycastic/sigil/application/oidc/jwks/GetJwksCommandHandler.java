@@ -2,7 +2,7 @@ package net.cycastic.sigil.application.oidc.jwks;
 
 import an.awesome.pipelinr.Command;
 
-import net.cycastic.sigil.domain.dto.JwksDto;
+import net.cycastic.sigil.domain.dto.auth.JwksDto;
 import net.cycastic.sigil.service.auth.AsymmetricJwtVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

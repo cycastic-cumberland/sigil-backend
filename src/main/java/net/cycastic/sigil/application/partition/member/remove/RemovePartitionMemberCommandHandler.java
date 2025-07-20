@@ -23,9 +23,12 @@ public class RemovePartitionMemberCommandHandler implements Command.Handler<Remo
     @Override
     @Transactional
     public @Null Object handle(RemovePartitionMemberCommand command) {
-        partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE);
         var user = userRepository.findByEmailAndTenantId(command.getEmail(), loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
+        if (!user.getId().equals(loggedUserAccessor.getUserId())){
+            partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE);
+        }
+
         partitionUserRepository.removeByPartitionAndUser(partitionService.getPartition(), user);
         return null;
     }

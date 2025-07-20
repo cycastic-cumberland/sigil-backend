@@ -20,9 +20,6 @@ import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import org.springframework.stereotype.Component;
 
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.OffsetDateTime;
 import java.util.regex.Pattern;
 
@@ -66,13 +63,9 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
         var listingKey = partitionKey;
 
         var user = userService.getUser();
-        PublicKey userPublicKey;
-        {
-            var kf = KeyFactory.getInstance("RSA", "BC");
-            userPublicKey = kf.generatePublic(new X509EncodedKeySpec(user.getPublicRsaKey()));
-        }
+        var userPublicKey = CryptographicUtilities.Keys.decodeRSAPublicKey(user.getPublicRsaKey());
         var userPartitionKey = CryptographicUtilities.encrypt(userPublicKey, partitionKey);
-        var partitionUserKey = new Cipher(CryptographicUtilities.digestSha256(user.getPublicRsaKey()), CipherDecryptionMethod.UNWRAPPED_USER_KEY, userPartitionKey);
+        var partitionUserKey = new Cipher(CipherDecryptionMethod.UNWRAPPED_USER_KEY, userPartitionKey);
 
         if (command.isServerSideKeyDerivation()){
             var serverPartitionKey = new byte[CryptographicUtilities.KEY_LENGTH];

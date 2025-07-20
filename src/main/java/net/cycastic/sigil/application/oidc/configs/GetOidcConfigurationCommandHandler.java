@@ -3,7 +3,7 @@ package net.cycastic.sigil.application.oidc.configs;
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.configuration.auth.JwtConfiguration;
-import net.cycastic.sigil.domain.dto.OidcConfigurationDto;
+import net.cycastic.sigil.domain.dto.auth.OidcConfigurationDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import org.springframework.stereotype.Component;
 

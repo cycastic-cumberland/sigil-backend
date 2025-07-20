@@ -3,6 +3,7 @@ package net.cycastic.sigil.domain.model.tenant;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import net.cycastic.sigil.domain.model.Cipher;
+import net.cycastic.sigil.domain.model.WebAuthnCredential;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.OptionalInt;
 import java.util.Set;
 
 import jakarta.persistence.*;
@@ -71,9 +73,8 @@ public class User implements UserDetails {
     @JoinColumn(name = "wrapped_user_key_id")
     private Cipher wrappedUserKey;
 
-    @OneToOne
-    @JoinColumn(name = "webauthn_key_id")
-    private Cipher webAuthnKey;
+    @OneToOne(mappedBy = "user")
+    private WebAuthnCredential webAuthnCredential;
 
     @Override
     public boolean isEnabled() {
@@ -95,5 +96,9 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public OptionalInt getWebAuthnCredentialId() {
+        return webAuthnCredential != null ? OptionalInt.of(webAuthnCredential.getId()) : OptionalInt.empty();
     }
 }

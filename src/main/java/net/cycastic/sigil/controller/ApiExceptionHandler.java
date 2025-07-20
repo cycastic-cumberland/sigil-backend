@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -81,6 +82,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(UnavailableException.class)
     public ResponseEntity<ExceptionResponse> handleUnavailableException(UnavailableException ex, HttpServletRequest request) {
         return handleGeneric(new RequestException(503, ex, "Service unavailable"), request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        return handleGeneric(RequestException.withExceptionCode("C400T010", ex), request);
     }
 
     @ExceptionHandler(Exception.class)

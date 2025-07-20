@@ -12,14 +12,11 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "cipher_store", indexes = @Index(name = "cipher_store_kid_uindex", columnList = "kid"))
+@Table(name = "cipher_store")
 public class Cipher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(columnDefinition = "BINARY(32)", nullable = false)
-    private byte[] kid;
 
     @Column(nullable = false)
     private CipherDecryptionMethod decryptionMethod;
@@ -33,15 +30,14 @@ public class Cipher {
     @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] cipherLong;
 
-    public Cipher(byte[] kid, CipherDecryptionMethod decryptionMethod, byte[] iv, byte[] cipher){
-        this.kid = kid;
+    public Cipher(CipherDecryptionMethod decryptionMethod, byte[] iv, byte[] cipher){
         this.decryptionMethod = decryptionMethod;
         this.iv = iv;
         setCipher(cipher);
     }
 
-    public Cipher(byte[] kid, CipherDecryptionMethod decryptionMethod, CryptographicUtilities.EncryptionResult encryptionResult){
-        this(kid, decryptionMethod, encryptionResult.getIv(), encryptionResult.getCipher());
+    public Cipher(CipherDecryptionMethod decryptionMethod, CryptographicUtilities.EncryptionResult encryptionResult){
+        this(decryptionMethod, encryptionResult.getIv(), encryptionResult.getCipher());
     }
 
     public byte[] getCipher(){

@@ -21,6 +21,7 @@ public class UserDto {
     private String lastName;
     private String[] roles;
     private String publicRsaKey;
+    private boolean hasWebAuthnCredential;
     private OffsetDateTime joinedAt;
 
     public static UserDto fromDomain(@NotNull User user){
@@ -31,6 +32,7 @@ public class UserDto {
                 .lastName(user.getLastName())
                 .roles(user.getRoles().split(","))
                 .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
+                .hasWebAuthnCredential(user.getWebAuthnCredentialId().isPresent())
                 .joinedAt(user.getJoinedAt())
                 .build();
     }

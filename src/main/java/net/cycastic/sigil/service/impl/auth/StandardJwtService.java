@@ -10,19 +10,15 @@ import net.cycastic.sigil.configuration.BaseJwtConfiguration;
 import net.cycastic.sigil.configuration.auth.JwtConfiguration;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.CryptographicUtilities;
-import net.cycastic.sigil.domain.dto.JwkDto;
+import net.cycastic.sigil.domain.dto.auth.JwkDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.auth.AsymmetricJwtVerifier;
 import net.cycastic.sigil.service.auth.JwtIssuer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.KeyFactory;
-import java.security.MessageDigest;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -32,40 +28,20 @@ public class StandardJwtService implements JwtIssuer, AsymmetricJwtVerifier {
     private final BaseJwtConfiguration jwtConfiguration;
     private final ECPrivateKey privateKey;
     private final ECPublicKey publicKey;
+    private final String kid;
 
     public StandardJwtService(JwtConfiguration jwtConfiguration){
-        this.jwtConfiguration = jwtConfiguration;
-        privateKey = decodePrivateKey(jwtConfiguration.getPrivateKey());
-        publicKey = decodePublicKey(jwtConfiguration.getPublicKey());
+        this(jwtConfiguration,
+                CryptographicUtilities.Keys.decodeECPrivateKey(Base64.getDecoder().decode(jwtConfiguration.getPrivateKey())),
+                CryptographicUtilities.Keys.decodeECPublicKey(Base64.getDecoder().decode(jwtConfiguration.getPublicKey())));
     }
 
     public StandardJwtService(BaseJwtConfiguration jwtConfiguration, ECPrivateKey privateKey, ECPublicKey publicKey){
-
         this.jwtConfiguration = jwtConfiguration;
         this.privateKey = privateKey;
         this.publicKey = publicKey;
-    }
-
-    public static @NonNull ECPrivateKey decodePrivateKey(@NotNull String base64Private) {
-        try {
-            var keyBytes = Base64.getDecoder().decode(base64Private);
-            var keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            var kf = KeyFactory.getInstance("EC");
-            return (ECPrivateKey)kf.generatePrivate(keySpec);
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to load EC private key", e);
-        }
-    }
-
-    public static @NonNull ECPublicKey decodePublicKey(@NotNull String base64Public) {
-        try {
-            var keyBytes = Base64.getDecoder().decode(base64Public);
-            var keySpec = new X509EncodedKeySpec(keyBytes);
-            var kf = KeyFactory.getInstance("EC");
-            return (ECPublicKey)kf.generatePublic(keySpec);
-        } catch (Exception e) {
-            throw new IllegalStateException("Unable to load EC public key", e);
-        }
+        var digest = CryptographicUtilities.digestSha256(publicKey.getEncoded());
+        kid = Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
     }
 
     @Override
@@ -79,6 +55,7 @@ public class StandardJwtService implements JwtIssuer, AsymmetricJwtVerifier {
             authTokenBuilder.setClaims(extraClaims);
         }
         authTokenBuilder = authTokenBuilder
+                .setHeaderParam("kid", kid)
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(exp)
@@ -154,8 +131,6 @@ public class StandardJwtService implements JwtIssuer, AsymmetricJwtVerifier {
         var urlEnc = Base64.getUrlEncoder().withoutPadding();
         var x = urlEnc.encodeToString(publicKey.getW().getAffineX().toByteArray());
         var y = urlEnc.encodeToString(publicKey.getW().getAffineY().toByteArray());
-        var digest = CryptographicUtilities.digestSha256(publicKey.getEncoded());
-        var kid = Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
         return JwkDto.builder()
                 .kty("EC")
                 .crv(crv)

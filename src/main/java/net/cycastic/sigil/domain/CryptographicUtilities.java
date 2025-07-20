@@ -14,10 +14,14 @@ import org.springframework.lang.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import java.security.*;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.PSSParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
 
 public class CryptographicUtilities {
@@ -74,6 +78,36 @@ public class CryptographicUtilities {
     public static class TOTP {
         public static long getTimeStamp(long timestamp, long window){
             return timestamp / window;
+        }
+    }
+
+    public static class Keys {
+        @SneakyThrows
+        public static ECPrivateKey decodeECPrivateKey(byte[] encoded){
+            var keySpec = new PKCS8EncodedKeySpec(encoded);
+            var kf = KeyFactory.getInstance("EC", "BC");
+            return (ECPrivateKey)kf.generatePrivate(keySpec);
+        }
+
+        @SneakyThrows
+        public static ECPublicKey decodeECPublicKey(byte[] encoded){
+            var keySpec = new X509EncodedKeySpec(encoded);
+            var kf = KeyFactory.getInstance("EC", "BC");
+            return (ECPublicKey)kf.generatePublic(keySpec);
+        }
+
+        @SneakyThrows
+        public static RSAPrivateKey decodeRSAPrivateKey(byte[] encoded){
+            var keySpec = new PKCS8EncodedKeySpec(encoded);
+            var kf = KeyFactory.getInstance("RSA", "BC");
+            return (RSAPrivateKey)kf.generatePrivate(keySpec);
+        }
+
+        @SneakyThrows
+        public static RSAPublicKey decodeRSAPublicKey(byte[] encoded){
+            var keySpec = new X509EncodedKeySpec(encoded);
+            var kf = KeyFactory.getInstance("RSA", "BC");
+            return (RSAPublicKey)kf.generatePublic(keySpec);
         }
     }
 

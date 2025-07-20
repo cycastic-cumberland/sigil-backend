@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
@@ -41,8 +40,7 @@ public class AddPartitionMemberCommandHandler implements Command.Handler<AddPart
             throw new RequestException(400, "Invalid request");
         }
         var partition = partitionService.getPartition();
-        var kid = CryptographicUtilities.digestSha256(user.getPublicRsaKey());
-        var cipher = new Cipher(kid, CipherDecryptionMethod.UNWRAPPED_USER_KEY, null, Base64.getDecoder().decode(command.getWrappedPartitionUserKey()));
+        var cipher = new Cipher(CipherDecryptionMethod.UNWRAPPED_USER_KEY, null, Base64.getDecoder().decode(command.getWrappedPartitionUserKey()));
         cipherRepository.save(cipher);
         var partitionUser = PartitionUser.builder()
                 .partition(partition)
