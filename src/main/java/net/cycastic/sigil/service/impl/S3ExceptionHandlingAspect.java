@@ -17,13 +17,14 @@ public class S3ExceptionHandlingAspect {
         } catch (S3Exception e) {
             var statusCode = e.statusCode();
             switch (statusCode){
+                case 400:
                 case 401:
                 case 403:
                 case 404: {
                     throw new RequestException(statusCode, e, e.getMessage());
                 }
                 default: {
-                    throw new RequestException(500, e, e.getMessage());
+                    throw new RequestException(500, e, "Internal server error");
                 }
             }
         }
