@@ -9,6 +9,20 @@ logging:
               BasicBinder: TRACE
       springframework:
         web: DEBUG
+    net:
+      cycastic:
+        sigil:
+          controller:
+            filter: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
 spring:
   cloud:
     compatibility-verifier:
@@ -16,12 +30,12 @@ spring:
     vault:
       enabled: false
   application:
-    name: portfoliotoolkit
+    name: sigil
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password:
-    url:
-    username:
+    password: <db_password>
+    url: jdbc:mysql://<db_host>:<db_port>/<db_name>
+    username: sigil
   jpa:
     hibernate:
       ddl-auto: none
@@ -33,16 +47,60 @@ spring:
   threads:
     virtual:
       enabled: true
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
 springdoc:
   show-actuator: true
 application:
+  cleaner:
+    incomplete-upload-ttl-seconds: 21_600
+  limit:
+    limits:
+      - usage-type: UNRESTRICTED
+      - usage-type: STANDARD
+        project-count: 3
+        lacp-count: 5
+        per-attachment-size: 10_000_000
+        all-attachment-size: 200_000_000
+  cors:
+    allow-origins:
+      - <origins> # Use "*" for local development
+  email:
+    template:
+      max-template-file-size: 1_000_000
+    host: localhost
+    auth: false
+    starttls: false
+    port: 2500
+    sender: <mail_address>
   auth:
+    registration:
+      registration-link-valid-seconds: 3_600
+      resend-verification-limit-seconds: 1
     jwt:
-      valid-for-millis: 10_800_000
-      public-key: MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEfAAV6D+rM3V4SxUZwEc8/2dvx2iQaRovWMmxT18KvAlqoUV88Br5Apnrhv807b+VCN/Y/nvFsAfcBXqgzX+Vgk3QH4TgmObqviikBlBG77Po4K4yYWF5tRJoIlbMqLUd
-      private-key: ME4CAQAwEAYHKoZIzj0CAQYFK4EEACIENzA1AgEBBDC4K76p7bdIsiEtqj3ENjqT9bL7TNOoxqZmh50YvXukWU+gDhuf5WyJeBm16+nrvHs=
+      valid-for-millis: 900_000
+      issuer: "http://localhost:8080"
+    kdf:
+      masking-key: <random_base64_value>
+      masking-rsa-public-key: <rsa_public_key>
+      masking-rsa-private-key: <rsa_private_key>
   vault:
-    token:
-    encryption-key-name:
-    api-address:
-    api-version:
+    token: <vult_token>token
+    encryption-key-name: <vault_encryption_key_name>
+    api-address: <vault_address>
+    api-version: <vault_key_version>
+    signing-key-name: <vault_signing_key_name>
+    signing-private-key-wrapped: <vault_wrapped_jwt_ec_private_key>
+    signing-public-key: <vault_jwt_ec_public_key>
+    presign-key-name: <vault_presigner_key_name>
+    ephemeral-key-name: <vault_ephemeral_rsa_key_name>
+  s3:
+    region-name: <s3_region>
+    access-key: <s3_access_key>
+    secret-key: <s3_secret_key>
+    attachment-bucket-name: <s3_attachment_bucket_name>
+  origins:
+    backend-origin: http://localhost:8080
+    frontend-origin: http://localhost:5173
