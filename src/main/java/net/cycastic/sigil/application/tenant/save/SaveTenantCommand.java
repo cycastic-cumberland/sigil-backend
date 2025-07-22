@@ -14,5 +14,5 @@ import org.springframework.lang.Nullable;
 public class SaveTenantCommand implements Command<IdDto> {
     private @Nullable Integer id;
     private @Nullable Integer userId;
-    private @NotNull String name;
+    private @NotNull String tenantName;
 }

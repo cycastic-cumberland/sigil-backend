@@ -21,7 +21,7 @@ public class SaveTenantCommandHandler implements Command.Handler<SaveTenantComma
     private final UserRepository userRepository;
 
     private Integer updateTenant(SaveTenantCommand command, Tenant tenant){
-        tenant.setName(command.getName());
+        tenant.setName(command.getTenantName());
         tenant.setUpdatedAt(OffsetDateTime.now());
 
         tenantRepository.save(tenant);
@@ -33,7 +33,7 @@ public class SaveTenantCommandHandler implements Command.Handler<SaveTenantComma
                 .orElseThrow(() -> new RequestException(404, "User not found"));
 
         var project = Tenant.builder()
-                .name(command.getName())
+                .name(command.getTenantName())
                 .owner(user)
                 .createdAt(OffsetDateTime.now())
                 .build();
