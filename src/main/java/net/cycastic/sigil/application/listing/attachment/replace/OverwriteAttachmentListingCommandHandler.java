@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OverwriteAttachmentListingCommandHandler implements Command.Handler<OverwriteAttachmentListingCommand, @Null Object> {
+public class OverwriteAttachmentListingCommandHandler implements Command.Handler<OverwriteAttachmentListingCommand, Void> {
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final StorageProvider storageProvider;
@@ -26,7 +26,7 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
 
     @Override
     @Transactional
-    public @Null Object handle(OverwriteAttachmentListingCommand command) {
+    public Void handle(OverwriteAttachmentListingCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
 
         var partition = partitionService.getPartition();

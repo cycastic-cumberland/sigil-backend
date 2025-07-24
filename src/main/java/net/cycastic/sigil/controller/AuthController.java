@@ -1,6 +1,7 @@
 package net.cycastic.sigil.controller;
 
 import an.awesome.pipelinr.Pipelinr;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.auth.ephemeral.GetEphemeralPublicKeyCommand;
@@ -15,10 +16,8 @@ import net.cycastic.sigil.application.auth.self.GetSelfCommand;
 import net.cycastic.sigil.application.auth.signin.SignInCommand;
 import net.cycastic.sigil.application.auth.webauthn.enroll.EnrollWebAuthnEnvelopCommand;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
-import net.cycastic.sigil.domain.dto.auth.CredentialDto;
+import net.cycastic.sigil.domain.dto.auth.*;
 import net.cycastic.sigil.domain.dto.KdfDetailsDto;
-import net.cycastic.sigil.domain.dto.auth.EnvelopDto;
-import net.cycastic.sigil.domain.dto.auth.PemDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,8 +33,9 @@ public class AuthController {
     }
 
     @PostMapping("complete")
-    public void completeRegistration(CompleteUserRegistrationCommand command){
-        pipelinr.send(command);
+    public void completeRegistration(@Valid @RequestParam CompleteUserRegistrationParams queryParams,
+                                     @Valid @RequestBody CompleteUserRegistrationForm form){
+        pipelinr.send(CompleteUserRegistrationCommand.fromDomain(queryParams, form));
     }
 
     @PostMapping

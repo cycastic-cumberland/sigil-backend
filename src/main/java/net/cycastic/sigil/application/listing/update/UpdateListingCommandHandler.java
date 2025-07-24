@@ -14,13 +14,13 @@ import java.time.OffsetDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class UpdateListingCommandHandler implements Command.Handler<UpdateListingCommand, @Null Object> {
+public class UpdateListingCommandHandler implements Command.Handler<UpdateListingCommand, Void> {
     private final ListingRepository listingRepository;
     private final PartitionService partitionService;
 
     @Override
     @Transactional
-    public @Null Object handle(UpdateListingCommand command) {
+    public Void handle(UpdateListingCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
         var listing = listingRepository.findByPartitionAndListingPath(partitionService.getPartition(), command.getPath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));

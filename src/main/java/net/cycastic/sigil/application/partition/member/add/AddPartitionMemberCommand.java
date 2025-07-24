@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
-public class AddPartitionMemberCommand implements Command<@Null Object> {
+public class AddPartitionMemberCommand implements Command<Void> {
     private String email;
     private String wrappedPartitionUserKey;
     private int permissions;

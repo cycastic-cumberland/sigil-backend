@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
-public class UpdateListingCommand implements Command<@Null Object> {
+public class UpdateListingCommand implements Command<Void> {
     private String path;
     private String newPath;
 }

@@ -31,7 +31,7 @@ public class UserDto {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .roles(user.getRoles().split(","))
-                .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
+                .publicRsaKey(user.getPublicRsaKey() == null ? null : Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .hasWebAuthnCredential(user.getWebAuthnCredentialId().isPresent())
                 .joinedAt(user.getJoinedAt())
                 .build();

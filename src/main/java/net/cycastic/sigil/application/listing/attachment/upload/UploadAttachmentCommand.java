@@ -8,6 +8,6 @@ import net.cycastic.sigil.domain.dto.listing.AttachmentUploadDto;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class UploadAttachmentCommand extends AttachmentUploadDto implements Command<@Null Object> {
+public class UploadAttachmentCommand extends AttachmentUploadDto implements Command<Void> {
     private FileUpload fileUpload;
 }

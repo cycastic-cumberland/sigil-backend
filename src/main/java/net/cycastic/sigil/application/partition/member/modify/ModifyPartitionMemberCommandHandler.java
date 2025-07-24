@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ModifyPartitionMemberCommandHandler implements Command.Handler<ModifyPartitionMemberCommand, @Null Object> {
+public class ModifyPartitionMemberCommandHandler implements Command.Handler<ModifyPartitionMemberCommand, Void> {
     private final PartitionService partitionService;
     private final UserRepository userRepository;
     private final PartitionUserRepository partitionUserRepository;
     private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
-    public @Null Object handle(ModifyPartitionMemberCommand command) {
+    public Void handle(ModifyPartitionMemberCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE);
         var user = userRepository.findByEmailAndTenantId(command.getEmail(), loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));

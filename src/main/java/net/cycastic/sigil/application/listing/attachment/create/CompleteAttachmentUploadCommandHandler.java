@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CompleteAttachmentUploadCommandHandler implements Command.Handler<CompleteAttachmentUploadCommand, @Null Object> {
+public class CompleteAttachmentUploadCommandHandler implements Command.Handler<CompleteAttachmentUploadCommand, Void> {
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingService listingService;
 
     @Override
-    public Object handle(CompleteAttachmentUploadCommand command) {
+    public Void handle(CompleteAttachmentUploadCommand command) {
         var listing = attachmentListingRepository.findById(command.getId())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
         listingService.markAttachmentUploadAsCompleted(listing, true);

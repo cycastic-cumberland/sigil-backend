@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class RemovePartitionMemberCommandHandler implements Command.Handler<RemovePartitionMemberCommand, @Null Object> {
+public class RemovePartitionMemberCommandHandler implements Command.Handler<RemovePartitionMemberCommand, Void> {
     private final PartitionService partitionService;
     private final UserRepository userRepository;
     private final PartitionUserRepository partitionUserRepository;
@@ -22,7 +22,7 @@ public class RemovePartitionMemberCommandHandler implements Command.Handler<Remo
 
     @Override
     @Transactional
-    public @Null Object handle(RemovePartitionMemberCommand command) {
+    public Void handle(RemovePartitionMemberCommand command) {
         var user = userRepository.findByEmailAndTenantId(command.getEmail(), loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
         if (!user.getId().equals(loggedUserAccessor.getUserId())){

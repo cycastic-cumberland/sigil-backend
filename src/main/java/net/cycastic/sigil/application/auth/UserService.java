@@ -1,23 +1,26 @@
 package net.cycastic.sigil.application.auth;
 
+import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.configuration.auth.KdfConfiguration;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CipherDto;
+import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
 import net.cycastic.sigil.domain.dto.auth.CredentialDto;
 import net.cycastic.sigil.domain.dto.UserDto;
+import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.*;
 import net.cycastic.sigil.domain.model.tenant.UsageType;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.CipherRepository;
+import net.cycastic.sigil.domain.repository.WebAuthnCredentialRepository;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
@@ -49,10 +52,11 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    public static long SIGNATURE_VERIFICATION_WINDOW = 3;
+    public static long SIGNATURE_VERIFICATION_WINDOW = 10;
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final LoggedUserAccessor loggedUserAccessor;
+    private final WebAuthnCredentialRepository webAuthnCredentialRepository;
     private final UserRepository userRepository;
     private final KeyDerivationFunction keyDerivationFunction;
     private final JwtIssuer jwtIssuer;
@@ -63,12 +67,23 @@ public class UserService {
     private final ApplicationEmailSender applicationEmailSender;
     private final TaskExecutor taskScheduler;
     private final CipherRepository cipherRepository;
-    private final TenantService tenantService;
     private final KdfConfiguration kdfConfiguration;
 
     @Autowired
-    public UserService(LoggedUserAccessor loggedUserAccessor, UserRepository userRepository, KeyDerivationFunction keyDerivationFunction, JwtIssuer jwtIssuer, RegistrationConfigurations registrationConfigurations, UrlAccessor urlAccessor, UriPresigner uriPresigner, EmailTemplateEngine emailTemplateEngine, ApplicationEmailSender applicationEmailSender, TaskExecutor taskScheduler, CipherRepository cipherRepository, TenantService tenantService, KdfConfiguration kdfConfiguration){
+    public UserService(LoggedUserAccessor loggedUserAccessor, WebAuthnCredentialRepository webAuthnCredentialRepository,
+                       UserRepository userRepository,
+                       KeyDerivationFunction keyDerivationFunction,
+                       JwtIssuer jwtIssuer,
+                       RegistrationConfigurations registrationConfigurations,
+                       UrlAccessor urlAccessor,
+                       UriPresigner uriPresigner,
+                       EmailTemplateEngine emailTemplateEngine,
+                       ApplicationEmailSender applicationEmailSender,
+                       TaskExecutor taskScheduler,
+                       CipherRepository cipherRepository,
+                       KdfConfiguration kdfConfiguration){
         this.loggedUserAccessor = loggedUserAccessor;
+        this.webAuthnCredentialRepository = webAuthnCredentialRepository;
         this.userRepository = userRepository;
         this.keyDerivationFunction = keyDerivationFunction;
         this.jwtIssuer = jwtIssuer;
@@ -80,7 +95,6 @@ public class UserService {
         this.applicationEmailSender = applicationEmailSender;
         this.taskScheduler = taskScheduler;
         this.cipherRepository = cipherRepository;
-        this.tenantService = tenantService;
     }
 
     public static void refreshSecurityStamp(User user){
@@ -88,23 +102,12 @@ public class UserService {
     }
 
     private User registerUserNoTransactionNoValidation(@NotNull String email,
-                                                       @NotNull String firstName,
-                                                       @NotNull String lastName,
-                                                       @NotNull String publicRsaKey,
-                                                       @NotNull String kdfSalt,
-                                                       @NotNull String kdfParameters,
-                                                       @NotNull CipherDto privateRsaKey,
                                                        @NotNull Collection<String> roles,
                                                        @NotNull UserStatus userStatus,
-                                                       @NotNull UsageType usageType,
                                                        boolean emailVerified){
-        var decoder = Base64.getDecoder();
         var user = User.builder()
                 .email(email)
                 .normalizedEmail(email.toUpperCase(Locale.ROOT))
-                .firstName(firstName)
-                .lastName(lastName)
-                .publicRsaKey(decoder.decode(publicRsaKey))
                 .roles(String.join(",", roles))
                 .joinedAt(OffsetDateTime.now())
                 .securityStamp(new byte[32])
@@ -112,37 +115,23 @@ public class UserService {
                 .lastInvitationSent(OffsetDateTime.now())
                 .emailVerified(emailVerified)
                 .build();
-        var cipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD,
-                decoder.decode(privateRsaKey.getIv()),
-                decoder.decode(privateRsaKey.getCipher()));
-        cipherRepository.save(cipher);
-        user.setWrappedUserKey(cipher);
-        user.setKdfSettings(decoder.decode(kdfParameters));
-        user.setKdfSalt(decoder.decode(kdfSalt));
         refreshSecurityStamp(user);
         userRepository.save(user);
-        tenantService.createTenant(user, user.getLastName() + "'s tenant", usageType);
         return user;
     }
 
     public User registerUserNoTransaction(@NotNull String email,
-                                          @NotNull String firstName,
-                                          @NotNull String lastName,
-                                          @NotNull String publicRsaKey,
-                                          @NotNull String kdfSalt,
-                                          @NotNull String kdfParameters,
-                                          @NotNull CipherDto privateRsaKey,
                                           @NotNull Collection<String> roles,
                                           @NotNull UserStatus userStatus,
-                                          @NotNull UsageType usageType,
                                           boolean emailVerified){
         if (!ApplicationUtilities.isEmail(email)){
             throw RequestException.withExceptionCode("C400T000");
         }
-        return registerUserNoTransactionNoValidation(email, firstName, lastName, publicRsaKey, kdfSalt, kdfParameters, privateRsaKey, roles, userStatus, usageType, emailVerified);
+        return registerUserNoTransactionNoValidation(email, roles, userStatus, emailVerified);
     }
 
     @Transactional
+    @SneakyThrows
     public User registerUser(@NotNull String email,
                              @NotNull String firstName,
                              @NotNull String lastName,
@@ -154,7 +143,7 @@ public class UserService {
                              @NotNull UserStatus userStatus,
                              @NotNull UsageType usageType,
                              boolean emailVerified){
-        return registerUserNoTransaction(email, firstName, lastName, publicRsaKey, kdfSalt, kdfParameters, privateRsaKey, roles, userStatus, usageType, emailVerified);
+        throw new NotSupportedException("This method is no longer supported");
     }
 
     @SneakyThrows
@@ -232,18 +221,7 @@ public class UserService {
             throw RequestException.withExceptionCode("C401T000");
         }
         if (!user.isEmailVerified()){
-            var now = OffsetDateTime.now();
-            if (user.getLastInvitationSent() != null){
-                var secondsElapsed = Duration.between(user.getLastInvitationSent(), now).getSeconds();
-                if (secondsElapsed < registrationConfigurations.getResendVerificationLimitSeconds()){
-                    throw RequestException.withExceptionCode("C401T001");
-                }
-            }
-
-            user.setLastInvitationSent(now);
-            userRepository.save(user);
-            sendConfirmationEmail(user);
-            throw new RequestException(400, "Verification email sent, please check your inbox");
+            throw RequestException.withExceptionCode("C400T011");
         }
 
         var roles = user.getAuthorities()
@@ -302,7 +280,6 @@ public class UserService {
         Map<String, Object> parameters = Map.of(
                 "completionUri", completionUri,
                 "__debugBackendCompletionUri", backendCompletionUri,
-                "lastName", user.getLastName(),
                 "notValidAfter", DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
                         .withLocale(Locale.ROOT)
                         .format(nva),
@@ -336,7 +313,7 @@ public class UserService {
 
         applicationEmailSender.sendHtml(user.getEmail(),
                 null,
-                "Complete your registration with PortfolioToolkit",
+                "Complete your registration with Sigil",
                 new String(renderedContent, StandardCharsets.UTF_8),
                 renderResult.getImageStreamSource());
     }
@@ -348,6 +325,16 @@ public class UserService {
         if (registrationConfigurations.getResendVerificationLimitSeconds() <= 0){
             throw new IllegalStateException("Invalid resend verification time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
         }
+        var now = OffsetDateTime.now();
+        if (user.getLastInvitationSent() != null){
+            var secondsElapsed = Duration.between(user.getLastInvitationSent(), now).getSeconds();
+            if (secondsElapsed < registrationConfigurations.getResendVerificationLimitSeconds()){
+                throw RequestException.withExceptionCode("C401T001");
+            }
+        }
+
+        user.setLastInvitationSent(now);
+        userRepository.save(user);
         final var securityStamp = Base64.getEncoder().encodeToString(user.getSecurityStamp());
         final var dto = UserDto.fromDomain(user);
 
@@ -359,6 +346,56 @@ public class UserService {
                 logger.error("Failed to send confirmation email to user {}", dto.getId(), e);
             }
         });
+    }
+
+    public void enrollWebAuthnNoTransaction(User user, WebAuthnCredentialDto webAuthnCredential){
+        if (webAuthnCredentialRepository.existsByUser(user)){
+            throw RequestException.withExceptionCode("C409T000");
+        }
+        var transports = Arrays.stream(webAuthnCredential.getTransports())
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .sorted(String::compareTo)
+                .toList();
+        if (transports.stream().anyMatch(t -> t.contains(","))){
+            throw new RequestException(400, "Invalid transport");
+        }
+
+        var cipher = new Cipher(CipherDecryptionMethod.WEBAUTHN_KEY,
+                Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getIv()),
+                Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getCipher()));
+        cipherRepository.save(cipher);
+
+        var cred = WebAuthnCredential.builder()
+                .user(user)
+                .credentialId(Base64.getDecoder().decode(webAuthnCredential.getCredentialId()))
+                .salt(Base64.getDecoder().decode(webAuthnCredential.getSalt()))
+                .transports(String.join(",", transports))
+                .wrappedUserKey(cipher)
+                .build();
+        webAuthnCredentialRepository.save(cred);
+    }
+
+    public void completeRegistrationNoTransaction(User user, CompleteUserRegistrationForm form){
+        user.setFirstName(form.getFirstName());
+        user.setLastName(form.getLastName());
+        user.setPublicRsaKey(Base64.getDecoder().decode(form.getPublicRsaKey()));
+        if (form.getPasswordCredential() == null && form.getWebAuthnCredential() == null){
+            throw RequestException.withExceptionCode("C400T010");
+        }
+        if (form.getPasswordCredential() != null){
+            var settings = keyDerivationFunction.decodeSettings(form.getPasswordCredential().getKeyDerivationSettings());
+            user.setKdfSalt(settings.getSalt());
+            user.setKdfSettings(settings.getParameters().encode());
+            var passwordCipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD,
+                    Base64.getDecoder().decode(form.getPasswordCredential().getCipher().getIv()),
+                    Base64.getDecoder().decode(form.getPasswordCredential().getCipher().getCipher()));
+            cipherRepository.save(passwordCipher);
+            user.setWrappedUserKey(passwordCipher);
+        } else {
+            enrollWebAuthnNoTransaction(user, form.getWebAuthnCredential());
+        }
+        userRepository.save(user);
     }
 
     public User getUser(){

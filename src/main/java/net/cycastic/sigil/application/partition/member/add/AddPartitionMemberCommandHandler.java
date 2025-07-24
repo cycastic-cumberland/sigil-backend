@@ -21,7 +21,7 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
-public class AddPartitionMemberCommandHandler implements Command.Handler<AddPartitionMemberCommand, @Null Object> {
+public class AddPartitionMemberCommandHandler implements Command.Handler<AddPartitionMemberCommand, Void> {
     private final PartitionService partitionService;
     private final UserRepository userRepository;
     private final PartitionUserRepository partitionUserRepository;
@@ -30,14 +30,14 @@ public class AddPartitionMemberCommandHandler implements Command.Handler<AddPart
 
     @Override
     @Transactional
-    public @Null Object handle(AddPartitionMemberCommand command) {
+    public Void handle(AddPartitionMemberCommand command) {
         Objects.requireNonNull(command.getWrappedPartitionUserKey());
 
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE);
         var user = userRepository.findByEmailAndTenantId(command.getEmail(), loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
         if (loggedUserAccessor.getUserId() == user.getId()){
-            throw new RequestException(400, "Invalid request");
+            throw RequestException.withExceptionCode("C400T010");
         }
         var partition = partitionService.getPartition();
         var cipher = new Cipher(CipherDecryptionMethod.UNWRAPPED_USER_KEY, null, Base64.getDecoder().decode(command.getWrappedPartitionUserKey()));

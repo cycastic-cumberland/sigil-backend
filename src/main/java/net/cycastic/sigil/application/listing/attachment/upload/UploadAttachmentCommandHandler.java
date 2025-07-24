@@ -16,7 +16,7 @@ import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
-public class UploadAttachmentCommandHandler implements Command.Handler<UploadAttachmentCommand, @Null Object> {
+public class UploadAttachmentCommandHandler implements Command.Handler<UploadAttachmentCommand, Void> {
     private final StorageProvider storageProvider;
     private final ListingService listingService;
     private final PartitionService partitionService;
@@ -24,7 +24,7 @@ public class UploadAttachmentCommandHandler implements Command.Handler<UploadAtt
     private final EncryptionKeyHelper encryptionKeyHelper;
 
     @Override
-    public @Null Object handle(UploadAttachmentCommand command) {
+    public Void handle(UploadAttachmentCommand command) {
         var partition = partitionService.getPartition();
         var serverCipher = partition.getServerPartitionKey();
         if (serverCipher == null){

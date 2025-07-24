@@ -13,13 +13,13 @@ import java.time.OffsetDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class DeletePartitionCommandHandler implements Command.Handler<DeletePartitionCommand, @Null Object> {
+public class DeletePartitionCommandHandler implements Command.Handler<DeletePartitionCommand, Void> {
     private final PartitionService partitionService;
     private final PartitionRepository partitionRepository;
 
     @Override
     @Transactional
-    public @Null Object handle(DeletePartitionCommand command) {
+    public Void handle(DeletePartitionCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE | ApplicationConstants.PartitionPermissions.WRITE);
         var partition = partitionService.getPartition();
         partition.setRemovedAt(OffsetDateTime.now());

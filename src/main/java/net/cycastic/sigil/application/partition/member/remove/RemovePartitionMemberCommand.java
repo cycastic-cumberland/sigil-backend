@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
-public class RemovePartitionMemberCommand implements Command<@Null Object> {
+public class RemovePartitionMemberCommand implements Command<Void> {
     private String email;
 }

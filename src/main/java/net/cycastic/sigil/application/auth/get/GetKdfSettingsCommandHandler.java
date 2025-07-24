@@ -13,6 +13,7 @@ import net.cycastic.sigil.domain.dto.auth.AuthenticationMethod;
 import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.domain.model.tenant.User;
+import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,7 +133,11 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
         var dummyWebAuthnId = CryptographicUtilities.deriveKey(STANDARD_WEBAUTHN_ID_LENGTH, getMaskingSeed(command.getUserEmail(), "WebAuthnKeyId"), null);
         var dummyWebAuthnSalt = CryptographicUtilities.deriveKey(STANDARD_WEBAUTHN_SALT_LENGTH, getMaskingSeed(command.getUserEmail(), "WebAuthnKeySalt"), null);
 
-        Optional<User> userOpt = userRepository.getByEmail(command.getUserEmail());
+        var userOpt = userRepository.getByEmail(command.getUserEmail());
+        if (userOpt.isPresent() && userOpt.get().getStatus() != UserStatus.ACTIVE){
+            userOpt = Optional.empty();
+        }
+
         var passwordWrappedKey = dummyPasswordCipher;
         var webAuthnCredential = WebAuthnCredentialDto.builder()
                 .credentialId(Base64.getEncoder().encodeToString(dummyWebAuthnId))

@@ -12,12 +12,12 @@ import java.time.OffsetDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class DeleteTenantCommandHandler implements Command.Handler<DeleteTenantCommand, @Null Object> {
+public class DeleteTenantCommandHandler implements Command.Handler<DeleteTenantCommand, Void> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantRepository tenantRepository;
 
     @Override
-    public @Null Object handle(DeleteTenantCommand command) {
+    public Void handle(DeleteTenantCommand command) {
         var userId = loggedUserAccessor.getUserId();
         var project = tenantRepository.findById(command.getId())
                 .orElseThrow(() -> new RequestException(404, "Could not find tenant"));

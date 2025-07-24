@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class DeleteListingCommandHandler implements Command.Handler<DeleteListingCommand, @Null Object> {
+public class DeleteListingCommandHandler implements Command.Handler<DeleteListingCommand, Void> {
     private final ListingService listingService;
 
     @Override
     @Transactional
-    public @Null Object handle(DeleteListingCommand command) {
+    public Void handle(DeleteListingCommand command) {
         listingService.deleteListingNoTransaction(command.getListingPath());
         return null;
     }

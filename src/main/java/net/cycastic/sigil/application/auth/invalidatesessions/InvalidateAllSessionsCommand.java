@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvalidateAllSessionsCommand implements Command<@Null Object> {
+public class InvalidateAllSessionsCommand implements Command<Void> {
     private int userId;
 }

@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 @Data
-public class CompleteAttachmentUploadCommand implements Command<@Null Object> {
+public class CompleteAttachmentUploadCommand implements Command<Void> {
     private int id;
 }

@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class InvalidateAllSessionsCommandHandler implements Command.Handler<InvalidateAllSessionsCommand, @Null Object> {
+public class InvalidateAllSessionsCommandHandler implements Command.Handler<InvalidateAllSessionsCommand, Void> {
     private final LoggedUserAccessor loggedUserAccessor;
     private final UserRepository userRepository;
 
     @Override
-    public @Null Object handle(InvalidateAllSessionsCommand command) {
+    public Void handle(InvalidateAllSessionsCommand command) {
         if (loggedUserAccessor.getClaims() == null){
             throw new RequestException(401, "User not signed in");
         }

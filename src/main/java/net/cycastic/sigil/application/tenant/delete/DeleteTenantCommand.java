@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeleteTenantCommand implements Command<@Null Object> {
+public class DeleteTenantCommand implements Command<Void> {
     private int id;
 }
