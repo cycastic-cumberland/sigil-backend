@@ -11,3 +11,5 @@ C400T008,400,Partition does not have server-managed key and can only be accessed
 C400T009,400,Partition key is not supplied,
 C400T010,400,Invalid request,
 C400T011,400,Account's registration in progress,
+C400T012,400,Invalid decryption method,
+C400T013,400,User registered,

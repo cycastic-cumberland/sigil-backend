@@ -19,6 +19,8 @@ public abstract class KeyDerivationFunction implements PasswordEncoder {
     public interface Parameters {
         void encode(OutputStream stream);
 
+        boolean isMinimallyViable();
+
         @SneakyThrows
         default byte[] encode(){
             try (var stream = new ByteArrayOutputStream()){

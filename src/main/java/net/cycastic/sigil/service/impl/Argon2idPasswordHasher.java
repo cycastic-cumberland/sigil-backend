@@ -38,6 +38,11 @@ public class Argon2idPasswordHasher extends KeyDerivationFunction {
             writeInt(stream, intBytes, iterations);
         }
 
+        @Override
+        public boolean isMinimallyViable() {
+            return parallelism >= PARALLELISM && memoryKb >= MEMORY_KB && iterations >= ITERATIONS;
+        }
+
         public static CipherConfigurations decode(InputStream stream){
             var intBytes = ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN);
             var parallelism = readInt(stream, intBytes);

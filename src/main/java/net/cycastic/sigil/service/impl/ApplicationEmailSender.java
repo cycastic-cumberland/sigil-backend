@@ -35,6 +35,6 @@ public class ApplicationEmailSender extends EmailSenderImpl {
     }
 
     public void sendHtml(String to, String cc, String subject, String htmlBody, @Nullable Map<String, EmailImage> imageStreamSource){
-        sendHtml(senderAddress, "PortfolioToolkit", to, cc, subject, htmlBody, imageStreamSource);
+        sendHtml(senderAddress, "Sigil", to, cc, subject, htmlBody, imageStreamSource);
     }
 }

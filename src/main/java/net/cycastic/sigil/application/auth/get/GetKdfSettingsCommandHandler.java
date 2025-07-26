@@ -11,6 +11,7 @@ import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.dto.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.auth.AuthenticationMethod;
 import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
+import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
@@ -134,8 +135,14 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
         var dummyWebAuthnSalt = CryptographicUtilities.deriveKey(STANDARD_WEBAUTHN_SALT_LENGTH, getMaskingSeed(command.getUserEmail(), "WebAuthnKeySalt"), null);
 
         var userOpt = userRepository.getByEmail(command.getUserEmail());
-        if (userOpt.isPresent() && userOpt.get().getStatus() != UserStatus.ACTIVE){
-            userOpt = Optional.empty();
+        if (userOpt.isPresent()){
+            var status = userOpt.get().getStatus();
+            if (status == UserStatus.INVITED){
+                throw RequestException.withExceptionCode("C400T011");
+            }
+            if (status != UserStatus.ACTIVE){
+                userOpt = Optional.empty();
+            }
         }
 
         var passwordWrappedKey = dummyPasswordCipher;
@@ -165,7 +172,9 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
                     var detailsOpt = userRepository.getWebAuthnBasedKdfDetails(user.getId());
                     if (detailsOpt.isPresent()){
                         var details = detailsOpt.get();
-                        settings = new KdfSettings(keyDerivationFunction, details.getSalt(), details.getParameters());
+                        if (details.getSalt() != null && details.getParameters() != null){
+                            settings = new KdfSettings(keyDerivationFunction, details.getSalt(), details.getParameters());
+                        }
                         var webAuthnCipher = CipherDto.builder()
                                 .decryptionMethod(CipherDecryptionMethod.WEBAUTHN_KEY)
                                 .iv(details.getIv() != null ? Base64.getEncoder().encodeToString(details.getIv()) : null)

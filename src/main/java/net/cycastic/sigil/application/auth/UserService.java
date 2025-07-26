@@ -1,7 +1,6 @@
 package net.cycastic.sigil.application.auth;
 
 import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
@@ -82,6 +81,13 @@ public class UserService {
                        TaskExecutor taskScheduler,
                        CipherRepository cipherRepository,
                        KdfConfiguration kdfConfiguration){
+        if (registrationConfigurations.getRegistrationLinkValidSeconds() <= 0){
+            throw new IllegalStateException("Invalid registration expiration time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
+        }
+        if (registrationConfigurations.getResendVerificationLimitSeconds() <= 0){
+            throw new IllegalStateException("Invalid resend verification time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
+        }
+
         this.loggedUserAccessor = loggedUserAccessor;
         this.webAuthnCredentialRepository = webAuthnCredentialRepository;
         this.userRepository = userRepository;
@@ -105,6 +111,7 @@ public class UserService {
                                                        @NotNull Collection<String> roles,
                                                        @NotNull UserStatus userStatus,
                                                        boolean emailVerified){
+        email = email.trim();
         var user = User.builder()
                 .email(email)
                 .normalizedEmail(email.toUpperCase(Locale.ROOT))
@@ -112,7 +119,7 @@ public class UserService {
                 .joinedAt(OffsetDateTime.now())
                 .securityStamp(new byte[32])
                 .status(userStatus)
-                .lastInvitationSent(OffsetDateTime.now())
+                .lastInvitationSent(null)
                 .emailVerified(emailVerified)
                 .build();
         refreshSecurityStamp(user);
@@ -130,8 +137,8 @@ public class UserService {
         return registerUserNoTransactionNoValidation(email, roles, userStatus, emailVerified);
     }
 
-    @Transactional
     @SneakyThrows
+    @Deprecated
     public User registerUser(@NotNull String email,
                              @NotNull String firstName,
                              @NotNull String lastName,
@@ -148,6 +155,9 @@ public class UserService {
 
     @SneakyThrows
     private String getKdfSettings(User user){
+        if (user.getKdfSettings() == null || user.getKdfSalt() == null){
+            return null;
+        }
         final KeyDerivationFunction.Parameters parameters;
         try (var stream = new ByteArrayInputStream(user.getKdfSettings())){
             parameters = keyDerivationFunction.getParameters(stream);
@@ -220,7 +230,7 @@ public class UserService {
             jwtIssuer.generateTokens("", null);
             throw RequestException.withExceptionCode("C401T000");
         }
-        if (!user.isEmailVerified()){
+        if (user.getStatus() == UserStatus.INVITED){
             throw RequestException.withExceptionCode("C400T011");
         }
 
@@ -253,7 +263,7 @@ public class UserService {
 
     private URI generateCompletionUrl(UserDto user, String securityStamp, OffsetDateTime notValidBefore, OffsetDateTime notValidAfter){
         var backendCompletionUri = UriComponentsBuilder.fromUriString(urlAccessor.getBackendOrigin())
-                .path("/api/auth/complete")
+                .path("/api/auth/register/complete")
                 .queryParam("userId", user.getId())
                 .queryParam("securityStamp", ApplicationUtilities.encodeURIComponent(securityStamp))
                 .queryParam("notValidBefore", notValidBefore.toInstant().getEpochSecond())
@@ -318,18 +328,12 @@ public class UserService {
                 renderResult.getImageStreamSource());
     }
 
-    public void sendConfirmationEmail(User user){
-        if (registrationConfigurations.getRegistrationLinkValidSeconds() <= 0){
-            throw new IllegalStateException("Invalid registration expiration time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
-        }
-        if (registrationConfigurations.getResendVerificationLimitSeconds() <= 0){
-            throw new IllegalStateException("Invalid resend verification time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
-        }
+    public void sendConfirmationEmailNoTransaction(User user){
         var now = OffsetDateTime.now();
         if (user.getLastInvitationSent() != null){
             var secondsElapsed = Duration.between(user.getLastInvitationSent(), now).getSeconds();
             if (secondsElapsed < registrationConfigurations.getResendVerificationLimitSeconds()){
-                throw RequestException.withExceptionCode("C401T001");
+                throw RequestException.withExceptionCode("C401T001", registrationConfigurations.getResendVerificationLimitSeconds() - secondsElapsed);
             }
         }
 
@@ -349,6 +353,9 @@ public class UserService {
     }
 
     public void enrollWebAuthnNoTransaction(User user, WebAuthnCredentialDto webAuthnCredential){
+        if (webAuthnCredential.getWrappedUserKey().getDecryptionMethod() != CipherDecryptionMethod.WEBAUTHN_KEY){
+            throw RequestException.withExceptionCode("C400T012");
+        }
         if (webAuthnCredentialRepository.existsByUser(user)){
             throw RequestException.withExceptionCode("C409T000");
         }
@@ -384,7 +391,13 @@ public class UserService {
             throw RequestException.withExceptionCode("C400T010");
         }
         if (form.getPasswordCredential() != null){
+            if (form.getPasswordCredential().getCipher().getDecryptionMethod() != CipherDecryptionMethod.USER_PASSWORD){
+                throw RequestException.withExceptionCode("C400T012");
+            }
             var settings = keyDerivationFunction.decodeSettings(form.getPasswordCredential().getKeyDerivationSettings());
+            if (!settings.getParameters().isMinimallyViable()){
+                throw new RequestException(400, "Password cipher does not achieve minimum viability");
+            }
             user.setKdfSalt(settings.getSalt());
             user.setKdfSettings(settings.getParameters().encode());
             var passwordCipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD,

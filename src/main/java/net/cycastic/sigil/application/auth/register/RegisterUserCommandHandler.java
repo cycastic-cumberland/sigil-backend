@@ -2,7 +2,6 @@ package net.cycastic.sigil.application.auth.register;
 
 import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.auth.UserService;
@@ -25,6 +24,10 @@ public class RegisterUserCommandHandler implements Command.Handler<RegisterUserC
     public Void handle(RegisterUserCommand command) {
         var userOpt = userRepository.getByEmail(command.getEmail());
         if (userOpt.isPresent()){
+            var user = userOpt.get();
+            if (user.getStatus() == UserStatus.INVITED){
+                userService.sendConfirmationEmailNoTransaction(user);
+            }
             return null;
         }
 
@@ -32,7 +35,7 @@ public class RegisterUserCommandHandler implements Command.Handler<RegisterUserC
                 Collections.singleton(ApplicationConstants.Roles.COMMON),
                 UserStatus.INVITED,
                 false);
-        userService.sendConfirmationEmail(user);
+        userService.sendConfirmationEmailNoTransaction(user);
         return null;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -62,6 +63,11 @@ public class ApiExceptionHandler {
         }
         var error = errorBuilder.build();
         return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getResponseCode()));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ExceptionResponse> handleValidationExceptions(MissingServletRequestParameterException ex, HttpServletRequest request) {
+        return handleGeneric(new RequestException(400, ex, ex.getMessage()), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

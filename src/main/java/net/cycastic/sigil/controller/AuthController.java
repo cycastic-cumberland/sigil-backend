@@ -11,7 +11,9 @@ import net.cycastic.sigil.application.auth.get.GetUserCommand;
 import net.cycastic.sigil.application.auth.invalidatesessions.InvalidateAllSessionsCommand;
 import net.cycastic.sigil.application.auth.refresh.RefreshTokenCommand;
 import net.cycastic.sigil.application.auth.register.CompleteUserRegistrationCommand;
+import net.cycastic.sigil.application.auth.register.ProbeRegistrationInvitationCommand;
 import net.cycastic.sigil.application.auth.register.RegisterUserCommand;
+import net.cycastic.sigil.application.auth.register.ResendConfirmationEmailCommand;
 import net.cycastic.sigil.application.auth.self.GetSelfCommand;
 import net.cycastic.sigil.application.auth.signin.SignInCommand;
 import net.cycastic.sigil.application.auth.webauthn.enroll.EnrollWebAuthnEnvelopCommand;
@@ -32,8 +34,18 @@ public class AuthController {
         pipelinr.send(command);
     }
 
-    @PostMapping("complete")
-    public void completeRegistration(@Valid @RequestParam CompleteUserRegistrationParams queryParams,
+    @PostMapping("register/resend")
+    public void resendInvitation(@RequestBody ResendConfirmationEmailCommand command){
+        pipelinr.send(command);
+    }
+
+    @GetMapping("register/complete")
+    public InvitationProbeResultDto probeInvitation(ProbeRegistrationInvitationCommand command){
+        return pipelinr.send(command);
+    }
+
+    @PostMapping("register/complete")
+    public void completeRegistration(@Valid CompleteUserRegistrationParams queryParams,
                                      @Valid @RequestBody CompleteUserRegistrationForm form){
         pipelinr.send(CompleteUserRegistrationCommand.fromDomain(queryParams, form));
     }
