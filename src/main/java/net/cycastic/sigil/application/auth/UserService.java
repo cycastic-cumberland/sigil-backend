@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.configuration.auth.KdfConfiguration;
+import net.cycastic.sigil.domain.ApplicationAssets;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
@@ -25,12 +26,12 @@ import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
+import net.cycastic.sigil.service.email.EmailTemplates;
 import net.cycastic.sigil.service.impl.ApplicationEmailSender;
 import net.cycastic.sigil.service.impl.UriPresigner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
@@ -274,10 +274,6 @@ public class UserService {
         return uriPresigner.signUri(backendCompletionUri);
     }
 
-    private static InputStream loadIconImage(){
-        return UserService.class.getClassLoader().getResourceAsStream("static/logo.png");
-    }
-
     @SneakyThrows
     private void sendConfirmationEmailInternal(@NotNull UserDto user, String securityStamp){
         var nvb = OffsetDateTime.now();
@@ -294,28 +290,13 @@ public class UserService {
                 "notValidAfter", DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
                         .withLocale(Locale.ROOT)
                         .format(nva),
-                "logo", new EmailImage() {
-                    @Override
-                    public String getFileName() {
-                        return "logo.png";
-                    }
-
-                    @Override
-                    public String getMimeType() {
-                        return "image/png";
-                    }
-
-                    @Override
-                    public InputStreamSource getImageSource() {
-                        return UserService::loadIconImage;
-                    }
-                }
+                "logo", ApplicationAssets.EmailImages.LOGO_EMAIL_IMAGE
         );
         byte[] renderedContent;
         EmailTemplateEngine.RenderResult renderResult;
 
         try (var byteStream = new ByteArrayOutputStream()){
-            try (var templateStream = getClass().getClassLoader().getResourceAsStream("templates/register/RegistrationCompletionMail.ftl")){
+            try (var templateStream = EmailTemplates.registrationCompletion()){
                 renderResult = emailTemplateEngine.render(templateStream, byteStream, parameters);
             }
 
@@ -346,7 +327,7 @@ public class UserService {
         taskScheduler.execute(() -> {
             try {
                 sendConfirmationEmailInternal(dto, securityStamp);
-                logger.info("Confirmation email sent to user {}", dto.getId());
+                logger.debug("Confirmation email sent to user {}", dto.getId());
             } catch (Exception e) {
                 logger.error("Failed to send confirmation email to user {}", dto.getId(), e);
             }

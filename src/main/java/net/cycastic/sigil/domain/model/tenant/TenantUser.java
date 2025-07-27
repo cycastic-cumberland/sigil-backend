@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Formula;
+
+import java.time.OffsetDateTime;
+
 import static net.cycastic.sigil.domain.ApplicationConstants.TenantPermissions.MODERATE;
 
 @Data
@@ -31,4 +34,6 @@ public class TenantUser {
 
     @Formula("permissions & " + MODERATE + " = " + MODERATE)
     private boolean isModerator;
+
+    private OffsetDateTime lastInvited;
 }

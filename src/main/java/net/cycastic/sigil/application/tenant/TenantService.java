@@ -1,18 +1,16 @@
 package net.cycastic.sigil.application.tenant;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
-import net.cycastic.sigil.domain.model.tenant.TenantUser;
-import net.cycastic.sigil.domain.model.tenant.UsageType;
-import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
+import net.cycastic.sigil.service.EmailTemplateEngine;
 import net.cycastic.sigil.service.LoggedUserAccessor;
+import net.cycastic.sigil.service.UrlAccessor;
+import net.cycastic.sigil.service.impl.UriPresigner;
 import org.springframework.stereotype.Service;
-
-import java.time.OffsetDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -20,26 +18,9 @@ public class TenantService {
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantUserRepository tenantUserRepository;
     private final TenantRepository tenantRepository;
-
-    public void createTenant(User user, String tenantName, UsageType usageType){
-        var tenant = Tenant.builder()
-                .name(tenantName)
-                .usageType(usageType)
-                .owner(user)
-                .createdAt(OffsetDateTime.now())
-                .build();
-        tenantRepository.save(tenant);
-        inviteToTenant(tenant, user, ApplicationConstants.TenantPermissions.MEMBER);
-    }
-
-    public void inviteToTenant(Tenant tenant, User invitee, int permission){
-        var tenantUser = TenantUser.builder()
-                .tenant(tenant)
-                .user(invitee)
-                .permissions(permission)
-                .build();
-        tenantUserRepository.save(tenantUser);
-    }
+    private final UriPresigner uriPresigner;
+    private final UrlAccessor urlAccessor;
+    private final EmailTemplateEngine emailTemplateEngine;
 
     public int getTenantUserPermissions() {
         var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
@@ -61,5 +42,10 @@ public class TenantService {
     public Tenant getTenant(){
         return tenantRepository.findById(loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "Tenant not found"));
+    }
+
+    @Transactional
+    public void inviteToTenant(int tenantId, String userEmail, int permissions){
+
     }
 }

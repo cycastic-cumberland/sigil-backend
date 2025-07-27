@@ -1,9 +1,11 @@
 package net.cycastic.sigil.controller;
 
 import an.awesome.pipelinr.Pipelinr;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.tenant.delete.DeleteTenantCommand;
 import net.cycastic.sigil.application.tenant.get.GetTenantCommand;
+import net.cycastic.sigil.application.tenant.members.invite.InviteUserToTenantCommand;
 import net.cycastic.sigil.application.tenant.members.search.SearchTenantMemberEmailByPrefixCommand;
 import net.cycastic.sigil.application.tenant.query.QueryTenantCommand;
 import net.cycastic.sigil.application.tenant.save.SaveTenantCommand;
@@ -43,5 +45,11 @@ public class TenantsController {
     @RequireTenantId
     public PageResponseDto<String> getTenantUserEmailByPrefix(SearchTenantMemberEmailByPrefixCommand command){
         return pipelinr.send(command);
+    }
+
+    @PostMapping("members/invite")
+    @RequireTenantId
+    public void inviteUser(@Valid InviteUserToTenantCommand command){
+        pipelinr.send(command);
     }
 }
