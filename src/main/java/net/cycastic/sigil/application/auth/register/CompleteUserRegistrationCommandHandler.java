@@ -10,6 +10,9 @@ import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Base64;
+
 @Component
 @RequiredArgsConstructor
 public class CompleteUserRegistrationCommandHandler implements Command.Handler<CompleteUserRegistrationCommand, Void> {
@@ -19,16 +22,20 @@ public class CompleteUserRegistrationCommandHandler implements Command.Handler<C
     @Override
     @Transactional
     public Void handle(CompleteUserRegistrationCommand command) {
-        var user = userRepository.findById(command.getUserId())
+        var user = userRepository.findById(command.getQueryParams().getUserId())
+                .stream()
+                .filter(u -> u.getStatus() != UserStatus.DISABLED)
+                .findFirst()
                 .orElseThrow(() -> new RequestException(404, "User not found"));
 
         if (user.isEmailVerified()){
             throw new RequestException(400, "User has completed registration");
         }
+        if (!Arrays.equals(Base64.getDecoder().decode(command.getQueryParams().getSecurityStamp()), user.getSecurityStamp())){
+            throw RequestException.forbidden();
+        }
 
-        user.setEmailVerified(true);
         userService.completeRegistrationNoTransaction(user, command.getForm());
-        user.setStatus(UserStatus.ACTIVE);
         return null;
     }
 }

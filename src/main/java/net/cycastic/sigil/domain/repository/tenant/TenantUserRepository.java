@@ -20,11 +20,18 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
 
     Optional<TenantUser> findByTenant_IdAndUser_Id(int tenantId, int userId);
 
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.normalizedEmail = UPPER(:email)")
+    Optional<TenantUser> findByTenantIdAndUserEmail(@Param("tenantId") int tenantId, @Param("email") String email);
+
     @Query(value = """
                    SELECT tu.user.email AS email
-                   FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.id <> :excludeUserId AND tu.user.normalizedEmail ILIKE CONCAT(:emailPrefix, '%') ESCAPE '\\'
+                   FROM TenantUser tu
+                   WHERE tu.lastInvited IS NULL AND
+                         tu.tenant.id = :tenantId AND
+                         tu.user.id <> :excludeUserId AND
+                         tu.user.normalizedEmail ILIKE CONCAT(:emailPrefix, '%') ESCAPE '\\'
                    """,
-            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.id <> :excludeUserId AND tu.user.normalizedEmail ILIKE CONCAT(:emailPrefix, '%') ESCAPE '\\'")
+            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.id <> :excludeUserId AND tu.user.normalizedEmail ILIKE CONCAT(:emailPrefix, '%') ESCAPE '\\' AND tu.lastInvited IS NULL")
     Page<TenantUserEmailItem> findByEmailPrefix(@Param("tenantId") int tenantId,
                                                 @Param("emailPrefix") String emailPrefix,
                                                 @Param("excludeUserId") int excludeUserId,

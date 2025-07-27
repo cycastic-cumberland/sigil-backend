@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class InvitationProbeResultDto {
+public class UserInvitationProbeResultDto {
     private String email;
 }

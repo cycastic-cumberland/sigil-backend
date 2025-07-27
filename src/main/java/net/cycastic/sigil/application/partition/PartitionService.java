@@ -18,6 +18,9 @@ public class PartitionService {
     private final PartitionUserRepository partitionUserRepository;
 
     public void checkPermission(int mask){
+        if (loggedUserAccessor.isAdmin()){
+            return;
+        }
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
                 loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);

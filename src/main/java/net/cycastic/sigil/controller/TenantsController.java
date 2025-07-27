@@ -11,7 +11,7 @@ import net.cycastic.sigil.application.tenant.query.QueryTenantCommand;
 import net.cycastic.sigil.application.tenant.save.SaveTenantCommand;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.IdDto;
-import net.cycastic.sigil.domain.dto.TenantDto;
+import net.cycastic.sigil.domain.dto.tenant.TenantDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
 

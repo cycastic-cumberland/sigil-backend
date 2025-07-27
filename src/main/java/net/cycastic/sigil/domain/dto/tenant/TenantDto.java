@@ -1,4 +1,4 @@
-package net.cycastic.sigil.domain.dto;
+package net.cycastic.sigil.domain.dto.tenant;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.auth.UserService;
 import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.dto.TenantDto;
-import net.cycastic.sigil.domain.dto.TenantMembership;
+import net.cycastic.sigil.domain.dto.tenant.TenantDto;
+import net.cycastic.sigil.domain.dto.tenant.TenantMembership;
 import org.springframework.stereotype.Component;
 
 @Component

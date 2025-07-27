@@ -30,38 +30,41 @@ public class AuthController {
     private final Pipelinr pipelinr;
 
     @PostMapping("register")
-    public void registerUser(@RequestBody RegisterUserCommand command){
+    public void registerUser(@Valid @RequestBody RegisterUserCommand command){
         pipelinr.send(command);
     }
 
     @PostMapping("register/resend")
-    public void resendInvitation(@RequestBody ResendConfirmationEmailCommand command){
+    public void resendInvitation(@Valid @RequestBody ResendConfirmationEmailCommand command){
         pipelinr.send(command);
     }
 
     @GetMapping("register/complete")
-    public InvitationProbeResultDto probeInvitation(ProbeRegistrationInvitationCommand command){
+    public UserInvitationProbeResultDto probeInvitation(@Valid ProbeRegistrationInvitationCommand command){
         return pipelinr.send(command);
     }
 
     @PostMapping("register/complete")
     public void completeRegistration(@Valid CompleteUserRegistrationParams queryParams,
                                      @Valid @RequestBody CompleteUserRegistrationForm form){
-        pipelinr.send(CompleteUserRegistrationCommand.fromDomain(queryParams, form));
+        pipelinr.send(CompleteUserRegistrationCommand.builder()
+                        .queryParams(queryParams)
+                        .form(form)
+                .build());
     }
 
     @PostMapping
-    public @NotNull CredentialDto signIn(@RequestBody @NotNull SignInCommand command){
+    public @NotNull CredentialDto signIn(@Valid @RequestBody @NotNull SignInCommand command){
         return pipelinr.send(command);
     }
 
     @PutMapping
-    public @NotNull CredentialDto refreshToken(@RequestBody @NotNull RefreshTokenCommand command){
+    public @NotNull CredentialDto refreshToken(@Valid @RequestBody @NotNull RefreshTokenCommand command){
         return pipelinr.send(command);
     }
 
     @PostMapping("invalidate")
-    public void invalidateAllSessions(@RequestBody @NotNull InvalidateAllSessionsCommand command){
+    public void invalidateAllSessions(@Valid @RequestBody @NotNull InvalidateAllSessionsCommand command){
         pipelinr.send(command);
     }
 
@@ -71,12 +74,12 @@ public class AuthController {
     }
 
     @PostMapping("webauthn/enroll")
-    public void enrollWebAuthnKey(@RequestBody EnrollWebAuthnEnvelopCommand command){
+    public void enrollWebAuthnKey(@Valid @RequestBody EnrollWebAuthnEnvelopCommand command){
         pipelinr.send(command);
     }
 
     @GetMapping("kdf")
-    public KdfDetailsDto getKdfSettings(GetKdfSettingsCommand command){
+    public KdfDetailsDto getKdfSettings(@Valid GetKdfSettingsCommand command){
         return pipelinr.send(command);
     }
 
@@ -87,7 +90,7 @@ public class AuthController {
 
     @GetMapping
     @RequireTenantId
-    public UserDto getUser(GetUserCommand command){
+    public UserDto getUser(@Valid GetUserCommand command){
         return pipelinr.send(command);
     }
 

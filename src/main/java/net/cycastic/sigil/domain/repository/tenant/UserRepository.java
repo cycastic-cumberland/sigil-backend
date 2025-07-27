@@ -28,8 +28,8 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 
     Optional<User> findByNormalizedEmail(@NotNull String normalizedEmail);
 
-    @Query("SELECT tu.user FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.normalizedEmail = UPPER(:normalizedEmail)")
-    Optional<User> findByEmailAndTenantId(@Param("normalizedEmail") @NotNull String normalizedEmail, @Param("tenantId") @NotNull int tenantId);
+    @Query("SELECT tu.user FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.normalizedEmail = UPPER(:email) AND tu.lastInvited IS NULL")
+    Optional<User> findByEmailAndTenantId(@Param("email") @NotNull String email, @Param("tenantId") @NotNull int tenantId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT u FROM User u WHERE u.id = :id")

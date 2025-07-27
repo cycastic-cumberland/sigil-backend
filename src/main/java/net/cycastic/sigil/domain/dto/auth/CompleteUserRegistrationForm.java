@@ -1,18 +1,19 @@
 package net.cycastic.sigil.domain.dto.auth;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.lang.Nullable;
 
 @Data
 public class CompleteUserRegistrationForm {
-    @NotNull
+    @NotEmpty
     private String firstName;
 
-    @NotNull
+    @NotEmpty
     private String lastName;
 
-    @NotNull
+    @NotEmpty
     private String publicRsaKey;
 
     @Nullable

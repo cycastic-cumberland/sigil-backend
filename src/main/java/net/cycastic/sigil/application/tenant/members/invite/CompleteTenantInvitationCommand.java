@@ -1,17 +1,16 @@
-package net.cycastic.sigil.application.auth.register;
+package net.cycastic.sigil.application.tenant.members.invite;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
 import net.cycastic.sigil.application.presigned.PresignedRequest;
 import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
-import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationParams;
+import net.cycastic.sigil.domain.dto.tenant.TenantInvitationParams;
 
-@Data
 @Builder
-public class CompleteUserRegistrationCommand implements PresignedRequest, Command<Void> {
-    private CompleteUserRegistrationParams queryParams;
+@Data
+public class CompleteTenantInvitationCommand implements PresignedRequest, Command<Void> {
+    private TenantInvitationParams queryParams;
     private CompleteUserRegistrationForm form;
 
     @Override

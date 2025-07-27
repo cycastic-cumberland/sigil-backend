@@ -1,3 +1,2 @@
 exceptionCode,statusCode,en,vi
 C401T000,401,Incorrect credential,
-C401T001,401,"Please wait %d second(s) before trying again",

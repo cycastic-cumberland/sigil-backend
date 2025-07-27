@@ -44,9 +44,9 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
                           tu.tenant.usageType as usageType,
                           tu.tenant.createdAt as createdAt,
                           tu.tenant.updatedAt as updatedAt
-                   FROM TenantUser tu WHERE tu.user = :user
+                   FROM TenantUser tu WHERE tu.user = :user AND tu.lastInvited IS NULL
                    """,
-            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.user = :user")
+            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.user = :user AND tu.lastInvited IS NULL")
     Page<TenantQueryItem> findByUser(@Param("user") User user, Pageable pageable);
 
     @Query(value = """
@@ -58,9 +58,9 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
                           tu.tenant.usageType as usageType,
                           tu.tenant.createdAt as createdAt,
                           tu.tenant.updatedAt as updatedAt
-                   FROM TenantUser tu WHERE tu.tenant = :tenant AND tu.user = :user
+                   FROM TenantUser tu WHERE tu.tenant = :tenant AND tu.user = :user AND tu.lastInvited IS NULL
                    """,
-            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenant = :tenant AND tu.user = :user")
+            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenant = :tenant AND tu.user = :user AND tu.lastInvited IS NULL")
     Optional<TenantQueryItem> findByTenantAndUser(@Param("tenant") Tenant tenant, @Param("user") User user);
 
     int countByOwner_Id(int ownerId);

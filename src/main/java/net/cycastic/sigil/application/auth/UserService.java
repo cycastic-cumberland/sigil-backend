@@ -262,7 +262,7 @@ public class UserService {
         return generateCredential(user, payload, signatureAlgorithm, submittedSignature);
     }
 
-    private URI generateCompletionUrl(UserDto user, String securityStamp, OffsetDateTime notValidBefore, OffsetDateTime notValidAfter){
+    private URI generateCompletionUri(UserDto user, String securityStamp, OffsetDateTime notValidBefore, OffsetDateTime notValidAfter){
         var backendCompletionUri = UriComponentsBuilder.fromUriString(urlAccessor.getBackendOrigin())
                 .path("/api/auth/register/complete")
                 .queryParam("userId", user.getId())
@@ -278,7 +278,7 @@ public class UserService {
     private void sendConfirmationEmailInternal(@NotNull UserDto user, String securityStamp){
         var nvb = OffsetDateTime.now();
         var nva = nvb.plusSeconds(registrationConfigurations.getRegistrationLinkValidSeconds());
-        var backendCompletionUri = generateCompletionUrl(user, securityStamp, nvb, nva);
+        var backendCompletionUri = generateCompletionUri(user, securityStamp, nvb, nva);
         var completionUri = UriComponentsBuilder.fromUriString(urlAccessor.getFrontendOrigin())
                 .path("/complete-signup")
                 .queryParam("submission", ApplicationUtilities.encodeURIComponent(backendCompletionUri))
@@ -315,7 +315,7 @@ public class UserService {
         if (user.getLastInvitationSent() != null){
             var secondsElapsed = Duration.between(user.getLastInvitationSent(), now).getSeconds();
             if (secondsElapsed < registrationConfigurations.getResendVerificationLimitSeconds()){
-                throw RequestException.withExceptionCode("C401T001", registrationConfigurations.getResendVerificationLimitSeconds() - secondsElapsed);
+                throw RequestException.withExceptionCode("C400T004", registrationConfigurations.getResendVerificationLimitSeconds() - secondsElapsed);
             }
         }
 
@@ -392,6 +392,8 @@ public class UserService {
         }
 
         user.setUpdatedAt(OffsetDateTime.now());
+        user.setEmailVerified(true);
+        user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
     }
 

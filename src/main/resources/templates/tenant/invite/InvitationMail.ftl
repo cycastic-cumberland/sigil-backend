@@ -25,11 +25,11 @@
                 ${greeting},
             </h3>
             <p style="margin-top: 0;">
-                You have been invited to join the&nbsp;
+                ${inviterName} has invited you to join the
                 <span style="font-weight: 600;">
                     ${tenantName}
                 </span>
-                &nbsp;tenant on Sigil. To accept the invitation, click the link below:
+                tenant on Sigil. To accept the invitation, click the link below:
             </p>
         </td>
     </tr>

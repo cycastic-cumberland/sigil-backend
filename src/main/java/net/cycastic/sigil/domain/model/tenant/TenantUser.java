@@ -36,4 +36,7 @@ public class TenantUser {
     private boolean isModerator;
 
     private OffsetDateTime lastInvited;
+
+    @Version
+    private long version;
 }

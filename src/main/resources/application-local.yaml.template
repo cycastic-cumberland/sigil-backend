@@ -54,6 +54,9 @@ spring:
 springdoc:
   show-actuator: true
 application:
+  tenants:
+    invitation-link-valid-seconds: 604_800
+    resend-invitation-limit-seconds: 86_400
   cleaner:
     incomplete-upload-ttl-seconds: 21_600
   limit:
