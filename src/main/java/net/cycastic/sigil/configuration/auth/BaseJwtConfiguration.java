@@ -1,4 +1,4 @@
-package net.cycastic.sigil.configuration;
+package net.cycastic.sigil.configuration.auth;
 
 import jakarta.validation.constraints.Null;
 import lombok.Data;

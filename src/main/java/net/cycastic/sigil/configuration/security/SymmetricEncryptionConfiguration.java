@@ -1,4 +1,4 @@
-package net.cycastic.sigil.configuration;
+package net.cycastic.sigil.configuration.security;
 
 
 import org.springframework.boot.context.properties.ConfigurationProperties;

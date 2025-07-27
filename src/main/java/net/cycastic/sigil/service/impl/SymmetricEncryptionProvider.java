@@ -2,16 +2,13 @@ package net.cycastic.sigil.service.impl;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.configuration.SymmetricEncryptionConfiguration;
+import net.cycastic.sigil.configuration.security.SymmetricEncryptionConfiguration;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.service.DecryptionProvider;
 import net.cycastic.sigil.service.EncryptionProvider;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.Base64;
 
 public class SymmetricEncryptionProvider implements EncryptionProvider, DecryptionProvider {

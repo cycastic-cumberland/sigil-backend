@@ -1,7 +1,7 @@
-package net.cycastic.sigil.configuration.auth;
+package net.cycastic.sigil.configuration.security;
 
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.configuration.CrossOriginConfiguration;
+import net.cycastic.sigil.configuration.application.CrossOriginConfiguration;
 import net.cycastic.sigil.controller.filter.JwtAuthenticationFilter;
 import net.cycastic.sigil.controller.filter.PerfFilter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

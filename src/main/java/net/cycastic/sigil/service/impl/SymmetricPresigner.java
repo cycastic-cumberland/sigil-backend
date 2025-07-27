@@ -2,7 +2,7 @@ package net.cycastic.sigil.service.impl;
 
 import jakarta.transaction.NotSupportedException;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.configuration.SymmetricPresignerConfiguration;
+import net.cycastic.sigil.configuration.security.SymmetricPresignerConfiguration;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.service.Presigner;
 import org.bouncycastle.crypto.digests.SHA256Digest;

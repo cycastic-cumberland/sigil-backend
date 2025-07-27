@@ -1,7 +1,6 @@
 package net.cycastic.sigil.configuration.auth;
 
 import lombok.*;
-import net.cycastic.sigil.configuration.BaseJwtConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 

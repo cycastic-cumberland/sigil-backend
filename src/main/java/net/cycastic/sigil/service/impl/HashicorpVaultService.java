@@ -3,7 +3,7 @@ package net.cycastic.sigil.service.impl;
 import com.bettercloud.vault.Vault;
 import com.bettercloud.vault.VaultConfig;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.configuration.HashicorpVaultConfiguration;
+import net.cycastic.sigil.configuration.security.HashicorpVaultConfiguration;
 
 public abstract class HashicorpVaultService {
     protected final Vault vault;

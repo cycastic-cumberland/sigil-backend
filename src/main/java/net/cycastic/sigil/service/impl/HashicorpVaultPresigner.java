@@ -2,7 +2,7 @@ package net.cycastic.sigil.service.impl;
 
 import jakarta.transaction.NotSupportedException;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.configuration.HashicorpVaultConfiguration;
+import net.cycastic.sigil.configuration.security.HashicorpVaultConfiguration;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.service.Presigner;
 import org.springframework.stereotype.Component;

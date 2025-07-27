@@ -1,4 +1,4 @@
-package net.cycastic.sigil.configuration;
+package net.cycastic.sigil.configuration.application;
 
 import an.awesome.pipelinr.Command;
 import an.awesome.pipelinr.Notification;

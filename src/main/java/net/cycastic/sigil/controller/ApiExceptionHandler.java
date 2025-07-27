@@ -3,7 +3,7 @@ package net.cycastic.sigil.controller;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.configuration.ExceptionHandlerConfigurations;
+import net.cycastic.sigil.configuration.application.ExceptionHandlerConfigurations;
 import net.cycastic.sigil.domain.exception.ExceptionResponse;
 import net.cycastic.sigil.domain.exception.RequestException;
 import org.slf4j.Logger;

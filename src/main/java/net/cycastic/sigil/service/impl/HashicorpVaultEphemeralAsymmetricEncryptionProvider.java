@@ -2,7 +2,7 @@ package net.cycastic.sigil.service.impl;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.configuration.HashicorpVaultConfiguration;
+import net.cycastic.sigil.configuration.security.HashicorpVaultConfiguration;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.auth.PemDto;

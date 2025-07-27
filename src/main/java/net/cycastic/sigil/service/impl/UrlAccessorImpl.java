@@ -3,7 +3,7 @@ package net.cycastic.sigil.service.impl;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.configuration.OriginConfigurations;
+import net.cycastic.sigil.configuration.application.OriginConfigurations;
 import net.cycastic.sigil.service.UrlAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;

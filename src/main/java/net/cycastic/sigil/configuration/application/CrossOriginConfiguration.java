@@ -1,4 +1,4 @@
-package net.cycastic.sigil.configuration;
+package net.cycastic.sigil.configuration.application;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

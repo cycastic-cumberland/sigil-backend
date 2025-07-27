@@ -1,4 +1,4 @@
-package net.cycastic.sigil.configuration;
+package net.cycastic.sigil.configuration.security;
 
 import net.cycastic.sigil.configuration.auth.JwtConfiguration;
 import net.cycastic.sigil.domain.CryptographicUtilities;
