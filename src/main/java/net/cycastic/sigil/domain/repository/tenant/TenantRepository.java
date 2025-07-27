@@ -2,6 +2,7 @@ package net.cycastic.sigil.domain.repository.tenant;
 
 import net.cycastic.sigil.domain.model.listing.PartitionUser;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.model.tenant.UsageType;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
         int getId();
         String getTenantName();
         long getAccumulatedAttachmentStorageUsage();
+        UsageType getUsageType();
         int getMembership();
         int getPermissions();
         OffsetDateTime getCreatedAt();
@@ -39,6 +41,7 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
                           tu.tenant.accumulatedAttachmentStorageUsage as accumulatedAttachmentStorageUsage,
                           CASE WHEN tu.tenant.owner = tu.user THEN 0 WHEN tu.isModerator THEN 1 ELSE 2 END AS membership,
                           tu.permissions as permissions,
+                          tu.tenant.usageType as usageType,
                           tu.tenant.createdAt as createdAt,
                           tu.tenant.updatedAt as updatedAt
                    FROM TenantUser tu WHERE tu.user = :user
@@ -52,10 +55,13 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
                           tu.tenant.accumulatedAttachmentStorageUsage as accumulatedAttachmentStorageUsage,
                           CASE WHEN tu.tenant.owner = tu.user THEN 0 WHEN tu.isModerator THEN 1 ELSE 2 END AS membership,
                           tu.permissions as permissions,
+                          tu.tenant.usageType as usageType,
                           tu.tenant.createdAt as createdAt,
                           tu.tenant.updatedAt as updatedAt
                    FROM TenantUser tu WHERE tu.tenant = :tenant AND tu.user = :user
                    """,
             countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenant = :tenant AND tu.user = :user")
     Optional<TenantQueryItem> findByTenantAndUser(@Param("tenant") Tenant tenant, @Param("user") User user);
+
+    int countByOwner_Id(int ownerId);
 }

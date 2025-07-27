@@ -20,6 +20,7 @@ import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.WebAuthnCredentialRepository;
+import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
@@ -67,6 +68,7 @@ public class UserService {
     private final TaskExecutor taskScheduler;
     private final CipherRepository cipherRepository;
     private final KdfConfiguration kdfConfiguration;
+    private final TenantRepository tenantRepository;
 
     @Autowired
     public UserService(LoggedUserAccessor loggedUserAccessor, WebAuthnCredentialRepository webAuthnCredentialRepository,
@@ -80,7 +82,7 @@ public class UserService {
                        ApplicationEmailSender applicationEmailSender,
                        TaskExecutor taskScheduler,
                        CipherRepository cipherRepository,
-                       KdfConfiguration kdfConfiguration){
+                       KdfConfiguration kdfConfiguration, TenantRepository tenantRepository){
         if (registrationConfigurations.getRegistrationLinkValidSeconds() <= 0){
             throw new IllegalStateException("Invalid registration expiration time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
         }
@@ -101,6 +103,7 @@ public class UserService {
         this.applicationEmailSender = applicationEmailSender;
         this.taskScheduler = taskScheduler;
         this.cipherRepository = cipherRepository;
+        this.tenantRepository = tenantRepository;
     }
 
     public static void refreshSecurityStamp(User user){
@@ -226,12 +229,10 @@ public class UserService {
             return wasteComputePower(user.getNormalizedEmail(), signatureAlgorithm, submittedSignature);
         }
         var publicKey = CryptographicUtilities.Keys.decodeRSAPublicKey(user.getPublicRsaKey());
-        if (!checkSignInPayloadValidity(payload, signatureAlgorithm, submittedSignature, publicKey)){
+        if (user.getStatus() != UserStatus.ACTIVE ||
+                !checkSignInPayloadValidity(payload, signatureAlgorithm, submittedSignature, publicKey)){
             jwtIssuer.generateTokens("", null);
             throw RequestException.withExceptionCode("C401T000");
-        }
-        if (user.getStatus() == UserStatus.INVITED){
-            throw RequestException.withExceptionCode("C400T011");
         }
 
         var roles = user.getAuthorities()
@@ -408,11 +409,20 @@ public class UserService {
         } else {
             enrollWebAuthnNoTransaction(user, form.getWebAuthnCredential());
         }
+
+        user.setUpdatedAt(OffsetDateTime.now());
         userRepository.save(user);
     }
 
     public User getUser(){
         return userRepository.findById(loggedUserAccessor.getUserId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));
+    }
+
+    public UserDto getUserDetails(User user){
+        var dto = UserDto.fromDomain(user);
+        var count = tenantRepository.countByOwner_Id(user.getId());
+        dto.setTenantOwnerCount(count);
+        return dto;
     }
 }

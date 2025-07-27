@@ -21,6 +21,7 @@ public class UserDto {
     private String lastName;
     private String[] roles;
     private String publicRsaKey;
+    private int tenantOwnerCount;
     private boolean hasWebAuthnCredential;
     private OffsetDateTime joinedAt;
 

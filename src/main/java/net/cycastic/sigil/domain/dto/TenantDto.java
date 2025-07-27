@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
+import net.cycastic.sigil.domain.model.tenant.UsageType;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 
 import java.time.OffsetDateTime;
@@ -30,6 +31,9 @@ public class TenantDto {
     private TenantMembership membership;
 
     @NotNull
+    private UsageType usageType;
+
+    @NotNull
     private List<String> permissions;
 
     @NotNull
@@ -43,6 +47,7 @@ public class TenantDto {
                 .tenantName(tenant.getName())
                 .accumulatedAttachmentStorageUsage(tenant.getAccumulatedAttachmentStorageUsage())
                 .membership(TenantMembership.MEMBER)
+                .usageType(tenant.getUsageType())
                 .createdAt(tenant.getCreatedAt())
                 .updatedAt(tenant.getUpdatedAt())
                 .build();
@@ -58,6 +63,7 @@ public class TenantDto {
                     case 1 -> TenantMembership.MODERATOR;
                     default -> TenantMembership.MEMBER;
                  })
+                .usageType(tenant.getUsageType())
                 .permissions(ApplicationConstants.TenantPermissions.toReadablePermissions(tenant.getPermissions()))
                 .createdAt(tenant.getCreatedAt())
                 .updatedAt(tenant.getUpdatedAt())

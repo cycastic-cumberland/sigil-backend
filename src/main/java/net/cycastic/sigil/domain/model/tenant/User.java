@@ -43,6 +43,8 @@ public class User implements UserDetails {
     @NotNull
     private OffsetDateTime joinedAt;
 
+    private OffsetDateTime updatedAt;
+
     @NotNull
     @Column(columnDefinition = "BINARY(32)")
     private byte[] securityStamp;

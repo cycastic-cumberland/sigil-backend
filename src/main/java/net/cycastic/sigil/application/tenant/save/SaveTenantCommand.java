@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.dto.IdDto;
+import net.cycastic.sigil.domain.model.tenant.UsageType;
 import org.springframework.lang.Nullable;
 
 @Data
@@ -15,4 +16,5 @@ public class SaveTenantCommand implements Command<IdDto> {
     private @Nullable Integer id;
     private @Nullable Integer userId;
     private @NotNull String tenantName;
+    private @Nullable UsageType usageType;
 }
