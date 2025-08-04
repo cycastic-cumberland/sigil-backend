@@ -11,8 +11,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface TenantUserRepository extends JpaRepository<TenantUser, Integer> {
-    interface TenantUserEmailItem {
+    interface TenantUserItem {
+        String getFirstName();
+        String getLastName();
         String getEmail();
+        int getMembership();
+        int getPermissions();
     }
 
     boolean existsByTenant_IdAndUser_Id(int tenantId, int userId);
@@ -24,16 +28,48 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
     Optional<TenantUser> findByTenantIdAndUserEmail(@Param("tenantId") int tenantId, @Param("email") String email);
 
     @Query(value = """
-                   SELECT tu.user.email AS email
+                   SELECT tu.user.email AS email,
+                          tu.user.lastName AS lastName,
+                          tu.user.firstName AS firstName,
+                          CASE WHEN tu.tenant.owner = tu.user THEN 0 WHEN tu.isModerator THEN 1 ELSE 2 END AS membership,
+                          tu.permissions AS permissions
                    FROM TenantUser tu
                    WHERE tu.lastInvited IS NULL AND
                          tu.tenant.id = :tenantId AND
                          tu.user.id <> :excludeUserId AND
-                         tu.user.normalizedEmail ILIKE CONCAT(:emailPrefix, '%') ESCAPE '\\'
+                         (tu.user.normalizedEmail ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                            tu.user.firstName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                            tu.user.lastName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\')
                    """,
-            countQuery = "SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.id <> :excludeUserId AND tu.user.normalizedEmail ILIKE CONCAT(:emailPrefix, '%') ESCAPE '\\' AND tu.lastInvited IS NULL")
-    Page<TenantUserEmailItem> findByEmailPrefix(@Param("tenantId") int tenantId,
-                                                @Param("emailPrefix") String emailPrefix,
+            countQuery = """
+
+                    SELECT COUNT(tu) FROM TenantUser tu WHERE tu.lastInvited IS NULL AND
+                                                              tu.tenant.id = :tenantId AND
+                                                              tu.user.id <> :excludeUserId AND
+                                                              (tu.user.normalizedEmail ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                                                                 tu.user.firstName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                                                                 tu.user.lastName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\') AND
+                                                              tu.lastInvited IS NULL
+                    """)
+    Page<TenantUserItem> findItemsByContentTerm(@Param("tenantId") int tenantId,
+                                                @Param("contentTerm") String contentTerm,
                                                 @Param("excludeUserId") int excludeUserId,
                                                 Pageable pageable);
+
+    @Query(value = """
+                   SELECT tu.user.email AS email,
+                          tu.user.lastName AS lastName,
+                          tu.user.firstName AS firstName,
+                          CASE WHEN tu.tenant.owner = tu.user THEN 0 WHEN tu.isModerator THEN 1 ELSE 2 END AS membership,
+                          tu.permissions AS permissions
+                   FROM TenantUser tu
+                   WHERE tu.lastInvited IS NULL AND
+                         tu.tenant.id = :tenantId
+                   """,
+            countQuery = """
+
+                    SELECT COUNT(tu) FROM TenantUser tu WHERE tu.lastInvited IS NULL AND
+                                                              tu.tenant.id = :tenantId
+                    """)
+    Page<TenantUserItem> findAllItems(@Param("tenantId") int tenantId, Pageable pageable);
 }

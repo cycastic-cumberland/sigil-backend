@@ -5,12 +5,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.cycastic.sigil.domain.dto.paging.PageRequestDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
+import net.cycastic.sigil.domain.dto.tenant.TenantUserDto;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.Nullable;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class SearchTenantMemberEmailByPrefixCommand extends PageRequestDto implements Command<PageResponseDto<String>> {
-    private String emailPrefix;
+public class SearchTenantMemberCommand extends PageRequestDto implements Command<PageResponseDto<TenantUserDto>> {
+    @Nullable
+    private String contentTerm;
 
     @Override
     protected Sort getDefaultSort() {

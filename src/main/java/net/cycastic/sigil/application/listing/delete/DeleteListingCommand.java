@@ -1,11 +1,11 @@
 package net.cycastic.sigil.application.listing.delete;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
 public class DeleteListingCommand implements Command<Void> {
-    private @NotNull String listingPath;
+    @NotEmpty
+    private String listingPath;
 }

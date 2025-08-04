@@ -18,15 +18,20 @@ public class TenantValidator implements CommandValidator{
     @Override
     public void validate(Command command) {
         var tenantIdOpt = loggedUserAccessor.tryGetTenantId();
+        var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
         if (tenantIdOpt.isEmpty()){
+            if (partitionIdOpt.isPresent()){
+                throw RequestException.forbidden();
+            }
             return;
         }
 
-        if (!tenantUserRepository.existsByTenant_IdAndUser_Id(tenantIdOpt.getAsInt(), loggedUserAccessor.getUserId())){
+        var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
+                .orElseThrow(RequestException::forbidden);
+        if (tenantUser.getLastInvited() != null){
             throw RequestException.forbidden();
         }
 
-        var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
         if (partitionIdOpt.isEmpty()){
             return;
         }

@@ -63,7 +63,7 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
                       ELSE NULL END AS attachmentUploadCompleted
                    FROM Listing l
                    WHERE l.partition = :partition
-                      AND l.listingPath LIKE CONCAT(:folder, '%')
+                      AND l.listingPath LIKE CONCAT(:folder, '%') ESCAPE '\\'
                       AND LENGTH(l.listingPath) > LENGTH(:folder)
                       AND l.removedAt IS NULL
                    """,
@@ -87,7 +87,7 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
                          )
                          FROM Listing l
                          WHERE l.partition = :partition
-                             AND l.listingPath LIKE CONCAT(:folder, '%')
+                             AND l.listingPath LIKE CONCAT(:folder, '%') ESCAPE '\\'
                              AND LENGTH(l.listingPath) > LENGTH(:folder)
                              AND l.removedAt IS NULL
                         """

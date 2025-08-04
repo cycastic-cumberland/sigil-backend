@@ -6,11 +6,13 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.configuration.application.ExceptionHandlerConfigurations;
 import net.cycastic.sigil.domain.exception.ExceptionResponse;
 import net.cycastic.sigil.domain.exception.RequestException;
+import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -93,6 +95,16 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         return handleGeneric(RequestException.withExceptionCode("C400T010", ex), request);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ExceptionResponse> handleStaleObjectState(ObjectOptimisticLockingFailureException ex, HttpServletRequest request) {
+        var root = ex.getRootCause();
+        if (root instanceof StaleObjectStateException){
+            return handleGeneric(new RequestException(429, ex, "Too many requests"), request);
+        }
+
+        return handleOtherExceptions(ex, request);
     }
 
     @ExceptionHandler(Exception.class)

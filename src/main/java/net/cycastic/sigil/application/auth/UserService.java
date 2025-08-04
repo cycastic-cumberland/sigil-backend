@@ -355,6 +355,11 @@ public class UserService {
                 Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getCipher()));
         cipherRepository.save(cipher);
 
+        var existingCred = user.getWebAuthnCredential();
+        if (existingCred != null){
+            webAuthnCredentialRepository.delete(existingCred);
+            user.setWebAuthnCredential(null);
+        }
         var cred = WebAuthnCredential.builder()
                 .user(user)
                 .credentialId(Base64.getDecoder().decode(webAuthnCredential.getCredentialId()))

@@ -6,13 +6,14 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.tenant.delete.DeleteTenantCommand;
 import net.cycastic.sigil.application.tenant.get.GetTenantCommand;
 import net.cycastic.sigil.application.tenant.members.invite.InviteUserToTenantCommand;
-import net.cycastic.sigil.application.tenant.members.search.SearchTenantMemberEmailByPrefixCommand;
+import net.cycastic.sigil.application.tenant.members.search.SearchTenantMemberCommand;
 import net.cycastic.sigil.application.tenant.query.QueryTenantCommand;
 import net.cycastic.sigil.application.tenant.save.SaveTenantCommand;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.dto.tenant.TenantDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
+import net.cycastic.sigil.domain.dto.tenant.TenantUserDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -41,9 +42,9 @@ public class TenantsController {
         return pipelinr.send(command);
     }
 
-    @GetMapping("members/prefix")
+    @GetMapping("members")
     @RequireTenantId
-    public PageResponseDto<String> getTenantUserEmailByPrefix(SearchTenantMemberEmailByPrefixCommand command){
+    public PageResponseDto<TenantUserDto> queryTenantMembers(SearchTenantMemberCommand command){
         return pipelinr.send(command);
     }
 

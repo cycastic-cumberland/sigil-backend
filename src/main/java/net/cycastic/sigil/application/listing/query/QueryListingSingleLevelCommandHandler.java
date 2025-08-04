@@ -25,6 +25,9 @@ public class QueryListingSingleLevelCommandHandler implements Command.Handler<Qu
         if (!folder.endsWith("/")){
             folder = folder + '/';
         }
+        folder = folder.replace("\\", "\\\\")
+                .replace("_", "\\_")
+                .replace("%", "\\%");
         var page = listingRepository.findItems(partitionService.getPartition(), folder, command.toPageable());
 
         return PageResponseDto.fromDomain(page,

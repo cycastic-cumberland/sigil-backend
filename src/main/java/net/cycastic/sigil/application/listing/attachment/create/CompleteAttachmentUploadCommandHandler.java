@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.listing.service.ListingService;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
+import org.hibernate.StaleObjectStateException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,10 +18,17 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
 
     @Override
     public Void handle(CompleteAttachmentUploadCommand command) {
-        var listing = attachmentListingRepository.findById(command.getId())
-                .orElseThrow(() -> new RequestException(404, "Listing not found"));
-        listingService.markAttachmentUploadAsCompleted(listing, true);
-
-        return null;
+        for (;;){
+            var listing = attachmentListingRepository.findById(command.getId())
+                    .orElseThrow(() -> new RequestException(404, "Listing not found"));
+            try {
+                listingService.markAttachmentUploadAsCompleted(listing, true);
+                return null;
+            } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e){
+                if (!(e.getRootCause() instanceof StaleObjectStateException)){
+                    throw e;
+                }
+            }
+        }
     }
 }

@@ -1,7 +1,5 @@
 package net.cycastic.sigil.application.listing.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +38,6 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class ListingService {
-    private static final Cache<String, Pattern> PATTERN_CACHE = Caffeine.newBuilder()
-            .maximumSize(512) // TODO: Ways to override this
-            .build();
-
     private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
 
     private final TenantRepository tenantRepository;
@@ -56,40 +50,6 @@ public class ListingService {
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final S3Configurations s3Configurations;
-
-    private static Pattern buildRegexFromGlob(@NotNull String glob){
-        var regex = new StringBuilder("^");
-        var i = 0;
-        while (i < glob.length()) {
-            var c = glob.charAt(i);
-            if (c == '*') {
-                if (i + 1 < glob.length() && glob.charAt(i + 1) == '*') {
-                    regex.append(".*");
-                    i += 2;
-                } else {
-                    regex.append("[^/]*");
-                    i++;
-                }
-            } else if ("\\.[]{}()+-^$|".indexOf(c) >= 0) {
-                regex.append("\\").append(c);
-                i++;
-            } else {
-                regex.append(c);
-                i++;
-            }
-        }
-        return Pattern.compile(regex.append('$').toString());
-    }
-
-
-    private static Pattern joinPatterns(@NotNull Stream<Pattern> stream){
-        var combined = stream.map(Pattern::pattern)
-                .map(s -> "(?:" + s + ")")
-                .collect(Collectors.joining("|"));
-        var pattern = Pattern.compile(combined);
-        PATTERN_CACHE.put(combined, pattern);
-        return pattern;
-    }
 
     public ListingDto toDto(Listing listing){
         for (var resolver : resolvers){

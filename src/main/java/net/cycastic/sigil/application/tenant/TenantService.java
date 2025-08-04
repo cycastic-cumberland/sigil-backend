@@ -53,6 +53,9 @@ public class TenantService {
     public int getTenantUserPermissions() {
         var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);
+        if (tenantUser.getLastInvited() != null){
+            throw RequestException.forbidden();
+        }
         return tenantUser.getPermissions();
     }
 

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 @Component
@@ -40,7 +41,8 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
         if (path.endsWith("/")){
             throw new RequestException(400, "Listing path must not end with a forward slash");
         }
-        if (INVALID_PATH.matcher(path).find()) {
+        var parent = Path.of(path).getParent().toString();
+        if (INVALID_PATH.matcher(parent).find()) {
             throw new RequestException(400, "Path must not contain \\, //, _ or %");
         }
         if (command.getContentLength() <= 0){

@@ -1,6 +1,7 @@
 package net.cycastic.sigil.controller;
 
 import an.awesome.pipelinr.Pipelinr;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.listing.attachment.create.CompleteAttachmentUploadCommand;
@@ -12,6 +13,7 @@ import net.cycastic.sigil.application.listing.delete.DeleteListingCommand;
 import net.cycastic.sigil.application.listing.attachment.presign.GenerateAttachmentPresignedDownloadCommand;
 import net.cycastic.sigil.application.listing.get.GetListingCommand;
 import net.cycastic.sigil.application.listing.query.QueryListingSingleLevelCommand;
+import net.cycastic.sigil.application.listing.update.UpdateListingCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.controller.annotation.RequireEncryptionKey;
@@ -36,12 +38,17 @@ public class ListingsController {
     private final Pipelinr pipelinr;
 
     @DeleteMapping
-    public void deleteListing(DeleteListingCommand command){
+    public void deleteListing(@Valid DeleteListingCommand command){
+        pipelinr.send(command);
+    }
+
+    @PatchMapping
+    public void updateListing(@Valid UpdateListingCommand command){
         pipelinr.send(command);
     }
 
     @GetMapping("attachment")
-    public AttachmentDto getAttachment(GetAttachmentCommand command){
+    public AttachmentDto getAttachment(@Valid GetAttachmentCommand command){
         return pipelinr.send(command);
     }
 
@@ -64,27 +71,27 @@ public class ListingsController {
     }
 
     @PostMapping("attachment/presigned")
-    public AttachmentPresignedDto generatePresignedAttachmentUpload(@RequestBody CreateAttachmentListingCommand command){
+    public AttachmentPresignedDto generatePresignedAttachmentUpload(@Valid @RequestBody CreateAttachmentListingCommand command){
         return pipelinr.send(command);
     }
 
     @PostMapping("attachment/complete")
-    public void completeAttachmentUpload(@RequestBody CompleteAttachmentUploadCommand command){
+    public void completeAttachmentUpload(@Valid @RequestBody CompleteAttachmentUploadCommand command){
         pipelinr.send(command);
     }
 
     @GetMapping("attachment/presigned")
-    public AttachmentPresignedDto generatePresignedAttachmentDownload(GenerateAttachmentPresignedDownloadCommand command){
+    public AttachmentPresignedDto generatePresignedAttachmentDownload(@Valid GenerateAttachmentPresignedDownloadCommand command){
         return pipelinr.send(command);
     }
 
     @GetMapping("subfolders")
-    public PageResponseDto<FolderItemDto> getSubfolders(QueryListingSingleLevelCommand command){
+    public PageResponseDto<FolderItemDto> getSubfolders(@Valid QueryListingSingleLevelCommand command){
         return pipelinr.send(command);
     }
 
     @GetMapping("listing")
-    public ListingDto getListing(GetListingCommand command){
+    public ListingDto getListing(@Valid GetListingCommand command){
         return pipelinr.send(command);
     }
 }
