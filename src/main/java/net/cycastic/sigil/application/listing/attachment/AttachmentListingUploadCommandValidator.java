@@ -27,8 +27,8 @@ public class AttachmentListingUploadCommandValidator implements CommandValidator
     private final LimitProvider limitProvider;
 
     @Override
-    public boolean matches(Command o) {
-        return o instanceof AttachmentUploadDto;
+    public boolean matches(Class klass) {
+        return AttachmentUploadDto.class.isAssignableFrom(klass);
     }
 
     @Override

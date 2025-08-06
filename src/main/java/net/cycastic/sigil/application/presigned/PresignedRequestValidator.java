@@ -20,8 +20,8 @@ public class PresignedRequestValidator implements CommandValidator {
     private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
-    public boolean matches(Command command) {
-        return command instanceof PresignedRequest;
+    public boolean matches(Class klass) {
+        return PresignedRequest.class.isAssignableFrom(klass);
     }
 
     @Override

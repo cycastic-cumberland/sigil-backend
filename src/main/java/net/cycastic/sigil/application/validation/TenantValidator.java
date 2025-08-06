@@ -43,7 +43,7 @@ public class TenantValidator implements CommandValidator{
     }
 
     @Override
-    public boolean matches(Command command) {
+    public boolean matches(Class klass) {
         return true;
     }
 }
