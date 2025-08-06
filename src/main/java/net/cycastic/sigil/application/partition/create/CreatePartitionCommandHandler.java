@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import net.cycastic.sigil.application.auth.UserService;
+import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.application.cipher.CipherService;
 import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.domain.ApplicationConstants;

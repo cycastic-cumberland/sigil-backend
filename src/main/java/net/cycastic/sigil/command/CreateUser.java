@@ -1,6 +1,6 @@
 package net.cycastic.sigil.command;
 
-import net.cycastic.sigil.application.auth.UserService;
+import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.CipherDto;
 import net.cycastic.sigil.domain.exception.RequestException;

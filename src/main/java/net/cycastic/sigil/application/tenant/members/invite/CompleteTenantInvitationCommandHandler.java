@@ -6,7 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.application.auth.UserService;
+import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
