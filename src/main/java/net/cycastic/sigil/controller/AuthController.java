@@ -9,6 +9,7 @@ import net.cycastic.sigil.application.user.get.GetEnvelopCommand;
 import net.cycastic.sigil.application.user.get.GetKdfSettingsCommand;
 import net.cycastic.sigil.application.user.get.GetUserCommand;
 import net.cycastic.sigil.application.user.invalidatesessions.InvalidateAllSessionsCommand;
+import net.cycastic.sigil.application.user.keyring.QueryKeyringCommand;
 import net.cycastic.sigil.application.user.refresh.RefreshTokenCommand;
 import net.cycastic.sigil.application.user.register.CompleteUserRegistrationCommand;
 import net.cycastic.sigil.application.user.register.ProbeRegistrationInvitationCommand;
@@ -21,6 +22,7 @@ import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.auth.*;
 import net.cycastic.sigil.domain.dto.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.UserDto;
+import net.cycastic.sigil.domain.dto.keyring.KeyringDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -84,8 +86,14 @@ public class AuthController {
     }
 
     @GetMapping("envelop")
+    @Deprecated
     public EnvelopDto getEnvelop(){
         return pipelinr.send(GetEnvelopCommand.INSTANCE);
+    }
+
+    @GetMapping("keyring")
+    public KeyringDto getKeyring(){
+        return pipelinr.send(new QueryKeyringCommand());
     }
 
     @GetMapping

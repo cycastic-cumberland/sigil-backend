@@ -35,6 +35,7 @@ import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -73,8 +74,16 @@ public class TenantService {
         }
     }
 
+    public Optional<Tenant> tryGetTenant(){
+        return loggedUserAccessor.tryGetTenantId()
+                .stream()
+                .boxed()
+                .flatMap(id -> tenantRepository.findById(id).stream())
+                .findFirst();
+    }
+
     public Tenant getTenant(){
-        return tenantRepository.findById(loggedUserAccessor.getTenantId())
+        return tryGetTenant()
                 .orElseThrow(() -> new RequestException(404, "Tenant not found"));
     }
 

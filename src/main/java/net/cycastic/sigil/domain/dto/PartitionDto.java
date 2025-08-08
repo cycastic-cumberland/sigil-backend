@@ -2,6 +2,7 @@ package net.cycastic.sigil.domain.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.listing.Partition;
 
 import java.time.OffsetDateTime;

@@ -2,7 +2,7 @@ package net.cycastic.sigil.application.user.get;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.domain.dto.CipherDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.dto.auth.EnvelopDto;
 import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;

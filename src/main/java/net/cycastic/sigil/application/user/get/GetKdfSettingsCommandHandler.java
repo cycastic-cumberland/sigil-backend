@@ -7,7 +7,7 @@ import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.configuration.auth.KdfConfiguration;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
-import net.cycastic.sigil.domain.dto.CipherDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.dto.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.auth.AuthenticationMethod;
 import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;

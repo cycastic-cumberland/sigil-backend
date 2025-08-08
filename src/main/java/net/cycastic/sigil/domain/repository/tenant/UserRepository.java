@@ -2,6 +2,8 @@ package net.cycastic.sigil.domain.repository.tenant;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
+import net.cycastic.sigil.domain.dto.keyring.interfaces.CipherBasedKdfDetails;
+import net.cycastic.sigil.domain.dto.keyring.interfaces.WebAuthnBasedKdfDetails;
 import net.cycastic.sigil.domain.model.tenant.User;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -10,22 +12,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
-    interface KdfDetails {
-        byte[] getParameters();
-        byte[] getSalt();
-    }
-
-    interface PasswordBasedKdfDetails extends KdfDetails {
-        byte[] getIv();
-        byte[] getCipher();
-    }
-
-    interface WebAuthnBasedKdfDetails extends PasswordBasedKdfDetails {
-        byte[] getWebAuthnCredentialId();
-        byte[] getWebAuthnSalt();
-        String getWebAuthnTransports();
-    }
-
     Optional<User> findByNormalizedEmail(@NotNull String normalizedEmail);
 
     @Query("SELECT tu.user FROM TenantUser tu WHERE tu.tenant.id = :tenantId AND tu.user.normalizedEmail = UPPER(:email) AND tu.lastInvited IS NULL")
@@ -43,15 +29,17 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
            SELECT u.kdfSettings AS parameters,
                   u.kdfSalt AS salt,
                   u.wrappedUserKey.iv AS iv,
+                  u.wrappedUserKey.id AS cipherId,
                   COALESCE(u.wrappedUserKey.cipherLong, u.wrappedUserKey.cipherStandard) AS cipher
                   FROM User u WHERE u.id = :userId
            """)
-    Optional<PasswordBasedKdfDetails> getPasswordBasedKdfDetails(@Param("userId") int userId);
+    Optional<CipherBasedKdfDetails> getPasswordBasedKdfDetails(@Param("userId") int userId);
 
     @Query("""
            SELECT u.kdfSettings AS parameters,
                   u.kdfSalt AS salt,
                   u.webAuthnCredential.wrappedUserKey.iv AS iv,
+                  u.webAuthnCredential.wrappedUserKey.id AS cipherId,
                   COALESCE(u.webAuthnCredential.wrappedUserKey.cipherLong, u.webAuthnCredential.wrappedUserKey.cipherStandard) AS cipher,
                   u.webAuthnCredential.credentialId AS webAuthnCredentialId,
                   u.webAuthnCredential.salt AS webAuthnSalt,

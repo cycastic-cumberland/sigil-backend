@@ -9,7 +9,7 @@ import net.cycastic.sigil.domain.ApplicationAssets;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
-import net.cycastic.sigil.domain.dto.CipherDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
 import net.cycastic.sigil.domain.dto.auth.CredentialDto;
 import net.cycastic.sigil.domain.dto.UserDto;

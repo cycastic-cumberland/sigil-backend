@@ -3,7 +3,7 @@ package net.cycastic.sigil.application.partition.get;
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
-import net.cycastic.sigil.domain.dto.CipherDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.dto.PartitionDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;

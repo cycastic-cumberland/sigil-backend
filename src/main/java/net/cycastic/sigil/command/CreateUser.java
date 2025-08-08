@@ -2,7 +2,7 @@ package net.cycastic.sigil.command;
 
 import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.domain.CryptographicUtilities;
-import net.cycastic.sigil.domain.dto.CipherDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.domain.model.tenant.UsageType;

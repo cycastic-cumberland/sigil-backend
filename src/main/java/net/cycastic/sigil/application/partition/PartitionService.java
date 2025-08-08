@@ -9,6 +9,8 @@ import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class PartitionService {
@@ -34,8 +36,16 @@ public class PartitionService {
         }
     }
 
+    public Optional<Partition> tryGetPartition(){
+        return loggedUserAccessor.tryGetPartitionId()
+                .stream()
+                .boxed()
+                .flatMap(id -> partitionRepository.findById(id).stream())
+                .findFirst();
+    }
+
     public Partition getPartition(){
-        return partitionRepository.findById(loggedUserAccessor.getPartitionId())
+        return tryGetPartition()
                 .orElseThrow(() -> new RequestException(404, "Partition not found"));
     }
 }
