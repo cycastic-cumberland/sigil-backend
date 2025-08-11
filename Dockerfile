@@ -9,8 +9,12 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
 COPY src ./src
+
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
+
 RUN rm ./src/main/resources/application-local.yaml
-RUN mvn clean package -DskipTests -B
+RUN --mount=type=secret,id=sentry_token export SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_token) && SENTRY_ORG=${SENTRY_ORG} SENTRY_PROJECT=${SENTRY_PROJECT} mvn clean package -DskipTests -B
 
 FROM bellsoft/liberica-runtime-container:jre-23-slim-musl AS runtime
 WORKDIR /app

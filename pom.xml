@@ -247,11 +247,8 @@
                 <extensions>true</extensions>
                 <configuration>
                     <debugSentryCli>true</debugSentryCli>
-
-                    <org>cycastic</org>
-
-                    <project>java-spring-boot</project>
-
+                    <org>${env.SENTRY_ORG}</org>
+                    <project>${env.SENTRY_PROJECT}</project>
                     <authToken>${env.SENTRY_AUTH_TOKEN}</authToken>
                 </configuration>
                 <executions>
