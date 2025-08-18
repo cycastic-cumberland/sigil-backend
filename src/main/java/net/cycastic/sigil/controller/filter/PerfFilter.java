@@ -25,7 +25,7 @@ public class PerfFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } finally {
             var end = System.currentTimeMillis();
-            logger.debug("Request {} {} took {} ms", request.getMethod(), request.getRequestURI(), end - start);
+            logger.debug("Request \"{} {}\" took {} ms. IP: {}", request.getMethod(), request.getRequestURI(), end - start, request.getRemoteAddr());
         }
     }
 }
