@@ -73,5 +73,6 @@ public class ApplicationConstants {
     public static final String SECURITY_STAMP_ENTRY = "security_stamp";
     public static final String PresignSignatureEntry = "x-pt-signature";
     public static final String PresignSignatureAlgorithmEntry = "x-pt-algorithm";
+    public static final String NewNotificationEventType = "NEW_NOTIFICATION";
     public static final long REFRESH_TOKEN_TIME_MILLISECONDS = 1_209_600_000;
 }

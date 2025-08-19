@@ -6,4 +6,5 @@ import net.cycastic.sigil.domain.dto.CountDto;
 
 @Data
 public class GetUnreadNotificationCountCommand implements Command<CountDto> {
+    private boolean useNotificationFilter;
 }

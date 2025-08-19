@@ -2,6 +2,7 @@ package net.cycastic.sigil.domain.model.notification;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.model.tenant.User;
@@ -9,6 +10,7 @@ import net.cycastic.sigil.domain.model.tenant.User;
 import java.time.OffsetDateTime;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

@@ -9,6 +9,7 @@ import net.cycastic.sigil.application.notifications.get.GetNotificationsCommand;
 import net.cycastic.sigil.application.notifications.get.GetUnreadNotificationCountCommand;
 import net.cycastic.sigil.application.notifications.mark.MarkNotificationsAsReadCommand;
 import net.cycastic.sigil.application.notifications.remove.DeleteNotificationsCommand;
+import net.cycastic.sigil.application.notifications.send.SendNotificationToUserCommand;
 import net.cycastic.sigil.domain.dto.CountDto;
 import net.cycastic.sigil.domain.dto.notifications.NotificationSettingsDto;
 import net.cycastic.sigil.domain.dto.notifications.NotificationsDto;
@@ -36,17 +37,22 @@ public class NotificationController {
     }
 
     @PostMapping("settings")
-    public void saveNotificationSettings(@Valid SaveNotificationSettingsCommand command){
+    public void saveNotificationSettings(@Valid @RequestBody SaveNotificationSettingsCommand command){
         pipelinr.send(command);
     }
 
     @PostMapping
-    public void markAsRead(@Valid MarkNotificationsAsReadCommand command){
+    public void markAsRead(@Valid @RequestBody MarkNotificationsAsReadCommand command){
         pipelinr.send(command);
     }
 
     @DeleteMapping
     public void deleteNotification(@Valid DeleteNotificationsCommand command){
+        pipelinr.send(command);
+    }
+
+    @PutMapping("user")
+    public void sendNotificationToUser(@Valid @RequestBody SendNotificationToUserCommand command){
         pipelinr.send(command);
     }
 }

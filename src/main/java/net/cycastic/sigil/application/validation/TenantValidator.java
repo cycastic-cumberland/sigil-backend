@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.validation;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.user.validation.RequireAdmin;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
@@ -17,6 +18,10 @@ public class TenantValidator implements CommandValidator{
 
     @Override
     public void validate(Command command) {
+        if (command.getClass().isAnnotationPresent(RequireAdmin.class) && !loggedUserAccessor.isAdmin()){
+            throw RequestException.forbidden();
+        }
+
         var tenantIdOpt = loggedUserAccessor.tryGetTenantId();
         var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
         if (tenantIdOpt.isEmpty()){

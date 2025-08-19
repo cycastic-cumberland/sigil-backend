@@ -38,7 +38,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
                                                   @Param("ignoreTypes") Collection<String> ignoreTypes,
                                                   @Param("amount") int amount);
 
-    long countByUser_IdAndRead(int userId, boolean read);
+    @Query("""
+           SELECT n FROM Notification n WHERE n.user.id = :userId AND n.notificationType NOT IN :ignoreTypes
+           """)
+    long countUnreadNotifications(@Param("userId") int userId, @Param("ignoreTypes") Collection<String> ignoreTypes);
 
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
