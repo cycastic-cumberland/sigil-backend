@@ -1,5 +1,5 @@
 package net.cycastic.sigil.service.notification;
 
 public interface NotificationSender {
-    <T> void sendNotification(String channel, String eventType, T payload);
+    void sendNotification(String channel, String eventType, Object payload);
 }

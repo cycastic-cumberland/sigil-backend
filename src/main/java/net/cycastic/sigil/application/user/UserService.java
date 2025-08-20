@@ -124,6 +124,7 @@ public class UserService {
                 .status(userStatus)
                 .lastInvitationSent(null)
                 .emailVerified(emailVerified)
+                .notificationToken(UUID.randomUUID())
                 .build();
         refreshSecurityStamp(user);
         userRepository.save(user);
@@ -187,6 +188,7 @@ public class UserService {
                 .authToken(authToken)
                 .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .kdfSettings(getKdfSettings(user))
+                .notificationToken(user.getNotificationToken())
                 .build();
     }
 

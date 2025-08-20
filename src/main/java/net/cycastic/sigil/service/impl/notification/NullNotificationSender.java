@@ -12,7 +12,7 @@ public class NullNotificationSender implements NotificationSender {
     }
 
     @Override
-    public <T> void sendNotification(String channel, String eventType, T payload) {
+    public void sendNotification(String channel, String eventType, Object payload) {
         logger.info("Notification sent: channel={}, eventType={}, payload={}", channel, eventType, payload);
     }
 }

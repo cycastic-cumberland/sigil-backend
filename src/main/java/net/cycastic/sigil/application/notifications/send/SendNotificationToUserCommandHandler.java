@@ -41,8 +41,8 @@ public class SendNotificationToUserCommandHandler implements Command.Handler<Sen
                 .createdAt(OffsetDateTime.now())
                 .build();
         notificationRepository.save(notification);
-        notificationSender.sendNotification(ApplicationConstants.NewNotificationEventType,
-                String.format("%d:%s", user.getId(), user.getNormalizedEmail()),
+        notificationSender.sendNotification(user.getNotificationToken().toString(),
+                ApplicationConstants.NewNotificationEventType,
                 Collections.emptyList());
         return null;
     }

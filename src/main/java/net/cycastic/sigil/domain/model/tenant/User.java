@@ -9,10 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.OptionalInt;
-import java.util.Set;
+import java.util.*;
 
 import jakarta.persistence.*;
 
@@ -21,7 +18,10 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users", indexes = { @Index(name = "users_normalized_email_uindex", columnList = "normalized_email", unique = true) })
+@Table(name = "users", indexes = {
+        @Index(name = "users_normalized_email_uindex", columnList = "normalized_email", unique = true),
+        @Index(name = "users_notification_token_uindex", columnList = "notification_token", unique = true)
+})
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,6 +77,9 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user")
     private WebAuthnCredential webAuthnCredential;
+
+    @Column(nullable = false)
+    private UUID notificationToken;
 
     @Override
     public boolean isEnabled() {

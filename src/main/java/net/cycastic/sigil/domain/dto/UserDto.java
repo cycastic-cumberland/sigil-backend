@@ -9,6 +9,7 @@ import net.cycastic.sigil.domain.model.tenant.User;
 
 import java.time.OffsetDateTime;
 import java.util.Base64;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -23,6 +24,7 @@ public class UserDto {
     private String publicRsaKey;
     private int tenantOwnerCount;
     private boolean hasWebAuthnCredential;
+    private UUID notificationToken;
     private OffsetDateTime joinedAt;
 
     public static UserDto fromDomain(@NotNull User user){
@@ -34,6 +36,7 @@ public class UserDto {
                 .roles(user.getRoles().split(","))
                 .publicRsaKey(user.getPublicRsaKey() == null ? null : Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .hasWebAuthnCredential(user.getWebAuthnCredentialId().isPresent())
+                .notificationToken(user.getNotificationToken())
                 .joinedAt(user.getJoinedAt())
                 .build();
     }

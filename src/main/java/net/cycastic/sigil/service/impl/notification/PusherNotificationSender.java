@@ -15,7 +15,7 @@ public class PusherNotificationSender implements NotificationSender {
         pusher.setEncrypted(Objects.requireNonNullElse(configurations.getEncrypted(), true));
     }
     @Override
-    public <T> void sendNotification(String channel, String eventType, T payload) {
+    public void sendNotification(String channel, String eventType, Object payload) {
         pusher.trigger(channel, eventType, payload);
     }
 }
