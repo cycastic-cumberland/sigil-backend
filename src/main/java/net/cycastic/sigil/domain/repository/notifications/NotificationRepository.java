@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     @Query("""
@@ -18,7 +19,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
            n.notificationType NOT IN :ignoreTypes
            ORDER BY n.createdAt LIMIT :amount
            """)
-    Collection<Notification> getNotificationUpper(@Param("userId") int userId,
+    List<Notification> getNotificationUpper(@Param("userId") int userId,
                                                   @Param("sinceId") Long sinceId,
                                                   @Param("readStatuses") boolean[] readStatuses,
                                                   @Param("ignoreTypes") Collection<String> ignoreTypes,
@@ -30,13 +31,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
            n.id < :sinceId AND
            n.isRead IN :readStatuses AND
            n.notificationType NOT IN :ignoreTypes
-           ORDER BY n.createdAt LIMIT :amount
+           ORDER BY n.createdAt DESC LIMIT :amount
            """)
-    Collection<Notification> getNotificationLower(@Param("userId") int userId,
-                                                  @Param("sinceId") Long sinceId,
-                                                  @Param("readStatuses") boolean[] readStatuses,
-                                                  @Param("ignoreTypes") Collection<String> ignoreTypes,
-                                                  @Param("amount") int amount);
+    List<Notification> getNotificationLower(@Param("userId") int userId,
+                                            @Param("sinceId") Long sinceId,
+                                            @Param("readStatuses") boolean[] readStatuses,
+                                            @Param("ignoreTypes") Collection<String> ignoreTypes,
+                                            @Param("amount") int amount);
 
     @Query("""
            SELECT COUNT(1)
@@ -49,16 +50,16 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Notification n SET n.isRead = false WHERE n.user.id = :userId AND n.id IN :notificationIds")
-    long markAsRead(@Param("userId") int userId, @Param("notificationIds") long[] notificationIds);
+    @Query("UPDATE Notification n SET n.isRead = true WHERE n.user.id = :userId AND n.id IN :notificationIds")
+    int markAsRead(@Param("userId") int userId, @Param("notificationIds") long[] notificationIds);
 
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Notification n WHERE n.user.id = :userId AND n.id IN :notificationIds")
-    long removeNotifications(@Param("userId") int userId, @Param("notificationIds") long[] notificationIds);
+    int removeNotifications(@Param("userId") int userId, @Param("notificationIds") long[] notificationIds);
 
     @Transactional
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM Notification n WHERE n.user.id = :userId")
-    long removeNotifications(@Param("userId") int userId);
+    int removeNotifications(@Param("userId") int userId);
 }

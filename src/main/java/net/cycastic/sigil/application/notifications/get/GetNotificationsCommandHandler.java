@@ -43,11 +43,13 @@ public class GetNotificationsCommandHandler implements Command.Handler<GetNotifi
 
         Collection<Notification> notifications;
         if (command.isLower()){
-            notifications = notificationRepository.getNotificationLower(loggedUserAccessor.getUserId(),
+            var n = notificationRepository.getNotificationLower(loggedUserAccessor.getUserId(),
                     Objects.requireNonNullElse(command.getSinceId(), Long.MAX_VALUE),
                     readStatuses,
                     filter,
                     command.getAmount());
+            Collections.reverse(n);
+            notifications = n;
         } else {
             notifications = notificationRepository.getNotificationUpper(loggedUserAccessor.getUserId(),
                     Objects.requireNonNullElse(command.getSinceId(), 0L),

@@ -29,7 +29,7 @@ public class SigilApplication implements CommandLineRunner {
     @Component
     @CommandLine.Command(
             subcommands = {CreateUser.class, VerifyPassword.class, GenerateKeyPair.class, Cleanup.class,
-                    CalculateAccumulatedStorage.class})
+                    CalculateAccumulatedStorage.class, FixUserPassword.class})
     public static class Cli{ }
 
     @Component

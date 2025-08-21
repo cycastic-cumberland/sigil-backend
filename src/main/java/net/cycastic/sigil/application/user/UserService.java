@@ -1,6 +1,7 @@
 package net.cycastic.sigil.application.user;
 
 import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
@@ -37,10 +38,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.Duration;
 import java.time.Instant;
@@ -414,5 +417,30 @@ public class UserService {
         var count = tenantRepository.countByOwner_Id(user.getId());
         dto.setTenantOwnerCount(count);
         return dto;
+    }
+
+    @Transactional
+    public void updatePasswordCipher(int userId, PrivateKey privateKey, String newPassword){
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new RequestException(404, "User not found"));
+        var salt = new byte[KeyDerivationFunction.SALT_SIZE];
+        CryptographicUtilities.generateRandom(salt);
+        var keyDerivationResult = keyDerivationFunction.derive(newPassword.getBytes(StandardCharsets.UTF_8), salt, keyDerivationFunction.getDefaultParameters());
+        user.setKdfSalt(salt);
+        user.setKdfSettings(keyDerivationResult.getParameters().encode());
+
+        var iv = new byte[CryptographicUtilities.NONCE_LENGTH];
+        CryptographicUtilities.generateRandom(iv);
+        var dummyKey = new SecretKeySpec(keyDerivationResult.getHash(), "AES");
+        var encryptedPrivateKey = CryptographicUtilities.encrypt(dummyKey, iv, privateKey.getEncoded());
+        var cipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD, iv, encryptedPrivateKey);
+
+        if (user.getWrappedUserKey() != null){
+            cipherRepository.delete(user.getWrappedUserKey());
+        }
+
+        cipherRepository.save(cipher);
+        user.setWrappedUserKey(cipher);
+        userRepository.save(user);
     }
 }
