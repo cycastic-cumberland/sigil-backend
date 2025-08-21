@@ -2,9 +2,11 @@ package net.cycastic.sigil.domain.dto.notifications;
 
 import lombok.Builder;
 import lombok.Data;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.notification.Notification;
 
 import java.time.OffsetDateTime;
+import java.util.Base64;
 
 @Data
 @Builder
@@ -14,6 +16,7 @@ public class NotificationDto {
     private boolean isRead;
     private String notificationContent;
     private String notificationType;
+    private CipherDto encryptionCipher;
     private OffsetDateTime createdAt;
 
     public static NotificationDto fromDomain(Notification notification){
@@ -21,8 +24,9 @@ public class NotificationDto {
                 .id(notification.getId())
                 .userId(notification.getUser().getId())
                 .isRead(notification.isRead())
-                .notificationContent(notification.getNotificationContent())
+                .notificationContent(Base64.getEncoder().encodeToString(notification.getNotificationContent()))
                 .notificationType(notification.getNotificationType())
+                .encryptionCipher(CipherDto.fromDomain(notification.getEncryptionCipher()))
                 .createdAt(notification.getCreatedAt())
                 .build();
     }

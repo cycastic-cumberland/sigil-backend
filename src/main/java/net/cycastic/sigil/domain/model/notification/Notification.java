@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.tenant.User;
 
 import java.time.OffsetDateTime;
@@ -26,12 +27,16 @@ public class Notification {
 
     private boolean isRead;
 
-    @Column(columnDefinition = "VARCHAR(2000)", nullable = false)
-    private String notificationContent;
+    @Column(columnDefinition = "VARBINARY(2000)", nullable = false)
+    private byte[] notificationContent;
 
     @Column(columnDefinition = "VARCHAR(64)", nullable = false)
     private String notificationType;
 
     @Column(nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    @OneToOne
+    @JoinColumn(name = "encryption_cipher", nullable = false)
+    private Cipher encryptionCipher;
 }
