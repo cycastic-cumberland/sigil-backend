@@ -1,21 +1,23 @@
 package net.cycastic.sigil.domain.model.tenant;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 import org.hibernate.annotations.Where;
 
 import java.time.OffsetDateTime;
 import java.util.Set;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "tenants")
 @Where(clause = "removed_at IS NULL")
-public class Tenant {
+@EqualsAndHashCode(callSuper = true)
+public class Tenant extends VersionedMetadataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -36,15 +38,7 @@ public class Tenant {
     @OneToMany(mappedBy = "tenant")
     private Set<TenantUser> tenantUsers;
 
-    @NotNull
-    private OffsetDateTime createdAt = OffsetDateTime.now();
-
-    private OffsetDateTime updatedAt;
-
     private OffsetDateTime removedAt;
-
-    @Version
-    private long version;
 
     public void setAccumulatedAttachmentStorageUsage(long accumulatedAttachmentStorageUsage){
         this.accumulatedAttachmentStorageUsage = accumulatedAttachmentStorageUsage < 0 ? 0 : accumulatedAttachmentStorageUsage;

@@ -2,10 +2,9 @@ package net.cycastic.sigil.domain.model.listing;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
 import org.hibernate.annotations.Where;
@@ -14,13 +13,14 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "partitions", indexes = @Index(name = "partitions_tenant_id_partition_path_uindex", columnList = "tenant_id,partition_path", unique = true))
 @Where(clause = "removed_at IS NULL")
-public class Partition {
+@EqualsAndHashCode(callSuper = true)
+public class Partition extends VersionedMetadataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -46,13 +46,5 @@ public class Partition {
     @OneToMany(mappedBy = "partition")
     private Set<Listing> listings;
 
-    @Column(nullable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
-
-    private OffsetDateTime updatedAt;
-
     private OffsetDateTime removedAt;
-
-    @Version
-    private long version;
 }
