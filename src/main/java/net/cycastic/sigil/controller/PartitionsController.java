@@ -1,6 +1,7 @@
 package net.cycastic.sigil.controller;
 
 import an.awesome.pipelinr.Pipelinr;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.create.CreatePartitionCommand;
 import net.cycastic.sigil.application.partition.delete.DeletePartitionCommand;
@@ -39,7 +40,7 @@ public class PartitionsController {
     }
 
     @PostMapping
-    public IdDto create(@RequestBody CreatePartitionCommand command){
+    public IdDto create(@Valid @RequestBody CreatePartitionCommand command){
         return pipelinr.send(command);
     }
 

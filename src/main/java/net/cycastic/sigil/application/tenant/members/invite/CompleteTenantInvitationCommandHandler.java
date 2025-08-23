@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.user.UserService;
+import net.cycastic.sigil.application.validation.JakartaValidationHelper;
 import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
@@ -34,18 +35,7 @@ public class CompleteTenantInvitationCommandHandler implements Command.Handler<C
         var tenantUser = tenantUserRepository.findById(command.getQueryParams().getTenantUserId())
                 .orElseThrow(() -> new RequestException(400, "Request invalidated"));
         if (user.getStatus().equals(UserStatus.INVITED)){
-            if (command.getForm() == null){
-                throw new RequestException(400, "Registration form is required");
-            }
-            try (var factory = Validation.buildDefaultValidatorFactory()){
-                var validator = factory.getValidator();
-                Set<ConstraintViolation<CompleteUserRegistrationForm>> violations = validator.validate(command.getForm());
-                if (!violations.isEmpty()){
-                    throw new RequestException(400, String.format("Validation failed: %s",
-                            String.join(". ", violations.stream().map(ConstraintViolation::getMessage).toList())));
-                }
-            }
-
+            JakartaValidationHelper.validateObject(command.getForm());
             userService.completeRegistrationNoTransaction(user, command.getForm());
         }
 

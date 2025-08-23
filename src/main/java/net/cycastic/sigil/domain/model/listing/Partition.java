@@ -43,6 +43,9 @@ public class Partition extends VersionedMetadataEntity {
     @Column(name = "sha256Digest", columnDefinition = "BINARY(32)", nullable = false)
     private byte[] keySha256Digest;
 
+    @Column(nullable = false)
+    private PartitionType partitionType;
+
     @OneToMany(mappedBy = "partition")
     private Set<Listing> listings;
 

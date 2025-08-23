@@ -26,7 +26,6 @@ public abstract class MetadataEntity {
     @PrePersist
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
-        updatedAt = OffsetDateTime.now();
     }
 
     @PreUpdate

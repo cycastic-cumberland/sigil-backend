@@ -3,9 +3,11 @@ package net.cycastic.sigil.controller;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.validation.JakartaValidationHelper;
 import net.cycastic.sigil.configuration.application.ExceptionHandlerConfigurations;
 import net.cycastic.sigil.domain.exception.ExceptionResponse;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.exception.ValidationException;
 import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +65,11 @@ public class ApiExceptionHandler {
         if (includeStackTrace){
             errorBuilder.stackTrace(buildStackTrace(ex.getStackTrace()));
         }
+        if (ex instanceof ValidationException validationException &&
+                !validationException.getValidationMessages().isEmpty()){
+            errorBuilder.validationMessages(validationException.getValidationMessages());
+        }
+
         var error = errorBuilder.build();
         return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getResponseCode()));
     }
@@ -70,6 +77,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ExceptionResponse> handleValidationExceptions(MissingServletRequestParameterException ex, HttpServletRequest request) {
         return handleGeneric(new RequestException(400, ex, ex.getMessage()), request);
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.HandlerMethodValidationException.class)
+    public ResponseEntity<ExceptionResponse> handleValidationExceptions(org.springframework.web.method.annotation.HandlerMethodValidationException ex, HttpServletRequest request) {
+        var map = JakartaValidationHelper.toValidationMap(ex);
+        return handleGeneric(new ValidationException(ex, map), request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
