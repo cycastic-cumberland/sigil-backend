@@ -90,7 +90,7 @@ application:
       masking-rsa-public-key: <rsa_public_key>
       masking-rsa-private-key: <rsa_private_key>
   vault:
-    token: <vult_token>token
+    token: <vault_token>
     encryption-key-name: <vault_encryption_key_name>
     api-address: <vault_address>
     api-version: <vault_key_version>
