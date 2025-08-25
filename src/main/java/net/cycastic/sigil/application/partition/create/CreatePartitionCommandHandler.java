@@ -90,7 +90,7 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
         partitionRepository.save(partition);
         if (partitionType.equals(PartitionType.PROJECT)){
             var projectPartition = ProjectPartition.builder()
-                    .id(partition.getId())
+                    .partition(partition)
                     .tenant(tenant)
                     .uniqueIdentifier(command.getProjectPartition().getUniqueIdentifier())
                     .build();

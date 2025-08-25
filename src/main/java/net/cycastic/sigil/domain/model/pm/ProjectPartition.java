@@ -35,10 +35,4 @@ public class ProjectPartition extends VersionedMetadataEntity {
     private int latestSprintNumber;
 
     private int latestTaskId;
-
-    @Override
-    protected void onCreate() {
-        super.onCreate();
-        latestSprintNumber = 1;
-    }
 }
