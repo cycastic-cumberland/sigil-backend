@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.model.listing.PartitionType;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
+import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.StorageProvider;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +25,17 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
     private final DeferrableStorageProvider deferrableStorageProvider;
     private final PartitionService partitionService;
     private final TenantRepository tenantRepository;
+    private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
     public Void handle(OverwriteAttachmentListingCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
 
         var partition = partitionService.getPartition();
+        if (!loggedUserAccessor.isAdmin() &&
+                !partition.getPartitionType().equals(PartitionType.GENERIC)){
+            throw RequestException.withExceptionCode("C403T003");
+        }
         var sourceListing = listingRepository.findByPartitionAndListingPathForUpdate(partition, command.getSourcePath())
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
         var destinationListing = listingRepository.findByPartitionAndListingPath(partition, command.getDestinationPath())

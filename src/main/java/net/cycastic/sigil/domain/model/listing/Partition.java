@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 import net.cycastic.sigil.domain.model.Cipher;
+import net.cycastic.sigil.domain.model.pm.ProjectPartition;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
 import org.hibernate.annotations.Where;
 
@@ -50,4 +51,7 @@ public class Partition extends VersionedMetadataEntity {
     private Set<Listing> listings;
 
     private OffsetDateTime removedAt;
+
+    @OneToOne(mappedBy = "partition")
+    private ProjectPartition projectPartition;
 }

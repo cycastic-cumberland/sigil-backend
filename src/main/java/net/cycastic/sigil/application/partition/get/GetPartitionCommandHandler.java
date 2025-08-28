@@ -4,8 +4,10 @@ import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
-import net.cycastic.sigil.domain.dto.PartitionDto;
+import net.cycastic.sigil.domain.dto.listing.PartitionDto;
+import net.cycastic.sigil.domain.dto.listing.ProjectPartitionDto;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.model.listing.PartitionType;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
@@ -25,7 +27,13 @@ public class GetPartitionCommandHandler implements Command.Handler<GetPartitionC
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(partition.getId(),
                         loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);
-        var partitionDto = PartitionDto.fromDomain(partition);
+        PartitionDto partitionDto;
+        if (partition.getPartitionType().equals(PartitionType.PROJECT)){
+            partitionDto = ProjectPartitionDto.fromDomain(partition);
+        } else {
+            partitionDto = PartitionDto.fromDomain(partition);
+        }
+
         var cipher = CipherDto.fromDomain(partitionUser.getPartitionUserKey());
         partitionDto.setUserPartitionKey(cipher);
         partitionDto.setPermissions(ApplicationConstants.PartitionPermissions.toReadablePermissions(partitionUser.getPermissions()));

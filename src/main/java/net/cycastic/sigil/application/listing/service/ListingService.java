@@ -8,16 +8,14 @@ import net.cycastic.sigil.configuration.S3Configurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.listing.Partition;
-import net.cycastic.sigil.domain.model.listing.ListingType;
-import net.cycastic.sigil.domain.model.listing.AttachmentListing;
-import net.cycastic.sigil.domain.model.listing.Listing;
+import net.cycastic.sigil.domain.model.listing.*;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.*;
 import net.cycastic.sigil.domain.dto.listing.ListingDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
 import net.cycastic.sigil.service.LimitProvider;
+import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.StorageProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -50,6 +48,7 @@ public class ListingService {
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final S3Configurations s3Configurations;
+    private final LoggedUserAccessor loggedUserAccessor;
 
     public ListingDto toDto(Listing listing){
         for (var resolver : resolvers){
@@ -132,9 +131,14 @@ public class ListingService {
         listingRepository.delete(listing);
     }
 
-    public void deleteListingNoTransaction(String path){
+    public void deleteListingNoTransaction(String path, boolean nonGenericPartitionConsent){
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
         var partition = partitionService.getPartition();
+        if (!loggedUserAccessor.isAdmin() &&
+                !partition.getPartitionType().equals(PartitionType.GENERIC) &&
+                !nonGenericPartitionConsent){
+            throw RequestException.withExceptionCode("C403T003");
+        }
         var listing = listingRepository.findByPartitionAndListingPath(partition, path)
                 .orElseThrow(() -> new RequestException(404, "Listing not found"));
 

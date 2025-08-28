@@ -1,7 +1,7 @@
-package net.cycastic.sigil.domain.dto;
+package net.cycastic.sigil.domain.dto.listing;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.listing.Partition;
 
@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
-@Builder
+@SuperBuilder
 public class PartitionDto {
     private int id;
     private String partitionPath;
@@ -20,13 +20,15 @@ public class PartitionDto {
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
-    public static PartitionDto fromDomain(Partition partition){
-        return PartitionDto.builder()
-                .id(partition.getId())
+    protected static <C extends PartitionDto, B extends PartitionDto.PartitionDtoBuilder<C, B>> B fromDomain(Partition partition, PartitionDto.PartitionDtoBuilder<C, B> builder){
+        return builder.id(partition.getId())
                 .partitionPath(partition.getPartitionPath())
                 .serverSideKeyDerivation(partition.getServerPartitionKey() != null)
                 .createdAt(partition.getCreatedAt())
-                .updatedAt(partition.getUpdatedAt())
-                .build();
+                .updatedAt(partition.getUpdatedAt());
+    }
+
+    public static PartitionDto fromDomain(Partition partition){
+        return fromDomain(partition, PartitionDto.builder()).build();
     }
 }

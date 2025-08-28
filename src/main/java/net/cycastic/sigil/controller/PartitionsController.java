@@ -17,7 +17,7 @@ import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.FolderItemDto;
 import net.cycastic.sigil.domain.dto.IdDto;
-import net.cycastic.sigil.domain.dto.PartitionDto;
+import net.cycastic.sigil.domain.dto.listing.PartitionDto;
 import net.cycastic.sigil.domain.dto.PartitionUserDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import org.springframework.web.bind.annotation.*;
