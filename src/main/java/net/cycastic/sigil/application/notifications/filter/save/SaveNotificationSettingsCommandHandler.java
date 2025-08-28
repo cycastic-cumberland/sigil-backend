@@ -32,7 +32,6 @@ public class SaveNotificationSettingsCommandHandler implements Command.Handler<S
     }
 
     @Override
-    @Transactional
     public Void handle(SaveNotificationSettingsCommand command) {
         var user = userService.getUser();
         var currentFilters = notificationSettingRepository.findByUser_Id(user.getId(), Pageable.unpaged());

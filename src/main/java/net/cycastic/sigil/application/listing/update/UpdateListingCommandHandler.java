@@ -19,7 +19,6 @@ public class UpdateListingCommandHandler implements Command.Handler<UpdateListin
     private final PartitionService partitionService;
 
     @Override
-    @Transactional
     public Void handle(UpdateListingCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
         var listing = listingRepository.findByPartitionAndListingPath(partitionService.getPartition(), command.getPath())

@@ -4,4 +4,5 @@ public enum FolderItemType {
     PARTITION,
     ATTACHMENT,
     FOLDER,
+    PROJECT_PARTITION,
 }

@@ -12,7 +12,6 @@ public class EnrollWebAuthnEnvelopCommandHandler implements Command.Handler<Enro
     private final UserService userService;
 
     @Override
-    @Transactional
     public Void handle(EnrollWebAuthnEnvelopCommand command) {
         var user = userService.getUser();
         userService.enrollWebAuthnNoTransaction(user, command);

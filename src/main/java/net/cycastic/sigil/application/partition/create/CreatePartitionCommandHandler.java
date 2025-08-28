@@ -1,7 +1,6 @@
 package net.cycastic.sigil.application.partition.create;
 
 import an.awesome.pipelinr.Command;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.user.UserService;
@@ -41,7 +40,6 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
     private final UserService userService;
 
     @Override
-    @Transactional
     @SneakyThrows
     public IdDto handle(CreatePartitionCommand command) {
         var path = command.getPartitionPath();

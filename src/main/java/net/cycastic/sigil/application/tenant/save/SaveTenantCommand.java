@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.sigil.application.misc.TransactionalCommand;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.model.tenant.UsageType;
 import org.springframework.lang.Nullable;
@@ -12,6 +13,7 @@ import org.springframework.lang.Nullable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TransactionalCommand
 public class SaveTenantCommand implements Command<IdDto> {
     private @Nullable Integer id;
     private @Nullable Integer userId;

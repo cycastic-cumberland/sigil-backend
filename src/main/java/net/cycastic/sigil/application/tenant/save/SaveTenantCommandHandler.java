@@ -65,7 +65,6 @@ public class SaveTenantCommandHandler implements Command.Handler<SaveTenantComma
     }
 
     @Override
-    @Transactional
     public IdDto handle(SaveTenantCommand command) {
         if (command.getUsageType() != null && !loggedUserAccessor.isAdmin()){
             throw RequestException.forbidden();

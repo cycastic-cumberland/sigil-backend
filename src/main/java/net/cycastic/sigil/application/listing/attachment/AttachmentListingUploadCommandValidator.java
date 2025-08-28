@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class AttachmentListingUploadCommandValidator implements CommandValidator {
     private static final Logger logger = LoggerFactory.getLogger(AttachmentListingUploadCommandValidator.class);
-    private static final Pattern INVALID_PATH = Pattern.compile("\\\\|/{2}|_|%");
+    private static final Pattern INVALID_PATH = Pattern.compile("\\\\|/{2}|_|%|\\r|\\n");
     private final LoggedUserAccessor loggedUserAccessor;
     private final TenantRepository tenantRepository;
     private final TenantUserRepository tenantUserRepository;

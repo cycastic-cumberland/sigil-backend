@@ -13,7 +13,6 @@ public class DeleteListingCommandHandler implements Command.Handler<DeleteListin
     private final ListingService listingService;
 
     @Override
-    @Transactional
     public Void handle(DeleteListingCommand command) {
         listingService.deleteListingNoTransaction(command.getListingPath());
         return null;

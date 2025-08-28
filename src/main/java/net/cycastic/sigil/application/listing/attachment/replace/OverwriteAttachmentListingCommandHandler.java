@@ -25,7 +25,6 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
     private final TenantRepository tenantRepository;
 
     @Override
-    @Transactional
     public Void handle(OverwriteAttachmentListingCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.WRITE);
 

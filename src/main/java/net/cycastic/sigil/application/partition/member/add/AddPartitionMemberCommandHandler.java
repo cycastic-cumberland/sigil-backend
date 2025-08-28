@@ -29,7 +29,6 @@ public class AddPartitionMemberCommandHandler implements Command.Handler<AddPart
     private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
-    @Transactional
     public Void handle(AddPartitionMemberCommand command) {
         Objects.requireNonNull(command.getWrappedPartitionUserKey());
 

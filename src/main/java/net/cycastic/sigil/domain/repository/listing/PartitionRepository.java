@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface PartitionRepository extends JpaRepository<Partition, Integer> {
@@ -18,6 +20,11 @@ public interface PartitionRepository extends JpaRepository<Partition, Integer> {
         String getName();
         boolean getIsPartition();
         OffsetDateTime getModifiedAt();
+    }
+
+    interface PartitionTypeItem {
+        long getId();
+        int getType();
     }
 
     Optional<Partition> findByTenant_IdAndPartitionPath(int tenantId, String partitionPath);
@@ -73,4 +80,12 @@ public interface PartitionRepository extends JpaRepository<Partition, Integer> {
                               AND pu.partition.removedAt IS NULL
                          """)
     Page<FileItem> findItems(@Param("tenant")Tenant tenant, @Param("folder") String folder, @Param("user") User user, Pageable pageable);
+
+    @Query("""
+           SELECT p
+           FROM Partition p
+           WHERE p.partitionPath LIKE CONCAT(:prefix, '%')
+           AND SUBSTRING(p.partitionPath, LENGTH(:prefix) + 1) IN :names
+           """)
+    List<Partition> findByPrefixAndNames(@Param("prefix") String prefix, @Param("names") Collection<String> names);
 }

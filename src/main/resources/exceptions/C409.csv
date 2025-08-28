@@ -1,2 +1,3 @@
 exceptionCode,statusCode,en,vi
 C409T000,409,Data conflict detected,
+C409T001,409,Data duplication detected,

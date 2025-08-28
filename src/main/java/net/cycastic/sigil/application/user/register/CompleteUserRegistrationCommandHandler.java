@@ -19,7 +19,6 @@ public class CompleteUserRegistrationCommandHandler implements Command.Handler<C
     private final UserService userService;
 
     @Override
-    @Transactional
     public Void handle(CompleteUserRegistrationCommand command) {
         var user = userRepository.findById(command.getQueryParams().getUserId())
                 .stream()

@@ -25,7 +25,6 @@ public class CompleteTenantInvitationCommandHandler implements Command.Handler<C
     private final TenantUserRepository tenantUserRepository;
 
     @Override
-    @Transactional
     public Void handle(CompleteTenantInvitationCommand command) {
         var user = userRepository.findById(command.getQueryParams().getUserId())
                 .stream()

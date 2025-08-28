@@ -19,7 +19,6 @@ public class RegisterUserCommandHandler implements Command.Handler<RegisterUserC
     private final UserService userService;
 
     @Override
-    @Transactional
     @SneakyThrows
     public Void handle(RegisterUserCommand command) {
         var userOpt = userRepository.getByEmail(command.getEmail());

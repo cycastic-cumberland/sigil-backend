@@ -21,7 +21,6 @@ public class RemovePartitionMemberCommandHandler implements Command.Handler<Remo
     private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
-    @Transactional
     public Void handle(RemovePartitionMemberCommand command) {
         var user = userRepository.findByEmailAndTenantId(command.getEmail(), loggedUserAccessor.getTenantId())
                 .orElseThrow(() -> new RequestException(404, "User not found"));

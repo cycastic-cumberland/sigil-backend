@@ -21,15 +21,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.sql.DataTruncation;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.regex.Pattern;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ApiExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
-    private static final Pattern DATA_TOO_LONG_PATTERN = Pattern.compile("data too long", Pattern.CASE_INSENSITIVE);
     private final ExceptionHandlerConfigurations configurations;
 
     private static String buildStackTrace(StackTraceElement[] elements){
@@ -88,11 +88,13 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ExceptionResponse> handleJpaViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
         var root = ex.getRootCause();
-        if (root != null && root.getMessage() != null && DATA_TOO_LONG_PATTERN.matcher(root.getMessage()).find()) {
+        if (root instanceof DataTruncation) {
             return handleGeneric(RequestException.withExceptionCode("C400T003", ex), request);
-        } else {
-            return handleGeneric(RequestException.withExceptionCode("C409T000", ex), request);
         }
+        if (root instanceof SQLIntegrityConstraintViolationException){
+            return handleGeneric(RequestException.withExceptionCode("C409T001", ex), request);
+        }
+        return handleGeneric(RequestException.withExceptionCode("C409T000", ex), request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

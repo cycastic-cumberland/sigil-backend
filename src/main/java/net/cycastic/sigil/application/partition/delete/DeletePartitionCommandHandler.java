@@ -18,7 +18,6 @@ public class DeletePartitionCommandHandler implements Command.Handler<DeletePart
     private final PartitionRepository partitionRepository;
 
     @Override
-    @Transactional
     public Void handle(DeletePartitionCommand command) {
         partitionService.checkPermission(ApplicationConstants.PartitionPermissions.MODERATE | ApplicationConstants.PartitionPermissions.WRITE);
         var partition = partitionService.getPartition();

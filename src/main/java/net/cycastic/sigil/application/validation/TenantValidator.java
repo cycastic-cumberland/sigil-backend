@@ -7,6 +7,7 @@ import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,8 @@ public class TenantValidator implements CommandValidator{
 
     @Override
     public void validate(Command command) {
-        if (command.getClass().isAnnotationPresent(RequireAdmin.class) && !loggedUserAccessor.isAdmin()){
+        if (AnnotatedElementUtils.findMergedAnnotation(command.getClass(), RequireAdmin.class) != null &&
+                !loggedUserAccessor.isAdmin()){
             throw RequestException.forbidden();
         }
 
