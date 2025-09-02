@@ -3,7 +3,7 @@ package net.cycastic.sigil.domain.dto.auth;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 public class CompleteUserRegistrationForm {

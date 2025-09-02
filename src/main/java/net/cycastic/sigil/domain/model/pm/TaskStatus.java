@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 @Entity

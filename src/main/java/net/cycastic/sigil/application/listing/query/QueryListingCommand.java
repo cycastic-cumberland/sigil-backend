@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.dto.listing.ListingDto;
 import net.cycastic.sigil.domain.dto.paging.PageRequestDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 @NoArgsConstructor

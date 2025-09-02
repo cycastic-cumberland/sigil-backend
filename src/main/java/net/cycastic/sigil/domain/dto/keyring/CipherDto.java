@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 import java.util.Base64;
 

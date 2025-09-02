@@ -9,7 +9,7 @@ import lombok.SneakyThrows;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;

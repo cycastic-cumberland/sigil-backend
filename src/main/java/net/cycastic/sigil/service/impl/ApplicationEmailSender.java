@@ -5,7 +5,7 @@ import net.cycastic.sigil.service.DecryptionProvider;
 import net.cycastic.sigil.service.EmailImage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 import java.util.Map;
 

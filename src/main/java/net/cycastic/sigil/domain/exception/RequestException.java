@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 

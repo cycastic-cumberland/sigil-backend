@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 @Builder

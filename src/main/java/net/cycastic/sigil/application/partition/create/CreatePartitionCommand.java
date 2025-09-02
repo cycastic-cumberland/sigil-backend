@@ -6,7 +6,7 @@ import lombok.Data;
 import net.cycastic.sigil.application.misc.TransactionalCommand;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.model.listing.PartitionType;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 @TransactionalCommand

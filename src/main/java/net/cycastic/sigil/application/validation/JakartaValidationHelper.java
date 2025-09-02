@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.exception.ValidationException;
 import org.springframework.context.MessageSourceResolvable;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.method.MethodValidationResult;
 

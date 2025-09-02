@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
 import net.cycastic.sigil.domain.dto.listing.AttachmentUploadDto;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

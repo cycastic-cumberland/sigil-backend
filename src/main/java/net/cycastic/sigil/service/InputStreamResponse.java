@@ -1,7 +1,7 @@
 package net.cycastic.sigil.service;
 
 import org.springframework.core.io.InputStreamSource;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 public interface InputStreamResponse extends InputStreamSource {
     @Nullable Long getContentLength();

@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 public class GenerateAttachmentPresignedDownloadCommand implements Command<AttachmentPresignedDto> {

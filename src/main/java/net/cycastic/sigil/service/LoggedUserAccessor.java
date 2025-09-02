@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.validation.constraints.Null;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;

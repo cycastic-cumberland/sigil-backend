@@ -10,7 +10,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;

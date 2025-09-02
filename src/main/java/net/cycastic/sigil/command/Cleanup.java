@@ -5,7 +5,7 @@ import net.cycastic.sigil.service.BackgroundCleaner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 

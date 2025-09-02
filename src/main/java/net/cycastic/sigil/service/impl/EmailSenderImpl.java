@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.mail.MailSettings;
 import net.cycastic.sigil.service.EmailImage;
 import net.cycastic.sigil.service.EmailSender;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;

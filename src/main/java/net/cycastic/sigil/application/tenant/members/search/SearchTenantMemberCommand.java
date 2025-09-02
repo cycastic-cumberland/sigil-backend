@@ -7,7 +7,7 @@ import net.cycastic.sigil.domain.dto.paging.PageRequestDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.domain.dto.tenant.TenantUserDto;
 import org.springframework.data.domain.Sort;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

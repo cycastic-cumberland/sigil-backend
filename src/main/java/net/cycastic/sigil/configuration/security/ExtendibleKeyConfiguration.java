@@ -1,7 +1,7 @@
 package net.cycastic.sigil.configuration.security;
 
 import lombok.Data;
-import org.springframework.lang.Nullable;
+import jakarta.annotation.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
