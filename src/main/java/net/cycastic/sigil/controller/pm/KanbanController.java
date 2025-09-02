@@ -3,7 +3,7 @@ package net.cycastic.sigil.controller.pm;
 import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.application.pm.create.SaveKanbanBoardCommand;
+import net.cycastic.sigil.application.pm.save.SaveKanbanBoardCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +20,7 @@ public class KanbanController {
     private final Pipelinr pipelinr;
 
     @PostMapping
-    public void createBoard(@Valid @RequestBody SaveKanbanBoardCommand command){
+    public void saveBoard(@Valid @RequestBody SaveKanbanBoardCommand command){
         pipelinr.send(command);
     }
 }
