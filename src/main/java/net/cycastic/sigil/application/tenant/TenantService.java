@@ -60,8 +60,7 @@ public class TenantService {
         return tenantUser.getPermissions();
     }
 
-    public void checkPermission(int mask){
-        var tenant = getTenant();
+    public void checkPermission(Tenant tenant, int mask){
         if (loggedUserAccessor.isAdmin()){
             return;
         }
@@ -72,6 +71,10 @@ public class TenantService {
         if ((getTenantUserPermissions() & mask) != mask){
             throw RequestException.forbidden();
         }
+    }
+
+    public void checkPermission(int mask){
+        checkPermission(getTenant(), mask);
     }
 
     public Optional<Tenant> tryGetTenant(){

@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
+import net.cycastic.sigil.domain.model.tenant.Tenant;
 import net.cycastic.sigil.domain.model.tenant.User;
 
 import java.util.Collection;
@@ -18,6 +18,7 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tasks", indexes = {
+        @Index(name = "tasks_tenant_id_task_identifier_uindex", columnList = "tenant_id,task_identifier", unique = true),
         @Index(name = "tasks_kanban_board_id_task_status_id_index", columnList = "kanban_board_id,task_status_id"),
         @Index(name = "tasks_kanban_board_id_assignee_id_index", columnList = "kanban_board_id,assignee_id"),
         @Index(name = "tasks_kanban_board_id_priority_index", columnList = "kanban_board_id,priority"),
@@ -28,11 +29,18 @@ public class Task extends VersionedMetadataEntity {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "kanban_board_id", nullable = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
+
+    @Column(columnDefinition = "VARCHAR(32)", nullable = false)
+    private String taskIdentifier;
+
+    @ManyToOne
+    @JoinColumn(name = "kanban_board_id")
     private KanbanBoard kanbanBoard;
 
     @ManyToOne
-    @JoinColumn(name = "task_status_id", nullable = false)
+    @JoinColumn(name = "task_status_id")
     private TaskStatus taskStatus;
 
     @ManyToOne
