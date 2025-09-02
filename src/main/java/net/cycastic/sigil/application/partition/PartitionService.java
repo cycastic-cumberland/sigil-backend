@@ -19,12 +19,12 @@ public class PartitionService {
     private final PartitionRepository partitionRepository;
     private final PartitionUserRepository partitionUserRepository;
 
-    public void checkPermission(int mask){
+    public void checkPermission(int partitionId, int mask){
         if (loggedUserAccessor.isAdmin()){
             return;
         }
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
-                loggedUserAccessor.getUserId())
+                        loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);
         var tenant = tenantRepository.findByPartitionUser(partitionUser);
         if (tenant.getOwner().getId().equals(partitionUser.getUser().getId())){
@@ -34,6 +34,10 @@ public class PartitionService {
         if ((partitionUser.getPermissions() & mask) != mask){
             throw RequestException.forbidden();
         }
+    }
+
+    public void checkPermission(int mask){
+        checkPermission(loggedUserAccessor.getPartitionId(), mask);
     }
 
     public Optional<Partition> tryGetPartition(){
