@@ -2,9 +2,8 @@ package net.cycastic.sigil.application.partition.member.add;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Null;
 import lombok.Data;
-import net.cycastic.sigil.application.misc.TransactionalCommand;
+import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 
 @Data
 @TransactionalCommand

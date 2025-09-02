@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.cycastic.sigil.application.misc.TransactionalCommand;
+import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.model.tenant.UsageType;
 import jakarta.annotation.Nullable;

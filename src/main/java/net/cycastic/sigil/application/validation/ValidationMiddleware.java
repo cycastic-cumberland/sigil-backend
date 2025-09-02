@@ -3,11 +3,13 @@ package net.cycastic.sigil.application.validation;
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Order(1)
 @Component
 @RequiredArgsConstructor
 public class ValidationMiddleware implements Command.Middleware {

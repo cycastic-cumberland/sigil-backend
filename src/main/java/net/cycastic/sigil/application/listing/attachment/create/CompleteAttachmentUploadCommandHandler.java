@@ -18,17 +18,9 @@ public class CompleteAttachmentUploadCommandHandler implements Command.Handler<C
 
     @Override
     public Void handle(CompleteAttachmentUploadCommand command) {
-        for (;;){
-            var listing = attachmentListingRepository.findById(command.getId())
-                    .orElseThrow(() -> new RequestException(404, "Listing not found"));
-            try {
-                listingService.markAttachmentUploadAsCompleted(listing, true);
-                return null;
-            } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e){
-                if (!(e.getRootCause() instanceof StaleObjectStateException)){
-                    throw e;
-                }
-            }
-        }
+        var listing = attachmentListingRepository.findById(command.getId())
+                .orElseThrow(() -> new RequestException(404, "Listing not found"));
+        listingService.markAttachmentUploadAsCompleted(listing, true);
+        return null;
     }
 }

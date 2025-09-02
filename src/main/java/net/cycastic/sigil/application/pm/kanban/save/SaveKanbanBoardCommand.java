@@ -4,10 +4,12 @@ import an.awesome.pipelinr.Command;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-import net.cycastic.sigil.application.misc.TransactionalCommand;
+import net.cycastic.sigil.application.misc.transaction.RetryOnStale;
+import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.domain.dto.IdDto;
 
 @Data
+@RetryOnStale
 @TransactionalCommand
 public class SaveKanbanBoardCommand implements Command<IdDto> {
     @Nullable

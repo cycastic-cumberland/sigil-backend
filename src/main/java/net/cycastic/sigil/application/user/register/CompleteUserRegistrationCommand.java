@@ -3,7 +3,7 @@ package net.cycastic.sigil.application.user.register;
 import an.awesome.pipelinr.Command;
 import lombok.Builder;
 import lombok.Data;
-import net.cycastic.sigil.application.misc.TransactionalCommand;
+import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.application.presigned.PresignedRequest;
 import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
 import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationParams;

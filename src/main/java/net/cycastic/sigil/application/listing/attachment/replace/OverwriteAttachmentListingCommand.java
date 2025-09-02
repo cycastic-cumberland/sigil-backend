@@ -1,9 +1,8 @@
 package net.cycastic.sigil.application.listing.attachment.replace;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.Null;
 import lombok.Data;
-import net.cycastic.sigil.application.misc.TransactionalCommand;
+import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 
 @Data
 @TransactionalCommand

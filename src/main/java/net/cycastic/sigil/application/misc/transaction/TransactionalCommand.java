@@ -1,10 +1,13 @@
-package net.cycastic.sigil.application.misc;
+package net.cycastic.sigil.application.misc.transaction;
 
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 
 import java.lang.annotation.*;
 
+/**
+ * Wrap the command handler inside a transaction.
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
