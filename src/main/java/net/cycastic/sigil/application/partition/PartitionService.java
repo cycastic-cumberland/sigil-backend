@@ -1,5 +1,6 @@
 package net.cycastic.sigil.application.partition;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.listing.Partition;
@@ -23,7 +24,7 @@ public class PartitionService {
         if (loggedUserAccessor.isAdmin()){
             return;
         }
-        var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(loggedUserAccessor.getPartitionId(),
+        var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(partitionId,
                         loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);
         var tenant = tenantRepository.findByPartitionUser(partitionUser);
@@ -41,11 +42,20 @@ public class PartitionService {
     }
 
     public Optional<Partition> tryGetPartition(){
-        return loggedUserAccessor.tryGetPartitionId()
-                .stream()
-                .boxed()
-                .flatMap(id -> partitionRepository.findById(id).stream())
-                .findFirst();
+        var idOpt = loggedUserAccessor.tryGetPartitionId();
+        if (idOpt.isEmpty()){
+            return Optional.empty();
+        }
+
+        try {
+            var partition = partitionRepository.getReferenceById(idOpt.getAsInt());
+            return Optional.of(partition);
+        } catch (EntityNotFoundException ignored){
+            return idOpt.stream()
+                    .boxed()
+                    .flatMap(id -> partitionRepository.findById(id).stream())
+                    .findFirst();
+        }
     }
 
     public Partition getPartition(){

@@ -8,8 +8,10 @@ import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+@Order(2)
 @Component
 @RequiredArgsConstructor
 public class TenantValidator implements CommandValidator{
@@ -19,11 +21,6 @@ public class TenantValidator implements CommandValidator{
 
     @Override
     public void validate(Command command) {
-        if (AnnotatedElementUtils.findMergedAnnotation(command.getClass(), RequireAdmin.class) != null &&
-                !loggedUserAccessor.isAdmin()){
-            throw RequestException.forbidden();
-        }
-
         var tenantIdOpt = loggedUserAccessor.tryGetTenantId();
         var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
         if (tenantIdOpt.isEmpty()){

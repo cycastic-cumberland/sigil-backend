@@ -1,5 +1,6 @@
 package net.cycastic.sigil.application.tenant;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -78,11 +79,21 @@ public class TenantService {
     }
 
     public Optional<Tenant> tryGetTenant(){
-        return loggedUserAccessor.tryGetTenantId()
-                .stream()
-                .boxed()
-                .flatMap(id -> tenantRepository.findById(id).stream())
-                .findFirst();
+        var idOpt = loggedUserAccessor.tryGetPartitionId();
+        if (idOpt.isEmpty()){
+            return Optional.empty();
+        }
+
+        try {
+            var tenant = tenantRepository.getReferenceById(idOpt.getAsInt());
+            return Optional.of(tenant);
+        } catch (EntityNotFoundException ignored){
+            return idOpt.stream()
+                    .boxed()
+                    .flatMap(id -> tenantRepository.findById(id).stream())
+                    .findFirst();
+
+        }
     }
 
     public Tenant getTenant(){
