@@ -4,10 +4,12 @@ import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.pm.task.create.CreateTaskCommand;
+import net.cycastic.sigil.application.pm.task.query.id.GetTaskByIdentifierCommand;
 import net.cycastic.sigil.application.pm.task.update.UpdateTaskCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.IdDto;
+import net.cycastic.sigil.domain.dto.pm.TaskDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,5 +28,10 @@ public class TasksController {
     @PatchMapping
     public void updateTask(@Valid @RequestBody UpdateTaskCommand command){
         pipelinr.send(command);
+    }
+
+    @GetMapping("task")
+    public TaskDto getExactTask(@Valid GetTaskByIdentifierCommand command){
+        return pipelinr.send(command);
     }
 }

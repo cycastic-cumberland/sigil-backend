@@ -11,6 +11,7 @@ import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.listing.Partition;
 import net.cycastic.sigil.domain.model.pm.ProjectPartition;
 import net.cycastic.sigil.domain.model.pm.Task;
+import net.cycastic.sigil.domain.model.pm.TaskPriority;
 import net.cycastic.sigil.domain.model.pm.TaskSubscriber;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.pm.*;
@@ -19,6 +20,7 @@ import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -52,9 +54,10 @@ public class CreateTaskCommandHandler extends BaseProjectCommandHandler<CreateTa
         projectPartition.setLatestTaskId(projectPartition.getLatestTaskId() + 1);
         var taskBuilder = Task.builder()
                 .tenant(tenant)
+                .priority(Objects.requireNonNullElse(command.getTaskPriority(), TaskPriority.MEDIUM))
                 .taskIdentifier(String.format("%s-%d", projectPartition.getUniqueIdentifier(), projectPartition.getLatestTaskId()))
                 .encryptedName(Base64.getDecoder().decode(command.getEncryptedName()))
-                .encryptedContent(Base64.getDecoder().decode(command.getEncryptedContent()))
+                .encryptedContent(command.getEncryptedContent() == null ? null : Base64.getDecoder().decode(command.getEncryptedContent()))
                 .iv(Base64.getDecoder().decode(command.getIv()));
         if (command.getKanbanBoardId() != null){
             var board = kanbanBoardRepository.findByIdAndProjectPartition_Id(command.getKanbanBoardId(), projectPartition.getId())

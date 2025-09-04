@@ -20,9 +20,14 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
     protected Void handleInternal(UpdateTaskCommand command, ProjectPartition projectPartition) {
         var task = taskRepository.findByTenant_IdAndTaskIdentifier(loggedUserAccessor.getTenantId(), command.getTaskId())
                 .orElseThrow(() -> new RequestException(404, "Task not found"));
-        task.setEncryptedName(Base64.getDecoder().decode(command.getEncryptedName()));
-        task.setEncryptedContent(Base64.getDecoder().decode(command.getEncryptedContent()));
-        task.setIv(Base64.getDecoder().decode(command.getIv()));
+        if (command.getTaskPriority() != null){
+            task.setPriority(command.getTaskPriority());
+        }
+        if (command.getEncryptedName() != null){
+            task.setEncryptedName(Base64.getDecoder().decode(command.getEncryptedName()));
+            task.setEncryptedContent(Base64.getDecoder().decode(command.getEncryptedContent()));
+            task.setIv(Base64.getDecoder().decode(command.getIv()));
+        }
         taskRepository.save(task);
 
         return null;
