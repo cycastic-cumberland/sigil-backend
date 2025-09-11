@@ -38,3 +38,9 @@ ALTER TABLE tasks
 
 ALTER TABLE tasks
     MODIFY task_status_id BIGINT NULL;
+
+ALTER TABLE task_comments
+    DROP FOREIGN KEY FK_TASK_COMMENTS_ON_CIPHER;
+
+ALTER TABLE task_comments
+    DROP COLUMN cipher_id;

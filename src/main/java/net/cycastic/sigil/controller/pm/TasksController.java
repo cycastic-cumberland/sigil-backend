@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.pm.task.create.CreateTaskCommand;
 import net.cycastic.sigil.application.pm.task.query.id.GetTaskByIdentifierCommand;
+import net.cycastic.sigil.application.pm.task.transit.MoveTaskCommand;
 import net.cycastic.sigil.application.pm.task.update.UpdateTaskCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
@@ -27,6 +28,11 @@ public class TasksController {
 
     @PatchMapping
     public void updateTask(@Valid @RequestBody UpdateTaskCommand command){
+        pipelinr.send(command);
+    }
+
+    @PatchMapping("move")
+    public void moveTask(@Valid @RequestBody MoveTaskCommand command){
         pipelinr.send(command);
     }
 

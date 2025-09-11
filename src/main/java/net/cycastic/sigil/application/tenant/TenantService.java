@@ -79,7 +79,7 @@ public class TenantService {
     }
 
     public Optional<Tenant> tryGetTenant(){
-        var idOpt = loggedUserAccessor.tryGetPartitionId();
+        var idOpt = loggedUserAccessor.tryGetTenantId();
         if (idOpt.isEmpty()){
             return Optional.empty();
         }
