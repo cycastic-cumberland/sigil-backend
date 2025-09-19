@@ -26,6 +26,7 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = true)
 public class Task extends VersionedMetadataEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne

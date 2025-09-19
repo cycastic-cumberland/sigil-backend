@@ -9,17 +9,21 @@ import net.cycastic.sigil.domain.model.notification.Notification;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.notifications.NotificationRepository;
+import net.cycastic.sigil.service.notification.NotificationSender;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final CipherRepository cipherRepository;
+    private final NotificationSender notificationSender;
 
     @Transactional
     public Notification saveNotification(User user, String notificationType, String notificationContent){
@@ -44,5 +48,13 @@ public class NotificationService {
         cipherRepository.save(encryptionCipher);
         notificationRepository.save(notification);
         return notification;
+    }
+
+    public void sendNotification(UUID uuid, String eventName, Object payload, String prefix){
+        notificationSender.sendNotification(prefix + uuid, eventName, payload);
+    }
+
+    public void triggerNotification(UUID uuid, String eventName){
+        sendNotification(uuid, eventName, Collections.emptyList(), "private-");
     }
 }

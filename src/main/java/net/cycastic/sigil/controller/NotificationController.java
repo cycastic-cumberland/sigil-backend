@@ -3,6 +3,7 @@ package net.cycastic.sigil.controller;
 import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.notifications.authenticate.AuthenticatePusherCommand;
 import net.cycastic.sigil.application.notifications.filter.get.GetNotificationSettingsCommand;
 import net.cycastic.sigil.application.notifications.filter.save.SaveNotificationSettingsCommand;
 import net.cycastic.sigil.application.notifications.get.GetNotificationsCommand;
@@ -13,6 +14,7 @@ import net.cycastic.sigil.application.notifications.send.SendNotificationToUserC
 import net.cycastic.sigil.domain.dto.CountDto;
 import net.cycastic.sigil.domain.dto.notifications.NotificationSettingsDto;
 import net.cycastic.sigil.domain.dto.notifications.NotificationsDto;
+import net.cycastic.sigil.domain.dto.notifications.PusherAuthenticationDataDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -54,5 +56,10 @@ public class NotificationController {
     @PutMapping("user")
     public void sendNotificationToUser(@Valid @RequestBody SendNotificationToUserCommand command){
         pipelinr.send(command);
+    }
+
+    @PostMapping(path = "pusher/auth")
+    public PusherAuthenticationDataDto authenticatePusher(@Valid @RequestBody AuthenticatePusherCommand command){
+        return pipelinr.send(command);
     }
 }

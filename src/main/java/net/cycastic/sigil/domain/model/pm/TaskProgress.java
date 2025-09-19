@@ -16,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 })
 public class TaskProgress {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne

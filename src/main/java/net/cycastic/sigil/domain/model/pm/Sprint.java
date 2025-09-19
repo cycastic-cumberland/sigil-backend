@@ -1,9 +1,6 @@
 package net.cycastic.sigil.domain.model.pm;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
@@ -17,6 +14,7 @@ import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 @EqualsAndHashCode(callSuper = true)
 public class Sprint extends VersionedMetadataEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(nullable = false)

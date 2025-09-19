@@ -15,6 +15,7 @@ import jakarta.annotation.Nullable;
 @EqualsAndHashCode(callSuper = true)
 public class TaskStatus extends VersionedMetadataEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

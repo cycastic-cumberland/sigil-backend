@@ -15,6 +15,7 @@ import lombok.*;
 })
 public class SprintTask {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne

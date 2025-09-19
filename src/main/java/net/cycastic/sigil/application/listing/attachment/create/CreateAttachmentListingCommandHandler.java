@@ -31,9 +31,6 @@ public class CreateAttachmentListingCommandHandler implements Command.Handler<Cr
         }
 
         var submittedMd5 = Base64.getDecoder().decode(command.getKeyMd5());
-        if (!Arrays.equals(submittedMd5, partition.getKeyMd5Digest())){
-            throw RequestException.withExceptionCode("C400T006");
-        }
 
         var path = command.getPath();
         var incompleteAttachment = listingService.saveTemporaryAttachment(partition,

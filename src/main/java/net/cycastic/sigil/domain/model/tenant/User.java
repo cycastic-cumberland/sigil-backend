@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.WebAuthnCredential;
+import net.cycastic.sigil.domain.model.notification.NotificationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,6 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "users_normalized_email_uindex", columnList = "normalized_email", unique = true),
-        @Index(name = "users_notification_token_uindex", columnList = "notification_token", unique = true)
 })
 public class User implements UserDetails {
     @Id
@@ -78,8 +78,9 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user")
     private WebAuthnCredential webAuthnCredential;
 
-    @Column(nullable = false)
-    private UUID notificationToken;
+    @OneToOne
+    @JoinColumn(name = "notification_token_id", nullable = false)
+    private NotificationToken notificationToken;
 
     @Override
     public boolean isEnabled() {

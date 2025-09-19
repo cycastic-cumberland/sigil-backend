@@ -3,14 +3,14 @@ package net.cycastic.sigil.controller.pm;
 import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.pm.kanban.query.project.QueryKanbanBoardByProjectCommand;
 import net.cycastic.sigil.application.pm.kanban.save.SaveKanbanBoardCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.IdDto;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
+import net.cycastic.sigil.domain.dto.pm.KanbanBoardDto;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequireTenantId
@@ -22,6 +22,11 @@ public class KanbanController {
 
     @PostMapping
     public IdDto saveBoard(@Valid @RequestBody SaveKanbanBoardCommand command){
+        return pipelinr.send(command);
+    }
+
+    @GetMapping
+    public PageResponseDto<KanbanBoardDto> queryBoards(@Valid QueryKanbanBoardByProjectCommand command){
         return pipelinr.send(command);
     }
 }

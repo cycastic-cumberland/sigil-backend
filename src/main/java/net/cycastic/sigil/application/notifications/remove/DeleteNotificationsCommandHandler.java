@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.notifications.remove;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.notifications.NotificationService;
 import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.repository.notifications.NotificationRepository;
@@ -19,7 +20,7 @@ public class DeleteNotificationsCommandHandler implements Command.Handler<Delete
 
     private final UserService userService;
     private final NotificationRepository notificationRepository;
-    private final NotificationSender notificationSender;
+    private final NotificationService notificationService;
 
     @Override
     public Void handle(DeleteNotificationsCommand command) {
@@ -36,9 +37,8 @@ public class DeleteNotificationsCommandHandler implements Command.Handler<Delete
         }
 
         if (amountUpdated > 0){
-            notificationSender.sendNotification(user.getNotificationToken().toString(),
-                    ApplicationConstants.NewNotificationEventType,
-                    Collections.emptyList());
+            notificationService.triggerNotification(user.getNotificationToken().getToken(),
+                    ApplicationConstants.NewNotificationEventType);
         }
 
         return null;

@@ -18,7 +18,6 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SendNotificationToUserCommandHandler implements Command.Handler<SendNotificationToUserCommand, Void> {
     private final UserRepository userRepository;
-    private final NotificationSender notificationSender;
     private final NotificationService notificationService;
     private final TaskExecutor taskScheduler;
     private final JsonSerializer jsonSerializer;
@@ -33,9 +32,8 @@ public class SendNotificationToUserCommandHandler implements Command.Handler<Sen
         notificationService.saveNotification(user, command.getNotificationType(), notificationContent);
 
         var notificationToken = user.getNotificationToken();
-        taskScheduler.execute(() -> notificationSender.sendNotification(notificationToken.toString(),
-                ApplicationConstants.NewNotificationEventType,
-                Collections.emptyList()));
+        taskScheduler.execute(() -> notificationService.triggerNotification(notificationToken.getToken(),
+                ApplicationConstants.NewNotificationEventType));
         return null;
     }
 }

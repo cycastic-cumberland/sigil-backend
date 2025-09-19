@@ -20,6 +20,7 @@ import net.cycastic.sigil.domain.model.tenant.User;
 @EqualsAndHashCode(callSuper = true)
 public class TaskComment extends VersionedMetadataEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

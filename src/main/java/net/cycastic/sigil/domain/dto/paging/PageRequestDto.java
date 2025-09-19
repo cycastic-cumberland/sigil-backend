@@ -1,6 +1,9 @@
 package net.cycastic.sigil.domain.dto.paging;
 
-import jakarta.validation.constraints.Null;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import net.cycastic.sigil.domain.exception.RequestException;
 import org.springframework.data.domain.PageRequest;
@@ -17,11 +20,18 @@ public class PageRequestDto {
     private static final int MAX_PAGE_SIZE = 1000;
 
     protected record Selector(String key, boolean isDescending){}
-    private int page = 1;
-    private int pageSize = 500;
-    private @Null String orderBy;
 
-    protected static @Null Selector toSelector(@NonNull String orderFragment){
+    @Min(1)
+    private int page = 1;
+
+    @Min(1)
+    @Max(2000)
+    private int pageSize = 500;
+
+    @Nullable
+    private String orderBy;
+
+    protected static @Nullable Selector toSelector(@NonNull String orderFragment){
         var split = orderFragment.split(":");
         if (split.length != 2){
             return null;
@@ -35,7 +45,7 @@ public class PageRequestDto {
         return selector.isDescending() ? sort.descending() : sort.ascending();
     }
 
-    protected @Null Sort getOrders(@NonNull String orderBy){
+    protected @Nullable Sort getOrders(@NonNull String orderBy){
         return Arrays.stream(orderBy.split(","))
                 .map(String::trim)
                 .map(PageRequestDto::toSelector)

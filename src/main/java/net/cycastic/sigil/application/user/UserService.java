@@ -17,11 +17,14 @@ import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.*;
+import net.cycastic.sigil.domain.model.notification.NotificationToken;
+import net.cycastic.sigil.domain.model.notification.NotificationTokenConsumer;
 import net.cycastic.sigil.domain.model.tenant.UsageType;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.WebAuthnCredentialRepository;
+import net.cycastic.sigil.domain.repository.notifications.NotificationTokenRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.*;
@@ -72,6 +75,7 @@ public class UserService {
     private final CipherRepository cipherRepository;
     private final KdfConfiguration kdfConfiguration;
     private final TenantRepository tenantRepository;
+    private final NotificationTokenRepository notificationTokenRepository;
 
     @Autowired
     public UserService(LoggedUserAccessor loggedUserAccessor, WebAuthnCredentialRepository webAuthnCredentialRepository,
@@ -85,7 +89,7 @@ public class UserService {
                        ApplicationEmailSender applicationEmailSender,
                        TaskExecutor taskScheduler,
                        CipherRepository cipherRepository,
-                       KdfConfiguration kdfConfiguration, TenantRepository tenantRepository){
+                       KdfConfiguration kdfConfiguration, TenantRepository tenantRepository, NotificationTokenRepository notificationTokenRepository){
         if (registrationConfigurations.getRegistrationLinkValidSeconds() <= 0){
             throw new IllegalStateException("Invalid registration expiration time: " + registrationConfigurations.getRegistrationLinkValidSeconds());
         }
@@ -107,6 +111,7 @@ public class UserService {
         this.taskScheduler = taskScheduler;
         this.cipherRepository = cipherRepository;
         this.tenantRepository = tenantRepository;
+        this.notificationTokenRepository = notificationTokenRepository;
     }
 
     public static void refreshSecurityStamp(User user){
@@ -118,6 +123,9 @@ public class UserService {
                                                        @NotNull UserStatus userStatus,
                                                        boolean emailVerified){
         email = email.trim();
+        var notificationToken = NotificationToken.builder()
+                .consumer(NotificationTokenConsumer.USER)
+                .build();
         var user = User.builder()
                 .email(email)
                 .normalizedEmail(email.toUpperCase(Locale.ROOT))
@@ -127,9 +135,10 @@ public class UserService {
                 .status(userStatus)
                 .lastInvitationSent(null)
                 .emailVerified(emailVerified)
-                .notificationToken(UUID.randomUUID())
+                .notificationToken(notificationToken)
                 .build();
         refreshSecurityStamp(user);
+        notificationTokenRepository.save(notificationToken);
         userRepository.save(user);
         return user;
     }
@@ -191,7 +200,7 @@ public class UserService {
                 .authToken(authToken)
                 .publicRsaKey(Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
                 .kdfSettings(getKdfSettings(user))
-                .notificationToken(user.getNotificationToken())
+                .notificationToken(user.getNotificationToken().getToken())
                 .build();
     }
 

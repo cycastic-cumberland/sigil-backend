@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.listing.Partition;
+import net.cycastic.sigil.domain.model.listing.PartitionType;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -16,6 +17,7 @@ public class PartitionDto {
     private CipherDto userPartitionKey;
     private boolean serverSideKeyDerivation;
     private List<String> permissions;
+    private PartitionType partitionType;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -24,6 +26,7 @@ public class PartitionDto {
         return builder.id(partition.getId())
                 .partitionPath(partition.getPartitionPath())
                 .serverSideKeyDerivation(partition.getServerPartitionKey() != null)
+                .partitionType(partition.getPartitionType())
                 .createdAt(partition.getCreatedAt())
                 .updatedAt(partition.getUpdatedAt());
     }

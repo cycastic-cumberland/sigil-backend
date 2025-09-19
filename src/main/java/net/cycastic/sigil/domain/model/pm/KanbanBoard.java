@@ -14,6 +14,7 @@ import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 @EqualsAndHashCode(callSuper = true)
 public class KanbanBoard extends VersionedMetadataEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne

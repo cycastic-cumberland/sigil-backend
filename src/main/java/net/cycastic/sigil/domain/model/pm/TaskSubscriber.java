@@ -17,6 +17,7 @@ import net.cycastic.sigil.domain.model.tenant.User;
 })
 public class TaskSubscriber {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
