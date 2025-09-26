@@ -2,7 +2,7 @@ package net.cycastic.sigil.application.pm.task.update;
 
 import an.awesome.pipelinr.Command;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import net.cycastic.sigil.application.misc.annotation.Base64String;
@@ -33,7 +33,7 @@ public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
     @Base64String
     private String iv;
 
-    @NotEmpty
+    @NotBlank
     @Base64String
     private String partitionChecksum;
 }

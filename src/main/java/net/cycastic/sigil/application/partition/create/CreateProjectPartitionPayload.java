@@ -1,13 +1,13 @@
 package net.cycastic.sigil.application.partition.create;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class CreateProjectPartitionPayload {
-    @NotEmpty
+    @NotBlank
     @Pattern(
             regexp = "^[A-Z]+[0-9]*$",
             message = "Project identifier may only have uppercase characters and numbers"

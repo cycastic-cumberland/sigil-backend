@@ -1,7 +1,7 @@
 package net.cycastic.sigil.application.notifications.authenticate;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 import net.cycastic.sigil.application.misc.annotation.UUIDString;
@@ -14,7 +14,7 @@ public class AuthenticatePusherCommand implements Command<PusherAuthenticationDa
 
     private String channelName;
 
-    @NotEmpty
+    @NotBlank
     @UUIDString
     public String getNotificationTokenString(){
         if (channelName == null){

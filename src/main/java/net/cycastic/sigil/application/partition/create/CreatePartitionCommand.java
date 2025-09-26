@@ -1,7 +1,7 @@
 package net.cycastic.sigil.application.partition.create;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.domain.dto.IdDto;
@@ -11,7 +11,7 @@ import jakarta.annotation.Nullable;
 @Data
 @TransactionalCommand
 public class CreatePartitionCommand implements Command<IdDto> {
-    @NotEmpty
+    @NotBlank
     private String partitionPath;
 
     private boolean serverSideKeyDerivation;

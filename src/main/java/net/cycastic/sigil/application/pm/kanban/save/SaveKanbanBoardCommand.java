@@ -2,7 +2,7 @@ package net.cycastic.sigil.application.pm.kanban.save;
 
 import an.awesome.pipelinr.Command;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import net.cycastic.sigil.application.misc.transaction.RetryOnStale;
 import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
@@ -18,6 +18,6 @@ public class SaveKanbanBoardCommand implements Command<IdDto> {
     @Nullable
     private Integer id;
 
-    @NotEmpty
+    @NotBlank
     private String boardName;
 }

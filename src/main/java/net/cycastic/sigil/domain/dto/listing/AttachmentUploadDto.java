@@ -1,13 +1,13 @@
 package net.cycastic.sigil.domain.dto.listing;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 public class AttachmentUploadDto {
-    @NotEmpty
+    @NotBlank
     private String path;
 
     private String mimeType;

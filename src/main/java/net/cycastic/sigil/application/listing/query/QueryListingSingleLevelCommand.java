@@ -1,7 +1,7 @@
 package net.cycastic.sigil.application.listing.query;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.data.domain.Sort;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class QueryListingSingleLevelCommand extends PageRequestDto implements Command<PageResponseDto<FolderItemDto>> {
-    @NotEmpty
+    @NotBlank
     private String folder;
 
     @Override

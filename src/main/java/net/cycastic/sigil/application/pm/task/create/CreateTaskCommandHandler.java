@@ -55,6 +55,7 @@ public class CreateTaskCommandHandler extends BaseProjectCommandHandler<CreateTa
         var taskBuilder = Task.builder()
                 .tenant(tenant)
                 .priority(Objects.requireNonNullElse(command.getTaskPriority(), TaskPriority.MEDIUM))
+                .label("")
                 .taskIdentifier(String.format("%s-%d", projectPartition.getUniqueIdentifier(), projectPartition.getLatestTaskId()))
                 .encryptedName(Base64.getDecoder().decode(command.getEncryptedName()))
                 .encryptedContent(command.getEncryptedContent() == null ? null : Base64.getDecoder().decode(command.getEncryptedContent()))
