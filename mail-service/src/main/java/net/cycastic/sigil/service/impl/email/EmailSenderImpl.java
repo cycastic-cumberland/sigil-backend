@@ -1,10 +1,10 @@
-package net.cycastic.sigil.service.impl;
+package net.cycastic.sigil.service.impl.email;
 
 import jakarta.mail.internet.InternetAddress;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.mail.MailSettings;
-import net.cycastic.sigil.service.EmailImage;
-import net.cycastic.sigil.service.EmailSender;
+import net.cycastic.sigil.service.email.EmailImage;
+import net.cycastic.sigil.service.email.EmailSender;
 import jakarta.annotation.Nullable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -37,7 +37,7 @@ public class EmailSenderImpl implements EmailSender {
 
     @Override
     @SneakyThrows
-    public void sendHtml(String fromAddress, String fromName, String to, String cc, String subject, String htmlBody, @Nullable Map<String, EmailImage> imageStreamSource) {
+    public <T extends EmailImage> void sendHtml(String fromAddress, String fromName, String to, String cc, String subject, String htmlBody, @Nullable Map<String, T> imageStreamSource) {
         var message = sender.createMimeMessage();
         var helper = new MimeMessageHelper(message, true, "UTF-8");
 

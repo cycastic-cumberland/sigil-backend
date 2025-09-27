@@ -2,7 +2,8 @@ package net.cycastic.sigil.service.impl;
 
 import net.cycastic.sigil.configuration.mail.ApplicationEmailConfigurations;
 import net.cycastic.sigil.service.DecryptionProvider;
-import net.cycastic.sigil.service.EmailImage;
+import net.cycastic.sigil.service.email.EmailImage;
+import net.cycastic.sigil.service.impl.email.EmailSenderImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import jakarta.annotation.Nullable;

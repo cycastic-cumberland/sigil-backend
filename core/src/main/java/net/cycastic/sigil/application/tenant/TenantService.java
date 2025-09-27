@@ -17,7 +17,7 @@ import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
-import net.cycastic.sigil.service.EmailTemplateEngine;
+import net.cycastic.sigil.service.email.EmailTemplateEngine;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.UrlAccessor;
 import net.cycastic.sigil.service.email.EmailTemplates;

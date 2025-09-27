@@ -1,6 +1,6 @@
 package net.cycastic.sigil.domain;
 
-import net.cycastic.sigil.service.EmailImage;
+import net.cycastic.sigil.service.email.EmailImage;
 import org.springframework.core.io.InputStreamSource;
 
 import java.io.InputStream;

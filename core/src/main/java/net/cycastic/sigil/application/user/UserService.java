@@ -30,6 +30,7 @@ import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
+import net.cycastic.sigil.service.email.EmailTemplateEngine;
 import net.cycastic.sigil.service.email.EmailTemplates;
 import net.cycastic.sigil.service.impl.ApplicationEmailSender;
 import net.cycastic.sigil.service.impl.UriPresigner;
