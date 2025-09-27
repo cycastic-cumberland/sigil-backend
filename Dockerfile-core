@@ -18,7 +18,7 @@ RUN --mount=type=secret,id=sentry_token export SENTRY_AUTH_TOKEN=$(cat /run/secr
 FROM bellsoft/liberica-runtime-container:jre-23-slim-musl AS runtime
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/target/core/*.jar app.jar
 
 EXPOSE 8080
 
