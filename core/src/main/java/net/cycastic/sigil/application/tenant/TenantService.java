@@ -17,6 +17,7 @@ import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
+import net.cycastic.sigil.service.email.DeferredEmailSender;
 import net.cycastic.sigil.service.email.EmailTemplateEngine;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.UrlAccessor;
@@ -50,7 +51,7 @@ public class TenantService {
     private final UrlAccessor urlAccessor;
     private final UserService userService;
     private final EmailTemplateEngine emailTemplateEngine;
-    private final ApplicationEmailSender applicationEmailSender;
+    private final DeferredEmailSender deferredEmailSender;
 
     public int getTenantUserPermissions() {
         var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
@@ -192,7 +193,7 @@ public class TenantService {
             renderedContent = byteStream.toByteArray();
         }
 
-        applicationEmailSender.sendHtml(user.getEmail(),
+        deferredEmailSender.sendHtml(user.getEmail(),
                 null,
                 String.format("You are invited to \"%s\" tenant", tenant.getName()),
                 new String(renderedContent, StandardCharsets.UTF_8),

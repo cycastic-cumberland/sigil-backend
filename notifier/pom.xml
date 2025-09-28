@@ -25,12 +25,18 @@
 		<wrapper.version>1.0.31.RELEASE</wrapper.version>
 		<aws-lambda-events.version>3.14.0</aws-lambda-events.version>
 		<spring-cloud-function.version>5.0.0-SNAPSHOT</spring-cloud-function.version>
+		<java.version>21</java.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>net.cycastic</groupId>
 			<artifactId>mail-service</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>net.cycastic</groupId>
+			<artifactId>infrastructure</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>

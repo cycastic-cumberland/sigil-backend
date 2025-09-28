@@ -9,7 +9,7 @@ import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
-import net.cycastic.sigil.service.StorageProvider;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import net.cycastic.sigil.service.UrlAccessor;
 import net.cycastic.sigil.service.impl.UriPresigner;
 import org.springframework.stereotype.Component;

@@ -48,10 +48,10 @@ public class UriPresigner {
         if (query != null) {
             // TODO: Regex?
             for (var param : query.split("&")) {
-                if (param.startsWith(ApplicationConstants.PresignSignatureEntry + "=")) {
+                if (param.startsWith(ApplicationConstants.PRESIGN_SIGNATURE_ENTRY + "=")) {
                     throw new IllegalStateException("URI already contains a signature parameter");
                 }
-                if (param.startsWith(ApplicationConstants.PresignSignatureAlgorithmEntry + "=")) {
+                if (param.startsWith(ApplicationConstants.PRESIGN_SIGNATURE_ALG_ENTRY + "=")) {
                     throw new IllegalStateException("URI already contains a signature algorithm parameter");
                 }
 
@@ -68,8 +68,8 @@ public class UriPresigner {
         var presigner = presigners.getFirst();
         var signature = presigner.getSignature(dataToSign, presigner.getDefaultAlgorithm());
 
-        queryParts.add(ApplicationConstants.PresignSignatureEntry + "=" + ApplicationUtilities.encodeURIComponent(signature));
-        queryParts.add(ApplicationConstants.PresignSignatureAlgorithmEntry + "=" + ApplicationUtilities.encodeURIComponent(presigner.getDefaultAlgorithm()));
+        queryParts.add(ApplicationConstants.PRESIGN_SIGNATURE_ENTRY + "=" + ApplicationUtilities.encodeURIComponent(signature));
+        queryParts.add(ApplicationConstants.PRESIGN_SIGNATURE_ALG_ENTRY + "=" + ApplicationUtilities.encodeURIComponent(presigner.getDefaultAlgorithm()));
 
         query = String.join("&", queryParts);
         return buildUri(uri.getScheme(), uri.getRawAuthority(), uri.getRawPath(), query, uri.getFragment());
@@ -86,12 +86,12 @@ public class UriPresigner {
         var signatures = new ArrayList<String>();
         var algorithms = new ArrayList<String>();
         for (var param : query.split("&")) {
-            if (param.startsWith(ApplicationConstants.PresignSignatureEntry + "=")) {
+            if (param.startsWith(ApplicationConstants.PRESIGN_SIGNATURE_ENTRY + "=")) {
                 var parts = param.split("=", 2);
                 if (parts.length == 2) {
                     signatures.add(ApplicationUtilities.decodeURIComponent(parts[1]));
                 }
-            } else if (param.startsWith(ApplicationConstants.PresignSignatureAlgorithmEntry + "=")){
+            } else if (param.startsWith(ApplicationConstants.PRESIGN_SIGNATURE_ALG_ENTRY + "=")){
                 var parts = param.split("=", 2);
                 if (parts.length == 2) {
                     algorithms.add(ApplicationUtilities.decodeURIComponent(parts[1]));

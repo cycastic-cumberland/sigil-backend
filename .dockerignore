@@ -2,7 +2,10 @@
 .gitignore
 *.iml
 .idea/
+.mvn/
 .vscode/
 **/target/*.*
 application-local.yaml
-src/main/resources/application-local.yaml
+**/application-local.yaml
+application-local.yml
+**/application-local.yml

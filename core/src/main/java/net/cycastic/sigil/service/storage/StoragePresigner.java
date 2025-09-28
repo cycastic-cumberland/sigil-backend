@@ -1,4 +1,4 @@
-package net.cycastic.sigil.service;
+package net.cycastic.sigil.service.storage;
 
 public interface StoragePresigner {
     String sign(String listingPath);

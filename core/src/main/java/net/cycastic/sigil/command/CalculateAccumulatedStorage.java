@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
-import net.cycastic.sigil.service.StorageProvider;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;

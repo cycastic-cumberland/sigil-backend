@@ -9,6 +9,7 @@ import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.service.*;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;

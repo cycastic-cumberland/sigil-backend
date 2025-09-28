@@ -11,4 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "application.email")
 public class ApplicationEmailConfigurations extends MailSettings {
     private String encryptedPassword;
+
+    private SqsRemoteEmailConfigurations sqs;
 }

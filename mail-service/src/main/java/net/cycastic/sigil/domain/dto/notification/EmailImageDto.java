@@ -7,6 +7,7 @@ import org.springframework.core.io.InputStreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Base64;
+import java.util.Map;
 
 @Data
 public class EmailImageDto implements EmailImage {
@@ -21,4 +22,6 @@ public class EmailImageDto implements EmailImage {
     public InputStreamSource getImageSource(){
         return this::getContentStream;
     }
+
+//    public static Map<String, EmailImageDto> from
 }

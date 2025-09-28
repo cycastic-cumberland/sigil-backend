@@ -193,10 +193,8 @@ public class CryptographicUtilities {
         return md.digest(data);
     }
 
-    @SneakyThrows
     public static byte[] digestMd5(byte[] data){
-        var md = MessageDigest.getInstance("MD5");
-        return md.digest(data);
+        return SlimCryptographicUtilities.digestMd5(data);
     }
 
     public static void generateRandom(byte[] data){

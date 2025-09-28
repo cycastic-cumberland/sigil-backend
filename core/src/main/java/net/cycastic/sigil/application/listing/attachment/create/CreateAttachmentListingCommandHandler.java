@@ -8,11 +8,10 @@ import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.dto.AttachmentPresignedDto;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.service.StorageProvider;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.Base64;
 
 @Component

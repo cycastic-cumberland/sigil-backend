@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
-import net.cycastic.sigil.configuration.S3Configurations;
+import net.cycastic.sigil.configuration.storage.S3Configurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.exception.RequestException;
@@ -16,7 +16,7 @@ import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
 import net.cycastic.sigil.service.LimitProvider;
 import net.cycastic.sigil.service.LoggedUserAccessor;
-import net.cycastic.sigil.service.StorageProvider;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +28,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Lazy
 @Service

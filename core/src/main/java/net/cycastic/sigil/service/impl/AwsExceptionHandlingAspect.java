@@ -5,16 +5,16 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 
 @Aspect
 @Component
-public class S3ExceptionHandlingAspect {
-    @Around("@annotation(HandleS3Exception)")
-    public Object handleS3Exception(ProceedingJoinPoint joinPoint) throws Throwable {
+public class AwsExceptionHandlingAspect {
+    @Around("@annotation(HandleAwsException)")
+    public Object handleAwsException(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             return joinPoint.proceed();
-        } catch (S3Exception e) {
+        } catch (AwsServiceException e) {
             var statusCode = e.statusCode();
             switch (statusCode){
                 case 400:

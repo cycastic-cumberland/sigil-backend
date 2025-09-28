@@ -41,7 +41,7 @@ public class PresignerTests {
         signAndAssert(presigner, url1);
         signAndAssert(presigner, url2);
 
-        assertThrows(IllegalStateException.class, () -> presigner.signUri(URI.create("https://example.com/someData?" + ApplicationConstants.PresignSignatureEntry + "=some+signature")));
+        assertThrows(IllegalStateException.class, () -> presigner.signUri(URI.create("https://example.com/someData?" + ApplicationConstants.PRESIGN_SIGNATURE_ENTRY + "=some+signature")));
     }
 
     @Test

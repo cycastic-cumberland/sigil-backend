@@ -1,8 +1,6 @@
 package net.cycastic.sigil.application.listing.attachment.replace;
 
 import an.awesome.pipelinr.Command;
-import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationConstants;
@@ -13,7 +11,7 @@ import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
 import net.cycastic.sigil.service.LoggedUserAccessor;
-import net.cycastic.sigil.service.StorageProvider;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import org.springframework.stereotype.Component;
 
 @Component

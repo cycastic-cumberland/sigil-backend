@@ -6,12 +6,9 @@ import net.cycastic.sigil.application.notifications.NotificationService;
 import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.repository.notifications.NotificationRepository;
-import net.cycastic.sigil.service.notification.NotificationSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +29,7 @@ public class MarkNotificationsAsReadCommandHandler implements Command.Handler<Ma
 
         if (amountUpdated > 0){
             notificationService.triggerNotification(user.getNotificationToken().getToken(),
-                    ApplicationConstants.NewNotificationEventType);
+                    ApplicationConstants.NEW_NOTIFICATION_EVENT_TYPE);
         }
 
         return null;

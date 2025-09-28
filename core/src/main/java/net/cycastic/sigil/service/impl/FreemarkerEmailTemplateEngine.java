@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.email.EmailImage;
 import net.cycastic.sigil.service.email.EmailTemplateEngine;
-import net.cycastic.sigil.service.StoragePresigner;
+import net.cycastic.sigil.service.storage.StoragePresigner;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 

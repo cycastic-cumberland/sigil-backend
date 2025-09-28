@@ -4,11 +4,10 @@
 FROM maven:3.9-eclipse-temurin-23 AS builder
 WORKDIR /app
 
-COPY pom.xml .
+COPY . ./
 
+# TODO: Fix go-offline layer
 RUN mvn dependency:go-offline -B
-
-COPY src ./src
 
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT

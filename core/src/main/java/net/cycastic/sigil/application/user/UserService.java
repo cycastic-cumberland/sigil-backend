@@ -30,6 +30,7 @@ import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.*;
 import net.cycastic.sigil.service.auth.JwtIssuer;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
+import net.cycastic.sigil.service.email.DeferredEmailSender;
 import net.cycastic.sigil.service.email.EmailTemplateEngine;
 import net.cycastic.sigil.service.email.EmailTemplates;
 import net.cycastic.sigil.service.impl.ApplicationEmailSender;
@@ -71,7 +72,7 @@ public class UserService {
     private final UrlAccessor urlAccessor;
     private final UriPresigner uriPresigner;
     private final EmailTemplateEngine emailTemplateEngine;
-    private final ApplicationEmailSender applicationEmailSender;
+    private final DeferredEmailSender deferredEmailSender;
     private final TaskExecutor taskScheduler;
     private final CipherRepository cipherRepository;
     private final KdfConfiguration kdfConfiguration;
@@ -87,7 +88,7 @@ public class UserService {
                        UrlAccessor urlAccessor,
                        UriPresigner uriPresigner,
                        EmailTemplateEngine emailTemplateEngine,
-                       ApplicationEmailSender applicationEmailSender,
+                       DeferredEmailSender deferredEmailSender,
                        TaskExecutor taskScheduler,
                        CipherRepository cipherRepository,
                        KdfConfiguration kdfConfiguration, TenantRepository tenantRepository, NotificationTokenRepository notificationTokenRepository){
@@ -108,7 +109,7 @@ public class UserService {
         this.urlAccessor = urlAccessor;
         this.uriPresigner = uriPresigner;
         this.emailTemplateEngine = emailTemplateEngine;
-        this.applicationEmailSender = applicationEmailSender;
+        this.deferredEmailSender = deferredEmailSender;
         this.taskScheduler = taskScheduler;
         this.cipherRepository = cipherRepository;
         this.tenantRepository = tenantRepository;
@@ -318,7 +319,7 @@ public class UserService {
             renderedContent = byteStream.toByteArray();
         }
 
-        applicationEmailSender.sendHtml(user.getEmail(),
+        deferredEmailSender.sendHtml(user.getEmail(),
                 null,
                 "Complete your registration with Sigil",
                 new String(renderedContent, StandardCharsets.UTF_8),

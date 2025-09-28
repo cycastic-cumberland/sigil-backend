@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.service.LoggedUserAccessor;
-import net.cycastic.sigil.service.StoragePresigner;
+import net.cycastic.sigil.service.storage.StoragePresigner;
 import net.cycastic.sigil.service.UrlAccessor;
 import org.springframework.stereotype.Service;
 

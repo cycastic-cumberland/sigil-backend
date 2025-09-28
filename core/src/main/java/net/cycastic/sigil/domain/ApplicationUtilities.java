@@ -49,31 +49,17 @@ public class ApplicationUtilities {
         };
     }
 
+    @Deprecated
     public static String encodeURIComponent(Object obj)
     {
-        String result;
-        result = URLEncoder.encode(obj instanceof String s ? s : obj.toString(), StandardCharsets.UTF_8)
-                .replaceAll("\\+", "%20")
-                .replaceAll("%21", "!")
-                .replaceAll("%27", "'")
-                .replaceAll("%28", "(")
-                .replaceAll("%29", ")")
-                .replaceAll("%7E", "~");
-
-        return result;
+        return UrlUtilities.encodeURIComponent(obj);
     }
 
-    // https://stackoverflow.com/a/611117
+    @Deprecated
     public static String decodeURIComponent(String s)
     {
-        if (s == null)
-        {
-            return null;
-        }
-
-        return URLDecoder.decode(s, StandardCharsets.UTF_8);
+        return UrlUtilities.decodeURIComponent(s);
     }
-
 
     public static String shardObjectKey(@NotNull String objectKey){
         assert objectKey.length() >= 36;
@@ -90,16 +76,9 @@ public class ApplicationUtilities {
         return sb.toString();
     }
 
+    @Deprecated
     public static Path getTempFile(){
-        var tempDir = System.getProperty("java.io.tmpdir");
-        String fileName;
-        {
-            var bytes = new byte[32];
-            CryptographicUtilities.generateRandom(bytes);
-            fileName = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        }
-
-        return Paths.get(tempDir, fileName);
+        return FilesUtilities.getTempFile();
     }
 
     public static boolean isEmail(@NotNull String input){

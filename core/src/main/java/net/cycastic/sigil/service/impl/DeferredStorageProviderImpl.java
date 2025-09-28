@@ -2,7 +2,7 @@ package net.cycastic.sigil.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.service.DeferrableStorageProvider;
-import net.cycastic.sigil.service.StorageProvider;
+import net.cycastic.sigil.service.storage.StorageProvider;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ public class DeferredStorageProviderImpl implements DeferrableStorageProvider {
     @RequiredArgsConstructor
     public static class DeferredBucketProvider implements BucketProvider {
         private final TaskExecutor executor;
-        private final StorageProvider.BucketProvider bucketProvider;
+        private final net.cycastic.sigil.service.storage.BucketProvider bucketProvider;
 
         @Override
         public void deleteFile(String fileKey) {
