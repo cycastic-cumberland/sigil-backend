@@ -37,7 +37,7 @@ public class EmailSenderImpl implements EmailSender {
 
     @Override
     @SneakyThrows
-    public <T extends EmailImage> void sendHtml(String fromAddress, String fromName, String to, String cc, String subject, String htmlBody, @Nullable Map<String, T> imageStreamSource) {
+    public void sendHtml(String fromAddress, String fromName, String to, String cc, String subject, String htmlBody, @Nullable Map<String, ? extends EmailImage> imageStreamSource) {
         var message = sender.createMimeMessage();
         var helper = new MimeMessageHelper(message, true, "UTF-8");
 

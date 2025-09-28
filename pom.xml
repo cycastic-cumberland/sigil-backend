@@ -24,6 +24,7 @@
     <modules>
         <module>core</module>
         <module>mail-service</module>
+        <module>notifier</module>
     </modules>
     <scm>
         <connection/>
