@@ -72,6 +72,7 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
                 for (var entry : imageStreamSource.entrySet()){
                     var entryPath = assetsDirRoot.resolve(UUID.randomUUID().toString());
                     imageEntries.add(EmailImageEntryDto.builder()
+                            .mappingName(entry.getKey())
                             .name(entry.getValue().getFileName())
                             .mimeType(entry.getValue().getMimeType())
                             .relativePath(tempDirRoot.relativize(entryPath).toString())
@@ -92,7 +93,7 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
 
             Files.writeString(tempDirRoot.resolve("registry.json"), jsonSerializer.serialize(registry));
 
-            var zipFile = tempDirRoot.resolve("attachment.zip");
+            var zipFile = tempDir.resolve("attachment.zip");
             try (var outStream = Files.newOutputStream(zipFile, StandardOpenOption.CREATE_NEW)){
                 ZipCompressUtility.INSTANCE.compressFolder(tempDirRootEnvelop, outStream);
             }
@@ -124,9 +125,10 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
                     .bucketName(configurations.getBucket().getAttachmentBucketName())
                     .key(fileKey)
                     .build();
+            var serializedRequest = jsonSerializer.serialize(request);
             var sendMessageRequest = SendMessageRequest.builder()
                     .queueUrl(configurations.getQueueUrl())
-                    .messageBody(jsonSerializer.serialize(request))
+                    .messageBody(serializedRequest)
                     .build();
 
             sqsClient.sendMessage(sendMessageRequest);

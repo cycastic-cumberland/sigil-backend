@@ -31,20 +31,47 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class SQSNotifierService {
+    private static class S3ClientCache implements AutoCloseable {
+        private final HashMap<String, S3Client> clients = HashMap.newHashMap(1);
+
+        private static S3Client createClient(String region){
+            return S3Client.builder().region(Region.of(region)).build();
+        }
+
+        public S3Client getClient(String region){
+            return clients.computeIfAbsent(region, S3ClientCache::createClient);
+        }
+
+        @Override
+        public void close() {
+            for (var entry : clients.entrySet()){
+                entry.getValue().close();
+            }
+
+            clients.clear();
+        }
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(SQSNotifierService.class);
     private final EmailSender emailSender;
     private final ObjectMapper objectMapper;
 
+    private static void deleteS3File(S3Bucket bucket, String fileName){
+        try {
+            bucket.deleteFile(fileName);
+        } catch (Exception e){
+            logger.error("Failed to remove bucket object", e);
+        }
+    }
+
     @SneakyThrows
-    private void processEmailNotification(EmailNotificationRequestDto request){
+    private void processEmailNotification(S3ClientCache clientCache, EmailNotificationRequestDto request){
         var tempDir = FilesUtilities.getTempFile();
         Files.createDirectories(tempDir);
-        try (var client = S3Client.builder()
-                .region(Region.of(request.getRegion()))
-                .build()) {
+        try {
             String htmlBody;
             Map<String, EmailImage> images;
-            var bucket = new S3Bucket(client, null, request.getBucketName());
+            var bucket = new S3Bucket(clientCache.getClient(request.getRegion()), null, request.getBucketName());
             try (var zipStream = bucket.download(request.getKey(), Paths.get(request.getKey()).getFileName().toString(), null)){
                 ZipCompressUtility.INSTANCE.decompressFolder(tempDir, zipStream);
             }
@@ -52,25 +79,27 @@ public class SQSNotifierService {
             final var decompressPath = tempDir.resolve(ApplicationConstants.REMOTE_SQS_DIRECTORY_ROOT);
             var registry = objectMapper.readValue(decompressPath.resolve("registry.json"), EmailContentRegistryDto.class);
             htmlBody = Files.readString(decompressPath.resolve(registry.getIndexRelativePath()));
-            images = HashMap.newHashMap(registry.getImageEntries().size());
-            for (var entry : registry.getImageEntries()){
-                final var e = entry;
-                images.put(entry.getName(), new EmailImage() {
-                    @Override
-                    public String getFileName() {
-                        return e.getName();
-                    }
+            images = HashMap.newHashMap(registry.getImageEntries() == null ? 0 : registry.getImageEntries().size());
+            if (registry.getImageEntries() != null){
+                for (var entry : registry.getImageEntries()){
+                    final var e = entry;
+                    images.put(entry.getMappingName(), new EmailImage() {
+                        @Override
+                        public String getFileName() {
+                            return e.getName();
+                        }
 
-                    @Override
-                    public String getMimeType() {
-                        return e.getMimeType();
-                    }
+                        @Override
+                        public String getMimeType() {
+                            return e.getMimeType();
+                        }
 
-                    @Override
-                    public InputStreamSource getImageSource() {
-                        return () -> Files.newInputStream(decompressPath.resolve(e.getRelativePath()), StandardOpenOption.READ);
-                    }
-                });
+                        @Override
+                        public InputStreamSource getImageSource() {
+                            return () -> Files.newInputStream(decompressPath.resolve(e.getRelativePath()), StandardOpenOption.READ);
+                        }
+                    });
+                }
             }
             emailSender.sendHtml(request.getFromAddress(),
                     request.getFromName(),
@@ -79,24 +108,33 @@ public class SQSNotifierService {
                     request.getSubject(),
                     htmlBody,
                     images);
+
+            deleteS3File(bucket, request.getKey());
         } finally {
-            FilesUtilities.deleteRecursively(tempDir);
+            try {
+                FilesUtilities.deleteRecursively(tempDir);
+            } catch (Exception e){
+                logger.error("Failed to clean up attachment data", e);
+            }
         }
     }
 
     public SQSBatchResponse process(SQSEvent event){
         var errors = new ArrayList<SQSBatchResponse.BatchItemFailure>();
-        for (var record : event.getRecords()){
-            try {
-                var request = objectMapper.readValue(record.getBody(), NotificationRequestDto.class);
-                switch (request.getType()){
-                    case EMAIL -> processEmailNotification(objectMapper.readValue(record.getBody(), EmailNotificationRequestDto.class));
-                    case APP -> throw new RuntimeException("Unimplemented");
-                    default -> throw new IllegalStateException("Illegal request type");
+        try (var clientCache = new S3ClientCache()){
+            for (var record : event.getRecords()){
+                try {
+                    var request = objectMapper.readValue(record.getBody(), NotificationRequestDto.class);
+                    switch (request.getType()){
+                        case EMAIL -> processEmailNotification(clientCache,
+                                objectMapper.readValue(record.getBody(), EmailNotificationRequestDto.class));
+                        case APP -> throw new RuntimeException("Unimplemented");
+                        default -> throw new IllegalStateException("Illegal request type");
+                    }
+                } catch (Exception e){
+                    logger.error("Failed to process event for message {}", record.getMessageId(), e);
+                    errors.add(new SQSBatchResponse.BatchItemFailure(record.getMessageId()));
                 }
-            } catch (Exception e){
-                logger.error("Failed to process event for message {}", record.getMessageId(), e);
-                errors.add(new SQSBatchResponse.BatchItemFailure(record.getMessageId()));
             }
         }
         return errors.isEmpty() ? new SQSBatchResponse() : new SQSBatchResponse(errors);
