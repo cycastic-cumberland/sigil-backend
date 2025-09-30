@@ -146,7 +146,11 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
                 }
             }
         } finally {
-            FilesUtilities.deleteRecursively(tempDir);
+            try {
+                FilesUtilities.deleteRecursively(tempDir);
+            } catch (Exception ignored){
+
+            }
         }
     }
 

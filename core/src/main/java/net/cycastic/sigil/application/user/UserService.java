@@ -3,7 +3,7 @@ package net.cycastic.sigil.application.user;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
-import lombok.SneakyThrows;
+import lombok.*;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.configuration.auth.KdfConfiguration;
 import net.cycastic.sigil.domain.ApplicationAssets;
@@ -33,12 +33,8 @@ import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import net.cycastic.sigil.service.email.DeferredEmailSender;
 import net.cycastic.sigil.service.email.EmailTemplateEngine;
 import net.cycastic.sigil.service.email.EmailTemplates;
-import net.cycastic.sigil.service.impl.ApplicationEmailSender;
 import net.cycastic.sigil.service.impl.UriPresigner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
+import net.cycastic.sigil.service.job.JobScheduler;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -62,7 +58,6 @@ import java.util.stream.Collectors;
 public class UserService {
     public static long SIGNATURE_VERIFICATION_WINDOW = 10;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final LoggedUserAccessor loggedUserAccessor;
     private final WebAuthnCredentialRepository webAuthnCredentialRepository;
     private final UserRepository userRepository;
@@ -73,13 +68,12 @@ public class UserService {
     private final UriPresigner uriPresigner;
     private final EmailTemplateEngine emailTemplateEngine;
     private final DeferredEmailSender deferredEmailSender;
-    private final TaskExecutor taskScheduler;
+    private final JobScheduler jobScheduler;
     private final CipherRepository cipherRepository;
     private final KdfConfiguration kdfConfiguration;
     private final TenantRepository tenantRepository;
     private final NotificationTokenRepository notificationTokenRepository;
 
-    @Autowired
     public UserService(LoggedUserAccessor loggedUserAccessor, WebAuthnCredentialRepository webAuthnCredentialRepository,
                        UserRepository userRepository,
                        KeyDerivationFunction keyDerivationFunction,
@@ -89,7 +83,7 @@ public class UserService {
                        UriPresigner uriPresigner,
                        EmailTemplateEngine emailTemplateEngine,
                        DeferredEmailSender deferredEmailSender,
-                       TaskExecutor taskScheduler,
+                       JobScheduler jobScheduler,
                        CipherRepository cipherRepository,
                        KdfConfiguration kdfConfiguration, TenantRepository tenantRepository, NotificationTokenRepository notificationTokenRepository){
         if (registrationConfigurations.getRegistrationLinkValidSeconds() <= 0){
@@ -110,7 +104,7 @@ public class UserService {
         this.uriPresigner = uriPresigner;
         this.emailTemplateEngine = emailTemplateEngine;
         this.deferredEmailSender = deferredEmailSender;
-        this.taskScheduler = taskScheduler;
+        this.jobScheduler = jobScheduler;
         this.cipherRepository = cipherRepository;
         this.tenantRepository = tenantRepository;
         this.notificationTokenRepository = notificationTokenRepository;
@@ -291,7 +285,7 @@ public class UserService {
     }
 
     @SneakyThrows
-    private void sendConfirmationEmailInternal(@NotNull UserDto user, String securityStamp){
+    public void sendConfirmationEmailInternal(@NotNull UserDto user, String securityStamp){
         var nvb = OffsetDateTime.now();
         var nva = nvb.plusSeconds(registrationConfigurations.getRegistrationLinkValidSeconds());
         var backendCompletionUri = generateCompletionUri(user, securityStamp, nvb, nva);
@@ -340,14 +334,10 @@ public class UserService {
         final var securityStamp = Base64.getEncoder().encodeToString(user.getSecurityStamp());
         final var dto = UserDto.fromDomain(user);
 
-        taskScheduler.execute(() -> {
-            try {
-                sendConfirmationEmailInternal(dto, securityStamp);
-                logger.debug("Confirmation email sent to user {}", dto.getId());
-            } catch (Exception e) {
-                logger.error("Failed to send confirmation email to user {}", dto.getId(), e);
-            }
-        });
+        jobScheduler.defer(SendConfirmationEmailJob.builder()
+                        .user(dto)
+                        .securityStamp(securityStamp)
+                .build());
     }
 
     public void enrollWebAuthnNoTransaction(User user, WebAuthnCredentialDto webAuthnCredential){
