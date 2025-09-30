@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope;
 import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -96,14 +97,10 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
         }
     }
 
-    public static S3Client buildClient(BaseS3Configurations configurations){
+    public static S3Client buildClient(BaseS3Configurations configurations, AwsCredentialsProvider awsCredentialsProvider){
         var builder = S3Client.builder()
+                .credentialsProvider(awsCredentialsProvider)
                 .region(Region.of(configurations.getRegionName()));
-        if (configurations.getAccessKey() != null){
-            var credentials = AwsBasicCredentials.create(configurations.getAccessKey(),
-                    configurations.getSecretKey());
-            builder = builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
-        }
         if (configurations.getServiceUrl() != null){
             builder = builder.endpointOverride(URI.create(configurations.getServiceUrl()))
                     .forcePathStyle(true);
@@ -112,14 +109,10 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
         return builder.build();
     }
 
-    public static S3Presigner buildPresigner(BaseS3Configurations configurations){
+    public static S3Presigner buildPresigner(BaseS3Configurations configurations, AwsCredentialsProvider awsCredentialsProvider){
         var builder = S3Presigner.builder()
+                .credentialsProvider(awsCredentialsProvider)
                 .region(Region.of(configurations.getRegionName()));
-        if (configurations.getAccessKey() != null){
-            var credentials = AwsBasicCredentials.create(configurations.getAccessKey(),
-                    configurations.getSecretKey());
-            builder = builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
-        }
         if (configurations.getServiceUrl() != null){
             builder = builder.endpointOverride(URI.create(configurations.getServiceUrl()))
                     .serviceConfiguration(S3Configuration.builder()
@@ -131,9 +124,11 @@ public class S3StorageProvider implements AutoCloseable, StorageProvider {
     }
 
     @Autowired
-    public S3StorageProvider(S3Configurations s3Configurations, ApplicationContext ctx){
-        s3Client = buildClient(s3Configurations);
-        s3Presigner = buildPresigner(s3Configurations);
+    public S3StorageProvider(S3Configurations s3Configurations,
+                             AwsCredentialsProvider awsCredentialsProvider,
+                             ApplicationContext ctx){
+        s3Client = buildClient(s3Configurations, awsCredentialsProvider);
+        s3Presigner = buildPresigner(s3Configurations, awsCredentialsProvider);
         this.ctx = ctx;
     }
 

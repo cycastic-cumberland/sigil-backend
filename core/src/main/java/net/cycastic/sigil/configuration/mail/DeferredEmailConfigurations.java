@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 @Configuration
 public class DeferredEmailConfigurations {
@@ -18,7 +19,8 @@ public class DeferredEmailConfigurations {
         if (applicationEmailConfigurations.getSqs() != null){
             return new SqsRemoteEmailSender(applicationEmailConfigurations.getSender(),
                     ctx.getBean(JsonSerializer.class),
-                    applicationEmailConfigurations.getSqs());
+                    applicationEmailConfigurations.getSqs(),
+                    ctx.getBean(AwsCredentialsProvider.class));
         }
 
         return new LocalDeferredEmailSender(ctx.getBean(TaskExecutor.class), ctx.getBean(ApplicationEmailSender.class));

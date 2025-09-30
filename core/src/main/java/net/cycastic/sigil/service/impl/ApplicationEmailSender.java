@@ -5,25 +5,23 @@ import net.cycastic.sigil.service.DecryptionProvider;
 import net.cycastic.sigil.service.email.EmailImage;
 import net.cycastic.sigil.service.impl.email.EmailSenderImpl;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import jakarta.annotation.Nullable;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Map;
 
 public class ApplicationEmailSender extends EmailSenderImpl {
-    @Configuration
-    public static class SenderConfiguration {
-        @Bean
-        public ApplicationEmailSender applicationEmailSender(ApplicationEmailConfigurations configurations, DecryptionProvider decryptionProvider){
-            return new ApplicationEmailSender(configurations, decryptionProvider);
-        }
-    }
-
     private final String senderAddress;
 
     public ApplicationEmailSender(ApplicationEmailConfigurations configurations, DecryptionProvider decryptionProvider){
         super(getConfigs(configurations, decryptionProvider));
         senderAddress = configurations.getSender();
+    }
+
+    @Bean
+    @Lazy
+    public static ApplicationEmailSender applicationEmailSender(ApplicationEmailConfigurations configurations, DecryptionProvider decryptionProvider){
+        return new ApplicationEmailSender(configurations, decryptionProvider);
     }
 
     private static ApplicationEmailConfigurations getConfigs(ApplicationEmailConfigurations configurations, DecryptionProvider decryptionProvider){

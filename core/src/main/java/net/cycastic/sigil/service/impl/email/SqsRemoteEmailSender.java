@@ -16,8 +16,7 @@ import net.cycastic.sigil.service.impl.S3StorageProvider;
 import net.cycastic.sigil.service.impl.storage.S3Bucket;
 import net.cycastic.sigil.service.impl.storage.ZipCompressUtility;
 import net.cycastic.sigil.service.serializer.JsonSerializer;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -36,19 +35,20 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
     private final JsonSerializer jsonSerializer;
     private final SqsClient sqsClient;
     private final SqsRemoteEmailConfigurations configurations;
+    private final AwsCredentialsProvider awsCredentialsProvider;
     private final String senderAddress;
 
-    public SqsRemoteEmailSender(String senderAddress, JsonSerializer jsonSerializer, SqsRemoteEmailConfigurations configurations){
+    public SqsRemoteEmailSender(String senderAddress,
+                                JsonSerializer jsonSerializer,
+                                SqsRemoteEmailConfigurations configurations,
+                                AwsCredentialsProvider awsCredentialsProvider){
         this.jsonSerializer = jsonSerializer;
         this.senderAddress = senderAddress;
         this.configurations = configurations;
+        this.awsCredentialsProvider = awsCredentialsProvider;
         var builder = SqsClient.builder()
+                .credentialsProvider(awsCredentialsProvider)
                 .region(Region.of(configurations.getRegionName()));
-        if (configurations.getAccessKey() != null){
-            var credentials = AwsBasicCredentials.create(configurations.getAccessKey(),
-                    configurations.getSecretKey());
-            builder = builder.credentialsProvider(StaticCredentialsProvider.create(credentials));
-        }
         sqsClient = builder.build();
     }
 
@@ -99,7 +99,7 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
             }
 
             var fileKey = Path.of("__tmp", ApplicationUtilities.shardObjectKey(UUID.randomUUID() + ".zip")).toString();
-            try (var client = S3StorageProvider.buildClient(configurations.getBucket())){
+            try (var client = S3StorageProvider.buildClient(configurations.getBucket(), awsCredentialsProvider)){
                 var bucket = new S3Bucket(client, null, configurations.getBucket().getAttachmentBucketName());
                 bucket.upload(fileKey,
                         "application/zip",
