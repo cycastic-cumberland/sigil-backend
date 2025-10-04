@@ -51,6 +51,7 @@ public class SqsJobDispatcher implements SmartLifecycle, AutoCloseable {
                 return;
             }
 
+            logger.debug("Marking {} job(s) as completed", successHandles.size());
             dispatcher.sqsClient.deleteMessageBatch(d -> d.queueUrl(dispatcher.sqsJobQueueConfigurations.getQueueUrl())
                     .entries(successHandles.stream()
                             .map(h -> DeleteMessageBatchRequestEntry.builder()
@@ -114,6 +115,7 @@ public class SqsJobDispatcher implements SmartLifecycle, AutoCloseable {
             return;
         }
 
+        logger.info("Processing batch job of {} item(s)", response.messages().size());
         try (var context = new SqsRoutineContext(this, response.messages())){
             for (var record : context.getMessages()){
                 try {
@@ -128,6 +130,7 @@ public class SqsJobDispatcher implements SmartLifecycle, AutoCloseable {
                     }
 
                     if (completed){
+                        logger.debug("Job completed: {}", record.messageId());
                         context.complete(record);
                     }
                 } catch (Exception e){
@@ -152,6 +155,7 @@ public class SqsJobDispatcher implements SmartLifecycle, AutoCloseable {
             }
         }
 
+        logger.info("SQS Job dispatcher stopped");
         started = false;
     }
 

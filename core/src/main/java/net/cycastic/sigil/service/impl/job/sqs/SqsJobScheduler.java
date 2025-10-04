@@ -5,6 +5,8 @@ import net.cycastic.sigil.service.job.BackgroundJobDetails;
 import net.cycastic.sigil.service.job.JobDetails;
 import net.cycastic.sigil.service.job.JobScheduler;
 import net.cycastic.sigil.service.serializer.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -14,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class SqsJobScheduler implements JobScheduler, AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(SqsJobScheduler.class);
     private final JsonSerializer jsonSerializer;
     private final SqsClient sqsClient;
     private final String queueUrl;
@@ -35,6 +38,7 @@ public class SqsJobScheduler implements JobScheduler, AutoCloseable {
                 .queueUrl(queueUrl)
                 .messageBody(serialized)
                 .build());
+        logger.debug("Scheduled item {}", jobDetails.getRequestClass());
     }
 
     @Override

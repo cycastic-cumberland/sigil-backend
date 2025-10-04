@@ -8,6 +8,8 @@ import net.cycastic.sigil.service.job.BackgroundJobHandler;
 import net.cycastic.sigil.service.job.JobActivator;
 import net.cycastic.sigil.service.job.JobScheduler;
 import net.cycastic.sigil.service.serializer.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.task.TaskExecutor;
 
@@ -16,6 +18,8 @@ import java.util.function.Supplier;
 
 @RequiredArgsConstructor
 public class LocalJobActivator implements JobActivator, JobScheduler {
+    private static final Logger logger = LoggerFactory.getLogger(LocalJobActivator.class);
+
     private final ConcurrentHashMap<Class, Supplier<BackgroundJobHandler>> handlerMap = new ConcurrentHashMap<>();
     private final ObjectProvider<BackgroundJobHandler> validators;
     private final JsonSerializer jsonSerializer;
@@ -45,6 +49,8 @@ public class LocalJobActivator implements JobActivator, JobScheduler {
         var handler = handlerMap.computeIfAbsent(klass, this::getHandler).get();
 
         var deserializedData = jsonSerializer.deserialize(job.getData(), klass);
+
+        logger.debug("Processing job {}", klass.getName());
         handler.process(deserializedData);
     }
 
