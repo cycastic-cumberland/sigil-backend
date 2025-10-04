@@ -12,14 +12,16 @@ import java.util.Base64;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class TaskDto extends TaskCardDto {
+    private int projectPartitionId;
     private String taskIdentifier;
     private TaskStatusDto taskStatus;
     private UserDto reporter;
     private String encryptedContent;
     // TODO: Label
 
-    public static TaskDto fromDomain(Task domain){
+    public static TaskDto fromDomain(Task domain, int projectPartitionId){
         return fromDomain(domain, TaskDto.builder())
+                .projectPartitionId(projectPartitionId)
                 .taskStatus(domain.getTaskStatus() == null ? null : TaskStatusDto.fromDomain(domain.getTaskStatus()))
                 .reporter(domain.getReporter() == null ? null : UserDto.fromDomain(domain.getReporter()))
                 .encryptedContent(domain.getEncryptedContent() == null ? null : Base64.getEncoder().encodeToString(domain.getEncryptedContent()))

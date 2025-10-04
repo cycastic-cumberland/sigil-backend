@@ -1,25 +1,24 @@
 package net.cycastic.sigil.application.pm.task.query.backlog;
 
-import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.pm.BaseProjectCommandHandler;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.domain.dto.pm.TaskDto;
+import net.cycastic.sigil.domain.model.pm.ProjectPartition;
 import net.cycastic.sigil.domain.repository.pm.TaskRepository;
-import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class QueryTasksByBacklogCommandHandler implements Command.Handler<QueryTasksByBacklogCommand, PageResponseDto<TaskDto>> {
+public class QueryTasksByBacklogCommandHandler extends BaseProjectCommandHandler<QueryTasksByBacklogCommand, PageResponseDto<TaskDto>> {
     private final TaskRepository taskRepository;
-    private final LoggedUserAccessor loggedUserAccessor;
 
     @Override
-    public PageResponseDto<TaskDto> handle(QueryTasksByBacklogCommand command) {
+    protected PageResponseDto<TaskDto> handleInternal(QueryTasksByBacklogCommand command, ProjectPartition projectPartition) {
         // TODO: Backlog unique task status union
-        var page = taskRepository.findByTenant_IdAndTaskStatus_Id(loggedUserAccessor.getTenantId(),
+        var page = taskRepository.findByKanbanBoard_ProjectPartition_IdAndTaskStatus_Id(projectPartition.getId(),
                 null,
                 command.toPageable());
-        return PageResponseDto.fromDomain(page, TaskDto::fromDomain);
+        return PageResponseDto.fromDomain(page, t -> TaskDto.fromDomain(t, projectPartition.getId()));
     }
 }

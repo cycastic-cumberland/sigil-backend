@@ -6,5 +6,6 @@ import net.cycastic.sigil.domain.dto.listing.PartitionDto;
 
 @Data
 public class GetPartitionCommand implements Command<PartitionDto> {
+    private Integer id;
     private String partitionPath;
 }

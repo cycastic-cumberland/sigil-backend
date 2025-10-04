@@ -15,6 +15,7 @@ public class TaskCardDto {
     private int id;
     private String taskIdentifier;
     private Long taskStatusId;
+    private Integer kanbanBoardId;
     private Integer assigneeId;
     private Integer reporterId;
     private UserDto assignee;
@@ -28,6 +29,7 @@ public class TaskCardDto {
         return builder.id(task.getId())
                 .taskIdentifier(task.getTaskIdentifier())
                 .taskStatusId(task.getTaskStatus() == null ? null : task.getTaskStatus().getId())
+                .kanbanBoardId(task.getKanbanBoard() == null ? null : task.getKanbanBoard().getId())
                 .assigneeId(task.getAssignee() == null ? null : task.getAssignee().getId())
                 .assignee(task.getAssignee() == null ? null : UserDto.fromDomain(task.getAssignee()))
                 .reporterId(task.getReporter() == null ? null : task.getReporter().getId())

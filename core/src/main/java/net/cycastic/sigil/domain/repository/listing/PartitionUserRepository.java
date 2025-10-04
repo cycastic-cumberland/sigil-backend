@@ -23,6 +23,11 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
 
     Optional<PartitionUser> findByPartition_IdAndUser_Id(int partitionId, int userId);
 
+    @Query("""
+           SELECT pu.user FROM PartitionUser pu WHERE pu.partition.id = :partitionId AND pu.user.normalizedEmail = UPPER(:userEmail)
+           """)
+    Optional<User> findPartitionMemberByEmail(@Param("partitionId") int partitionId, @Param("userEmail") String userEmail);
+
     boolean existsByPartition_Tenant_IdAndPartition_IdAndUser_Id(@NotNull int partitionTenantId, int partitionId, int userId);
 
     @Query("SELECT al.listing.partition FROM AttachmentListing al WHERE al = :attachmentListing")

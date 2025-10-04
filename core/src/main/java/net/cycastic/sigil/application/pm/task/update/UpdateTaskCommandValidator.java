@@ -12,8 +12,8 @@ public class UpdateTaskCommandValidator implements CommandValidator<UpdateTaskCo
 
     @Override
     public void validate(UpdateTaskCommand command) {
-        if (!bothNullOrNonNull(command.getIv(), command.getEncryptedName()) || !bothNullOrNonNull(command.getIv(), command.getEncryptedContent())){
-            throw new RequestException(400, "iv, encryptedName and encryptedContent must be present");
+        if (!bothNullOrNonNull(command.getIv(), command.getEncryptedName())){
+            throw new RequestException(400, "iv and encryptedName must both be present");
         }
     }
 }

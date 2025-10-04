@@ -52,6 +52,7 @@ public class CreateTaskCommandHandler extends BaseProjectCommandHandler<CreateTa
         }
 
         projectPartition.setLatestTaskId(projectPartition.getLatestTaskId() + 1);
+        projectPartitionRepository.save(projectPartition);
         var taskBuilder = Task.builder()
                 .tenant(tenant)
                 .priority(Objects.requireNonNullElse(command.getTaskPriority(), TaskPriority.MEDIUM))
@@ -86,7 +87,6 @@ public class CreateTaskCommandHandler extends BaseProjectCommandHandler<CreateTa
             task = taskBuilder.build();
             taskRepository.save(task);
         }
-        projectPartitionRepository.save(projectPartition);
 
         return new IdDto(task.getTaskIdentifier());
     }

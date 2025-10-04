@@ -29,11 +29,13 @@ public class TasksController {
     }
 
     @PatchMapping
+    @RequirePartitionId
     public void updateTask(@Valid @RequestBody UpdateTaskCommand command){
         pipelinr.send(command);
     }
 
     @PatchMapping("move")
+    @RequirePartitionId
     public void moveTask(@Valid @RequestBody MoveTaskCommand command){
         pipelinr.send(command);
     }
@@ -44,6 +46,7 @@ public class TasksController {
     }
 
     @GetMapping("by-board")
+    @RequirePartitionId
     public TaskCardsDto queryTasksByBoard(@Valid QueryTasksByKanbanBoardCommand command){
         return pipelinr.send(command);
     }

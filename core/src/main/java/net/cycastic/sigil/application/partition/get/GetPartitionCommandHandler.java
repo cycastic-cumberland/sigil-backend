@@ -7,11 +7,14 @@ import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.dto.listing.PartitionDto;
 import net.cycastic.sigil.domain.dto.listing.ProjectPartitionDto;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.model.listing.Partition;
 import net.cycastic.sigil.domain.model.listing.PartitionType;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -22,8 +25,14 @@ public class GetPartitionCommandHandler implements Command.Handler<GetPartitionC
 
     @Override
     public PartitionDto handle(GetPartitionCommand command) {
-        var partition = partitionRepository.findByTenant_IdAndPartitionPath(loggedUserAccessor.getTenantId(), command.getPartitionPath())
-                .orElseThrow(() -> new RequestException(404, "Partition not found"));
+        Optional<Partition> partitionOpt;
+        if (command.getId() != null){
+            partitionOpt = partitionRepository.findByTenant_IdAndId(loggedUserAccessor.getTenantId(), command.getId());
+        } else {
+            partitionOpt = partitionRepository.findByTenant_IdAndPartitionPath(loggedUserAccessor.getTenantId(), command.getPartitionPath());
+        }
+
+        var partition = partitionOpt.orElseThrow(() -> new RequestException(404, "Partition not found"));
         var partitionUser = partitionUserRepository.findByPartition_IdAndUser_Id(partition.getId(),
                         loggedUserAccessor.getUserId())
                 .orElseThrow(RequestException::forbidden);

@@ -22,14 +22,23 @@ public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
     private String taskId;
 
     @Nullable
+    private String assigneeEmail;
+
+    @Nullable
+    private String reporterEmail;
+
+    @Nullable
     private TaskPriority taskPriority;
 
+    @Nullable
     @Base64String
     private String encryptedName;
 
+    @Nullable
     @Base64String
     private String encryptedContent;
 
+    @Nullable
     @Base64String
     private String iv;
 

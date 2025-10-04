@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface TaskRepository extends JpaRepository<Task, Integer> {
     Optional<Task> findByTenant_IdAndTaskIdentifier(int tenantId, String taskIdentifier);
 
-    Page<Task> findByTenant_IdAndTaskStatus_Id(int tenantId, Long taskStatusId, Pageable pageable);
+    Page<Task> findByKanbanBoard_ProjectPartition_IdAndTaskStatus_Id(int kanbanBoardProjectPartitionId, Long taskStatusId, Pageable pageable);
 
     List<Task> findByKanbanBoard(KanbanBoard kanbanBoard);
 }

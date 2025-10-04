@@ -27,6 +27,8 @@ public interface PartitionRepository extends JpaRepository<Partition, Integer> {
         int getType();
     }
 
+    Optional<Partition> findByTenant_IdAndId(int tenantId, int id);
+
     Optional<Partition> findByTenant_IdAndPartitionPath(int tenantId, String partitionPath);
 
     @Query("SELECT al.listing.partition FROM AttachmentListing al WHERE al = :attachmentListing")
