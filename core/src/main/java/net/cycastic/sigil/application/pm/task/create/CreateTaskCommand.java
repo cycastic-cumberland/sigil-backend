@@ -12,6 +12,7 @@ import net.cycastic.sigil.application.partition.validation.PartitionChecksum;
 import net.cycastic.sigil.application.partition.validation.PartitionPermission;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.dto.IdDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.TaskPriority;
 
 @Data
@@ -22,25 +23,19 @@ public class CreateTaskCommand implements Command<IdDto>, PartitionChecksum {
     @Nullable
     private Integer kanbanBoardId;
 
+    @NotBlank
+    @Base64String
+    private String partitionChecksum;
+
     @Nullable
     private Long taskStatusId;
 
     @Nullable
     private TaskPriority taskPriority;
 
-    @NotBlank
-    @Base64String
-    private String encryptedName;
-
-    @NotBlank
-    @Base64String
-    private String partitionChecksum;
+    @NotNull
+    private CipherDto encryptedName;
 
     @Nullable
-    @Base64String
-    private String encryptedContent;
-
-    @NotBlank
-    @Base64String
-    private String iv;
+    private CipherDto encryptedContent;
 }

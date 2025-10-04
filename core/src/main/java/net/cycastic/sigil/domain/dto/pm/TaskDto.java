@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.UserDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.Task;
 
 import java.util.Base64;
@@ -16,7 +17,7 @@ public class TaskDto extends TaskCardDto {
     private String taskIdentifier;
     private TaskStatusDto taskStatus;
     private UserDto reporter;
-    private String encryptedContent;
+    private CipherDto encryptedContent;
     // TODO: Label
 
     public static TaskDto fromDomain(Task domain, int projectPartitionId){
@@ -24,7 +25,7 @@ public class TaskDto extends TaskCardDto {
                 .projectPartitionId(projectPartitionId)
                 .taskStatus(domain.getTaskStatus() == null ? null : TaskStatusDto.fromDomain(domain.getTaskStatus()))
                 .reporter(domain.getReporter() == null ? null : UserDto.fromDomain(domain.getReporter()))
-                .encryptedContent(domain.getEncryptedContent() == null ? null : Base64.getEncoder().encodeToString(domain.getEncryptedContent()))
+                .encryptedContent(domain.getEncryptedContent() == null ? null : CipherDto.fromDomain(domain.getEncryptedContent()))
                 .build();
     }
 }

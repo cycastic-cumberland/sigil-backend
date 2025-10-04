@@ -3,13 +3,17 @@ package net.cycastic.sigil.application.pm.task.update;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.pm.BaseProjectCommandHandler;
 import net.cycastic.sigil.domain.exception.RequestException;
+import net.cycastic.sigil.domain.model.Cipher;
+import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.domain.model.pm.ProjectPartition;
+import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.pm.TaskRepository;
 import net.cycastic.sigil.domain.repository.pm.TaskSubscriberRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Base64;
 
 @Component
@@ -19,24 +23,39 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
     private final LoggedUserAccessor loggedUserAccessor;
     private final PartitionUserRepository partitionUserRepository;
     private final TaskSubscriberRepository taskSubscriberRepository;
+    private final CipherRepository cipherRepository;
 
     @Override
     protected Void handleInternal(UpdateTaskCommand command, ProjectPartition projectPartition) {
         var task = taskRepository.findByTenant_IdAndTaskIdentifier(loggedUserAccessor.getTenantId(), command.getTaskId())
                 .orElseThrow(() -> new RequestException(404, "Task not found"));
-        if (command.getIv() != null){
-            task.setIv(Base64.getDecoder().decode(command.getIv()));
-            if (command.getEncryptedName() != null){
-                task.setEncryptedName(Base64.getDecoder().decode(command.getEncryptedName()));
-            } else {
-                throw new RequestException(400, "Encrypted name not supplied");
-            }
-            if (command.getEncryptedContent() != null){
-                task.setEncryptedContent(Base64.getDecoder().decode(command.getEncryptedContent()));
-            } else if (task.getEncryptedContent() != null){
-                task.setEncryptedContent(null);
+        {
+            var nameCipher = task.getEncryptedName();
+            var newNameCipher = command.getEncryptedName().toDomain(true);
+            if (nameCipher.copyFrom(newNameCipher)){
+                cipherRepository.save(nameCipher);
             }
         }
+
+        var contentCipher = task.getEncryptedContent();
+        if (command.getEncryptedContent() == null){
+            if (contentCipher != null){
+                task.setEncryptedContent(null);
+                cipherRepository.delete(contentCipher);
+            }
+        } else {
+            if (contentCipher == null){
+                contentCipher = command.getEncryptedContent().toDomain(true);
+                cipherRepository.save(contentCipher);
+                task.setEncryptedContent(contentCipher);
+            } else {
+                var newContentCipher = command.getEncryptedContent().toDomain(true);
+                if (contentCipher.copyFrom(newContentCipher)){
+                    cipherRepository.save(contentCipher);
+                }
+            }
+        }
+
         if (command.getAssigneeEmail() == null){
             if (task.getAssignee() != null){
                 taskSubscriberRepository.removeByTask_IdAndSubscriber_Id(task.getId(), task.getAssignee().getId());
@@ -65,9 +84,7 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
             }
             task.setReporter(reporter);
         }
-        if (command.getTaskPriority() != null){
-            task.setPriority(command.getTaskPriority());
-        }
+        task.setPriority(command.getTaskPriority());
         taskRepository.save(task);
 
         return null;

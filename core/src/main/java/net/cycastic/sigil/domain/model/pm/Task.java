@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
 import net.cycastic.sigil.domain.model.tenant.User;
@@ -55,13 +56,13 @@ public class Task extends VersionedMetadataEntity {
     @Column(nullable = false)
     private TaskPriority priority;
 
-    @Column(nullable = false)
-    private byte[] encryptedName;
+    @OneToOne
+    @JoinColumn(name = "encrypted_name_cipher_id", nullable = false)
+    private Cipher encryptedName;
 
-    private byte[] encryptedContent;
-
-    @Column(columnDefinition = "BINARY(12)", nullable = false)
-    private byte[] iv;
+    @OneToOne
+    @JoinColumn(name = "encrypted_content_cipher_id")
+    private Cipher encryptedContent;
 
     @Column(nullable = false)
     private String label;

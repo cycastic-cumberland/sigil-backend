@@ -13,6 +13,7 @@ import net.cycastic.sigil.domain.model.pm.ProjectPartition;
 import net.cycastic.sigil.domain.model.pm.Task;
 import net.cycastic.sigil.domain.model.pm.TaskPriority;
 import net.cycastic.sigil.domain.model.pm.TaskSubscriber;
+import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.pm.*;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
@@ -36,6 +37,7 @@ public class CreateTaskCommandHandler extends BaseProjectCommandHandler<CreateTa
     private final TaskRepository taskRepository;
     private final TaskSubscriberRepository taskSubscriberRepository;
     private final ProjectPartitionRepository projectPartitionRepository;
+    private final CipherRepository cipherRepository;
 
     @Override
     protected IdDto handleInternal(CreateTaskCommand command, ProjectPartition projectPartition) {
@@ -53,14 +55,19 @@ public class CreateTaskCommandHandler extends BaseProjectCommandHandler<CreateTa
 
         projectPartition.setLatestTaskId(projectPartition.getLatestTaskId() + 1);
         projectPartitionRepository.save(projectPartition);
+        var encryptedName = command.getEncryptedName().toDomain(true);
+        var encryptedContent = command.getEncryptedContent() == null ? null : command.getEncryptedContent().toDomain(true);
+        cipherRepository.save(encryptedName);
+        if (encryptedContent != null){
+            cipherRepository.save(encryptedContent);
+        }
         var taskBuilder = Task.builder()
                 .tenant(tenant)
                 .priority(Objects.requireNonNullElse(command.getTaskPriority(), TaskPriority.MEDIUM))
                 .label("")
                 .taskIdentifier(String.format("%s-%d", projectPartition.getUniqueIdentifier(), projectPartition.getLatestTaskId()))
-                .encryptedName(Base64.getDecoder().decode(command.getEncryptedName()))
-                .encryptedContent(command.getEncryptedContent() == null ? null : Base64.getDecoder().decode(command.getEncryptedContent()))
-                .iv(Base64.getDecoder().decode(command.getIv()));
+                .encryptedName(encryptedName)
+                .encryptedContent(encryptedContent);
         if (command.getKanbanBoardId() != null){
             var board = kanbanBoardRepository.findByIdAndProjectPartition_Id(command.getKanbanBoardId(), projectPartition.getId())
                     .orElseThrow(() -> new RequestException(400, "Board not found"));

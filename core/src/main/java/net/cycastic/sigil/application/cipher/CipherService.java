@@ -1,11 +1,14 @@
 package net.cycastic.sigil.application.cipher;
 
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.service.DecryptionProvider;
 import net.cycastic.sigil.service.EncryptionProvider;
 import org.springframework.stereotype.Service;
+
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor

@@ -11,6 +11,7 @@ import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.application.partition.validation.PartitionChecksum;
 import net.cycastic.sigil.application.partition.validation.PartitionPermission;
 import net.cycastic.sigil.domain.ApplicationConstants;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.TaskPriority;
 
 @Data
@@ -27,20 +28,14 @@ public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
     @Nullable
     private String reporterEmail;
 
-    @Nullable
+    @NotNull
     private TaskPriority taskPriority;
 
-    @Nullable
-    @Base64String
-    private String encryptedName;
+    @NotNull
+    private CipherDto encryptedName;
 
     @Nullable
-    @Base64String
-    private String encryptedContent;
-
-    @Nullable
-    @Base64String
-    private String iv;
+    private CipherDto encryptedContent;
 
     @NotBlank
     @Base64String

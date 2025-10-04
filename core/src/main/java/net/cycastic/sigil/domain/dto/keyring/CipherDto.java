@@ -5,11 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import net.cycastic.sigil.application.misc.annotation.Base64String;
+import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import jakarta.annotation.Nullable;
 
 import java.util.Base64;
+import java.util.Objects;
 
 @Data
 @SuperBuilder
@@ -20,9 +23,11 @@ public class CipherDto {
     private CipherDecryptionMethod decryptionMethod;
 
     @Nullable
+    @Base64String
     private String iv;
 
     @NotNull
+    @Base64String
     private String cipher;
 
     protected void buildFromDomain(Cipher cipher){
@@ -39,5 +44,19 @@ public class CipherDto {
 
     public static CipherDto fromDomain(Cipher cipher){
         return fromDomainInternal(new CipherDto(), cipher);
+    }
+
+    public Cipher toDomain(boolean requireIv){
+        return new Cipher(decryptionMethod,
+                requireIv
+                    ? Base64.getDecoder().decode(Objects.requireNonNull(iv, () -> {throw new RequestException(400, "IV not supplied");}))
+                    : iv == null
+                        ? null
+                        : Base64.getDecoder().decode(iv),
+                Base64.getDecoder().decode(cipher));
+    }
+
+    public Cipher toDomain(){
+        return toDomain(false);
     }
 }

@@ -3,6 +3,7 @@ package net.cycastic.sigil.domain.dto.pm;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.UserDto;
+import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.Task;
 import net.cycastic.sigil.domain.model.pm.TaskPriority;
 
@@ -20,8 +21,7 @@ public class TaskCardDto {
     private Integer reporterId;
     private UserDto assignee;
     private TaskPriority priority;
-    private String encryptedName;
-    private String iv;
+    private CipherDto encryptedName;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
@@ -34,8 +34,7 @@ public class TaskCardDto {
                 .assignee(task.getAssignee() == null ? null : UserDto.fromDomain(task.getAssignee()))
                 .reporterId(task.getReporter() == null ? null : task.getReporter().getId())
                 .priority(task.getPriority())
-                .encryptedName(Base64.getEncoder().encodeToString(task.getEncryptedName()))
-                .iv(Base64.getEncoder().encodeToString(task.getIv()))
+                .encryptedName(CipherDto.fromDomain(task.getEncryptedName()))
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt());
     }
