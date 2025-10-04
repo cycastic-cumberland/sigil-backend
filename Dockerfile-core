@@ -4,10 +4,15 @@
 FROM maven:3.9-eclipse-temurin-23 AS builder
 WORKDIR /app
 
-COPY . ./
+COPY pom.xml ./pom.xml
+COPY core/pom.xml ./core/pom.xml
+COPY infrastructure/pom.xml ./infrastructure/pom.xml
+COPY mail-service/pom.xml ./mail-service/pom.xml
+COPY notifier/pom.xml ./notifier/pom.xml
 
-# TODO: Fix go-offline layer
 RUN mvn dependency:go-offline -B
+
+COPY . ./
 
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
@@ -17,7 +22,7 @@ RUN --mount=type=secret,id=sentry_token export SENTRY_AUTH_TOKEN=$(cat /run/secr
 FROM bellsoft/liberica-runtime-container:jre-23-slim-musl AS runtime
 WORKDIR /app
 
-COPY --from=builder /app/target/core/*.jar app.jar
+COPY --from=builder /app/core/target/core-*.jar app.jar
 
 EXPOSE 8080
 
