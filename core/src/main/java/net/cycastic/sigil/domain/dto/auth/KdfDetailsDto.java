@@ -1,16 +1,17 @@
-package net.cycastic.sigil.domain.dto;
+package net.cycastic.sigil.domain.dto.auth;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
-import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 
 @Data
-@Builder
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class KdfDetailsDto {
     private String algorithm;
-    private KeyDerivationFunction.Parameters parameters;
     private String salt;
     private CipherDto wrappedUserKey;
     private WebAuthnCredentialDto webAuthnCredential;

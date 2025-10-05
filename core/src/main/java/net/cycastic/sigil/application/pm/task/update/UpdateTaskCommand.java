@@ -23,6 +23,9 @@ public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
     private String taskId;
 
     @Nullable
+    private Integer kanbanBoardId;
+
+    @Nullable
     private String assigneeEmail;
 
     @Nullable

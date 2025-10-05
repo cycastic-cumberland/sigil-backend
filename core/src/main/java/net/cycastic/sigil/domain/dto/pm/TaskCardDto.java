@@ -1,6 +1,8 @@
 package net.cycastic.sigil.domain.dto.pm;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
@@ -12,6 +14,8 @@ import java.util.Base64;
 
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TaskCardDto {
     private int id;
     private String taskIdentifier;

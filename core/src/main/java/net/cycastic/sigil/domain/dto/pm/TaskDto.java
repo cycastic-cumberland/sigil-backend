@@ -1,16 +1,18 @@
 package net.cycastic.sigil.domain.dto.pm;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.Task;
 
-import java.util.Base64;
-
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class TaskDto extends TaskCardDto {
     private int projectPartitionId;

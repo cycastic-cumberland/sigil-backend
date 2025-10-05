@@ -32,7 +32,7 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
         {
             var nameCipher = task.getEncryptedName();
             var newNameCipher = command.getEncryptedName().toDomain(true);
-            if (nameCipher.copyFrom(newNameCipher)){
+            if (nameCipher.copyFrom(newNameCipher)) {
                 cipherRepository.save(nameCipher);
             }
         }
@@ -54,6 +54,12 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
                     cipherRepository.save(contentCipher);
                 }
             }
+        }
+
+        if ((task.getKanbanBoard() != null || command.getKanbanBoardId() != null) &&
+                (task.getKanbanBoard() == null || task.getKanbanBoard().getId() == null ||
+                        !task.getKanbanBoard().getId().equals(command.getKanbanBoardId()))) {
+            throw new RequestException(500, "Unimplemented: Move board");
         }
 
         if (command.getAssigneeEmail() == null){

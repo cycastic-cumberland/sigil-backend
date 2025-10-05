@@ -26,6 +26,7 @@ public class UserDto {
     private boolean hasWebAuthnCredential;
     private UUID notificationToken;
     private OffsetDateTime joinedAt;
+    private OffsetDateTime updatedAt;
 
     public static UserDto fromDomain(@NotNull User user){
         return UserDto.builder()
@@ -38,6 +39,7 @@ public class UserDto {
                 .hasWebAuthnCredential(user.getWebAuthnCredentialId().isPresent())
                 .notificationToken(user.getNotificationToken().getToken())
                 .joinedAt(user.getJoinedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }

@@ -1,6 +1,7 @@
 package net.cycastic.sigil.application.pm.task.transit;
 
 import an.awesome.pipelinr.Command;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -16,6 +17,9 @@ import net.cycastic.sigil.domain.ApplicationConstants;
 public class MoveTaskCommand implements Command<Void> {
     @NotNull
     private String taskId;
+
+    @Nullable
+    private Integer kanbanBoardId;
 
     @Min(1)
     private long statusId;

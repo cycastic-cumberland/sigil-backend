@@ -18,17 +18,21 @@ import net.cycastic.sigil.application.user.register.ResendConfirmationEmailComma
 import net.cycastic.sigil.application.user.self.GetSelfCommand;
 import net.cycastic.sigil.application.user.signin.SignInCommand;
 import net.cycastic.sigil.application.user.webauthn.enroll.EnrollWebAuthnEnvelopCommand;
+import net.cycastic.sigil.configuration.cache.CacheConfigurations;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.auth.*;
-import net.cycastic.sigil.domain.dto.KdfDetailsDto;
+import net.cycastic.sigil.domain.dto.auth.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.dto.keyring.KeyringDto;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/auth")
 public class AuthController {
+    private static final String CACHE_KEY = "AuthController";
     private final Pipelinr pipelinr;
 
     @PostMapping("register")
@@ -71,6 +75,8 @@ public class AuthController {
     }
 
     @GetMapping("self")
+    @CachePut(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
+            key = "'self'+ '?email=' + #result.email")
     public UserDto getSelf(){
         return pipelinr.send(GetSelfCommand.INSTANCE);
     }
@@ -81,6 +87,8 @@ public class AuthController {
     }
 
     @GetMapping("kdf")
+    @Cacheable(value = CacheConfigurations.Presets.LONG_LIVE_CACHE, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
+            key = "'AuthController::getKdfSettings'+ '?command=' + #command")
     public KdfDetailsDto getKdfSettings(@Valid GetKdfSettingsCommand command){
         return pipelinr.send(command);
     }
@@ -98,6 +106,8 @@ public class AuthController {
 
     @GetMapping
     @RequireTenantId
+    @Cacheable(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
+            key = "'self'+ '?command=' + #command")
     public UserDto getUser(@Valid GetUserCommand command){
         return pipelinr.send(command);
     }

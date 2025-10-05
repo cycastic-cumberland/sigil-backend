@@ -1,26 +1,23 @@
 package net.cycastic.sigil.application.user.get;
 
 import an.awesome.pipelinr.Command;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.configuration.auth.KdfConfiguration;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
+import net.cycastic.sigil.domain.dto.auth.*;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
-import net.cycastic.sigil.domain.dto.KdfDetailsDto;
-import net.cycastic.sigil.domain.dto.auth.AuthenticationMethod;
-import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
+import net.cycastic.sigil.service.impl.Argon2idPasswordHasher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
@@ -31,35 +28,15 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
     private static final int STANDARD_WEBAUTHN_ID_LENGTH = 20;
     private static final int STANDARD_WEBAUTHN_SALT_LENGTH = 32;
 
-    @RequiredArgsConstructor
-    private static class KdfSettings implements KeyDerivationFunction.KeyDerivationSettings{
-        private final KeyDerivationFunction kdf;
-        private final byte[] salt;
-        private final byte[] parameters;
-
-        @Override
-        public byte[] getSalt() {
-            return salt;
-        }
-
-        @Override
-        @SneakyThrows
-        public KeyDerivationFunction.Parameters getParameters() {
-            try (var stream = new ByteArrayInputStream(parameters)){
-                return kdf.getParameters(stream);
-            }
-        }
-    }
-
     private final UserRepository userRepository;
     private final KeyDerivationFunction keyDerivationFunction;
-    private final KeyDerivationFunction.Parameters defaultParameters;
+    private final Argon2idPasswordHasher.CipherConfigurations defaultParameters;
     private final byte[] maskingKey;
     private final byte[] maskingPrivateKey;
 
     @Autowired
     public GetKdfSettingsCommandHandler(UserRepository userRepository,
-                                        KeyDerivationFunction keyDerivationFunction,
+                                        Argon2idPasswordHasher keyDerivationFunction,
                                         KdfConfiguration kdfConfiguration) {
         this.userRepository = userRepository;
         this.keyDerivationFunction = keyDerivationFunction;
@@ -91,21 +68,14 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
         return seed;
     }
 
-    private KeyDerivationFunction.KeyDerivationSettings createDummyDetails(String... seeds){
+    private Argon2idKeyDerivationSettings createDummyDetails(String... seeds){
         var finalSeed = getMaskingSeed(seeds);
         var dummySalt = CryptographicUtilities.deriveKey(KeyDerivationFunction.SALT_SIZE, finalSeed, "kdf-salt".getBytes(StandardCharsets.UTF_8));
 
-        return new KeyDerivationFunction.KeyDerivationSettings() {
-            @Override
-            public byte[] getSalt() {
-                return dummySalt;
-            }
-
-            @Override
-            public KeyDerivationFunction.Parameters getParameters() {
-                return defaultParameters;
-            }
-        };
+        return Argon2idKeyDerivationSettings.builder()
+                .salt(dummySalt)
+                .parameters(defaultParameters)
+                .build();
     }
 
     private CipherDto createDummyCipher(CipherDecryptionMethod method, String... seeds){
@@ -151,7 +121,7 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
                 .transports("hybrid,internal".split(","))
                 .wrappedUserKey(dummyWebAuthnCipher)
                 .build();
-        var settings = dummySettings;
+        var parameters = dummySettings;
         if (userOpt.isPresent()){
             var user = userOpt.get();
             switch (method){
@@ -159,7 +129,7 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
                     var detailsOpt = userRepository.getPasswordBasedKdfDetails(user.getId());
                     if (detailsOpt.isPresent()){
                         var details = detailsOpt.get();
-                        settings = new KdfSettings(keyDerivationFunction, details.getSalt(), details.getParameters());
+                        parameters = Argon2idKeyDerivationSettings.fromDetails(details);
                         passwordWrappedKey = CipherDto.builder()
                                 .decryptionMethod(CipherDecryptionMethod.USER_PASSWORD)
                                 .iv(details.getIv() != null ? Base64.getEncoder().encodeToString(details.getIv()) : null)
@@ -172,7 +142,7 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
                     if (detailsOpt.isPresent()){
                         var details = detailsOpt.get();
                         if (details.getSalt() != null && details.getParameters() != null){
-                            settings = new KdfSettings(keyDerivationFunction, details.getSalt(), details.getParameters());
+                            parameters = Argon2idKeyDerivationSettings.fromDetails(details);
                         }
                         var webAuthnCipher = CipherDto.builder()
                                 .decryptionMethod(CipherDecryptionMethod.WEBAUTHN_KEY)
@@ -201,10 +171,10 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
             }
         }
 
-        var detailsBuilder = KdfDetailsDto.builder()
+        var detailsBuilder = Argon2idKdfDetailsDto.builder()
                 .algorithm(keyDerivationFunction.getIdentifier())
-                .parameters(settings.getParameters())
-                .salt(Base64.getEncoder().encodeToString(settings.getSalt()))
+                .parameters(parameters)
+                .salt(Base64.getEncoder().encodeToString(parameters.getSalt()))
                 .signatureVerificationWindow(UserService.SIGNATURE_VERIFICATION_WINDOW);
         switch (method){
             case PASSWORD -> detailsBuilder = detailsBuilder.wrappedUserKey(passwordWrappedKey);

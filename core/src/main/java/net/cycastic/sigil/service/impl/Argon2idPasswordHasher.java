@@ -1,10 +1,7 @@
 package net.cycastic.sigil.service.impl;
 
 import jakarta.transaction.NotSupportedException;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.SneakyThrows;
+import lombok.*;
 import net.cycastic.sigil.service.auth.KeyDerivationFunction;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
@@ -19,7 +16,8 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class Argon2idPasswordHasher extends KeyDerivationFunction {
     @Data
-    @Builder
+    @Builder(toBuilder = true)
+    @NoArgsConstructor
     @AllArgsConstructor
     public static class CipherConfigurations implements KeyDerivationFunction.Parameters {
         private int parallelism;
@@ -72,7 +70,7 @@ public class Argon2idPasswordHasher extends KeyDerivationFunction {
     }
 
     @Override
-    public Parameters getDefaultParameters() {
+    public CipherConfigurations getDefaultParameters() {
         return CipherConfigurations.getDefault();
     }
 
