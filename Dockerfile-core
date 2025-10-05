@@ -8,11 +8,13 @@ COPY pom.xml ./pom.xml
 COPY core/pom.xml ./core/pom.xml
 COPY infrastructure/pom.xml ./infrastructure/pom.xml
 COPY mail-service/pom.xml ./mail-service/pom.xml
-COPY notifier/pom.xml ./notifier/pom.xml
+COPY core/notifier.pom.xml ./notifier/pom.xml
 
 RUN mvn dependency:go-offline -B
 
 COPY . ./
+RUN rm -rf ./notifier
+COPY core/notifier.pom.xml ./notifier/pom.xml
 
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
