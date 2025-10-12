@@ -6,6 +6,7 @@ import net.cycastic.sigil.domain.dto.PartitionUserDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,7 +17,17 @@ public class QueryPartitionMemberCommandHandler implements Command.Handler<Query
 
     @Override
     public PageResponseDto<PartitionUserDto> handle(QueryPartitionMemberCommand command) {
-        var page = partitionUserRepository.queryByPartition(loggedUserAccessor.getPartitionId(), command.toPageable());
+        var contentTerm = command.getContentTerm();
+        Page<PartitionUserRepository.PartitionUserResult> page;
+        if (contentTerm != null){
+            contentTerm = contentTerm
+                    .replace("\\", "\\\\")
+                    .replace("_", "\\_")
+                    .replace("%", "\\%");
+            page = partitionUserRepository.queryByPartition(loggedUserAccessor.getPartitionId(), contentTerm, command.toPageable());
+        } else {
+            page = partitionUserRepository.queryByPartition(loggedUserAccessor.getPartitionId(), command.toPageable());
+        }
         return PageResponseDto.fromDomain(page, PartitionUserDto::fromDomain);
     }
 }

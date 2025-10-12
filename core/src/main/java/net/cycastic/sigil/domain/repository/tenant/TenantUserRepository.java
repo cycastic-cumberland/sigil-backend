@@ -53,7 +53,7 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
                     """)
     Page<TenantUserItem> findItemsByContentTerm(@Param("tenantId") int tenantId,
                                                 @Param("contentTerm") String contentTerm,
-                                                @Param("excludeUserId") int excludeUserId,
+                                                @Param("excludeUserId") Integer excludeUserId,
                                                 Pageable pageable);
 
     @Query(value = """

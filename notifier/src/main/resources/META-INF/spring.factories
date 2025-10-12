@@ -1,2 +1,2 @@
-org.springframework.boot.context.config.ConfigDataLocationResolver=net.cycastic.sigil.configuration.aws.sm.AWSSecretsManagerEngineConfigDataLocationResolver
-org.springframework.boot.context.config.ConfigDataLoader=net.cycastic.sigil.configuration.aws.sm.AWSSecretsManagerEngineConfigDataLoader
+org.springframework.boot.context.config.ConfigDataLocationResolver=net.cycastic.sigil.configuration.aws.sm.AWSSMEngineConfigDataLocationResolver,net.cycastic.sigil.configuration.aws.ssm.AWSSSMEngineConfigDataLocationResolver
+org.springframework.boot.context.config.ConfigDataLoader=net.cycastic.sigil.configuration.aws.sm.AWSSMEngineConfigDataLoader,net.cycastic.sigil.configuration.aws.ssm.AWSSSMEngineConfigDataLoader

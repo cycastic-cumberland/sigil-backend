@@ -16,15 +16,17 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 
-public class AWSSecretsManagerEngineConfigDataLoader implements ConfigDataLoader<@NonNull AWSSecretsManagerEngineConfigDataResource> {
+public class AWSSMEngineConfigDataLoader implements ConfigDataLoader<@NonNull AWSSMEngineConfigDataResource> {
     @Override
-    public ConfigData load(@NonNull ConfigDataLoaderContext context, AWSSecretsManagerEngineConfigDataResource resource)
+    public ConfigData load(@NonNull ConfigDataLoaderContext context, AWSSMEngineConfigDataResource resource)
             throws ConfigDataResourceNotFoundException {
         try {
             var props = loadPropertiesFromCustomSource(resource.getPath(), resource.getRegion());
             var propertySource = new MapPropertySource("aws-sm", props);
             return new ConfigData(List.of(propertySource));
 
+        } catch (RuntimeException ex){
+            throw ex;
         } catch (Exception ex) {
             throw new ConfigDataResourceNotFoundException(resource, ex);
         }

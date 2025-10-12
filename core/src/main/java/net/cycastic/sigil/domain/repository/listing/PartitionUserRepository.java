@@ -45,6 +45,27 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
            countQuery = "SELECT COUNT(1) FROM PartitionUser pu WHERE pu.partition.id = :partitionId")
     Page<PartitionUserResult> queryByPartition(@Param("partitionId") int partitionId, Pageable pageable);
 
+    @Query(value = """
+                   SELECT pu.user.firstName AS firstName,
+                   pu.user.lastName AS lastName,
+                   pu.user.email AS email,
+                   pu.permissions AS permissions
+                   FROM PartitionUser pu
+                   WHERE pu.partition.id = :partitionId AND
+                         (pu.user.normalizedEmail ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                             pu.user.firstName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                             pu.user.lastName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\')
+                   """,
+            countQuery = """
+                         SELECT COUNT(1) FROM PartitionUser pu WHERE pu.partition.id = :partitionId AND
+                                                  (pu.user.normalizedEmail ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                                                         pu.user.firstName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\' OR
+                                                         pu.user.lastName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\')
+                         """)
+    Page<PartitionUserResult> queryByPartition(@Param("partitionId") int partitionId,
+                                               @Param("contentTerm") String contentTerm,
+                                               Pageable pageable);
+
 
     @Query(value = """
                    SELECT pu.user.firstName AS firstName,
