@@ -1,6 +1,7 @@
 package net.cycastic.sigil.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -59,21 +60,44 @@ public class Cipher {
         cipherLong = cipher;
     }
 
-    public boolean copyFrom(Cipher other){
-        var updated = false;
-        if (!other.getDecryptionMethod().equals(getDecryptionMethod())){
-            updated = true;
-            setDecryptionMethod(other.getDecryptionMethod());
+    public boolean copyFrom(@NotNull Cipher other){
+        setDecryptionMethod(other.getDecryptionMethod());
+        setIv(other.getIv());
+        setCipher(other.getCipher());
+
+        return !equals(other);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this){
+            return true;
         }
-        if (!Arrays.equals(other.getIv(), getIv())){
-            updated = true;
-            setIv(other.getIv());
+        if (object == null){
+            return false;
         }
-        if (!Arrays.equals(other.getCipher(), getCipher())){
-            updated = true;
-            setCipher(other.getCipher());
+        if (object instanceof Cipher other){
+            if (!Objects.equals(getDecryptionMethod(), other.getDecryptionMethod())){
+                return false;
+            }
+            if (!Arrays.equals(getIv(), other.getIv())){
+                return false;
+            }
+            if (!Arrays.equals(getCipher(), other.getCipher())){
+                return false;
+            }
+            return true;
         }
 
-        return updated;
+        return false;
+    }
+
+    @Override
+    public int hashCode(){
+        if (getId() == null){
+            return super.hashCode();
+        }
+
+        return getId().hashCode();
     }
 }
