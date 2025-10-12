@@ -3,13 +3,33 @@ package net.cycastic.sigil.application.misc.transaction;
 import java.lang.annotation.*;
 
 /**
- * Retry the command on stale state (optimistic concurrency failure).
+ * Indicating a command is retryable.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface RetryOnStale {
+public @interface Retry {
+    /**
+     * Constants for retryable events.
+     */
+    enum Event {
+        /**
+         * Retry on stale object state.
+         */
+        STALE,
+
+        /**
+         * Retry on integrity violation.
+         */
+        INTEGRITY_VIOLATION
+    }
+
+    /**
+     * Events to retry upon;
+     */
+    Event[] value();
+
     /**
      * Max attempt count.
      */

@@ -7,21 +7,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Order(2)
 @Component
-public class RetryOnStaleMiddleware implements Command.Middleware {
-    private static final Logger logger = LoggerFactory.getLogger(RetryOnStaleMiddleware.class);
+public class RetryMiddleware implements Command.Middleware {
+    private static final Logger logger = LoggerFactory.getLogger(RetryMiddleware.class);
+
+    private static void matchException(Set<Retry.Event> onEvents, RuntimeException e){
+        var backoff = false;
+        if (onEvents.contains(Retry.Event.STALE) && e instanceof ObjectOptimisticLockingFailureException o){
+            if (o.getRootCause() instanceof StaleObjectStateException){
+                logger.debug("Backoff on StaleObjectStateException");
+                backoff = true;
+            }
+        }
+        if (onEvents.contains(Retry.Event.INTEGRITY_VIOLATION) && e instanceof DataIntegrityViolationException d){
+            if (d.getRootCause() instanceof SQLIntegrityConstraintViolationException){
+                logger.debug("Backoff on SQLIntegrityConstraintViolationException");
+                backoff = true;
+            }
+        }
+
+        if (!backoff){
+            throw e;
+        }
+    }
 
     @Override
     public <R, C extends Command<R>> R invoke(C command, Command.Middleware.Next<R> next) {
-        var retryAnn = AnnotatedElementUtils.findMergedAnnotation(command.getClass(), RetryOnStale.class);
+        var retryAnn = AnnotatedElementUtils.findMergedAnnotation(command.getClass(), Retry.class);
         if (retryAnn == null) {
             return next.invoke();
         }
 
+        var eventSet = Arrays.stream(retryAnn.value())
+                .collect(Collectors.toSet());
         var maxAttempts = Math.max(1, retryAnn.maxAttempts());
         var initialBackoffMs = Math.max(0, retryAnn.initialBackoff());
         var multiplier = retryAnn.multiplier() <= 0 ? 2.0 : retryAnn.multiplier();
@@ -35,11 +63,12 @@ public class RetryOnStaleMiddleware implements Command.Middleware {
             }
             try {
                 return next.invoke();
-            } catch (ObjectOptimisticLockingFailureException e){
+            } catch (RuntimeException e){
                 lastException = e;
-                if (!(e.getRootCause() instanceof StaleObjectStateException)){
+                if (eventSet.isEmpty()){
                     throw e;
                 }
+                matchException(eventSet, e);
             }
 
             sleep(jitter(backoff));

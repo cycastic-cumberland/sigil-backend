@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class SubscribersDiff {
+public final class SubscribersDiff {
     private static final Equivalence<User> USER_EQUIVALENCE = new Equivalence<>() {
         @Override
         protected boolean doEquivalent(User a, User b) {
@@ -28,6 +28,11 @@ public class SubscribersDiff {
     private final HashSet<Equivalence.Wrapper<User>> subscribed = new HashSet<>();
     private final TaskSubscriberRepository taskSubscriberRepository;
     private final Task task;
+
+    public SubscribersDiff(TaskSubscriberRepository taskSubscriberRepository, Task task, User user){
+        this(taskSubscriberRepository, task);
+        subscribe(user);
+    }
 
     public void subscribe(User user){
         var wrapped = USER_EQUIVALENCE.wrap(user);

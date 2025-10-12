@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.VersionedMetadataEntity;
 import net.cycastic.sigil.domain.model.tenant.User;
 
@@ -31,9 +32,7 @@ public class TaskComment extends VersionedMetadataEntity {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
-    @Column(nullable = false)
-    private byte[] encryptedContent;
-
-    @Column(columnDefinition = "BINARY(12)", nullable = false)
-    private byte[] iv;
+    @OneToOne
+    @JoinColumn(name = "encrypted_content_cipher_id")
+    private Cipher encryptedContent;
 }

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import net.cycastic.sigil.application.misc.annotation.Base64String;
-import net.cycastic.sigil.application.misc.transaction.RetryOnStale;
+import net.cycastic.sigil.application.misc.transaction.Retry;
 import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.application.partition.validation.PartitionChecksum;
 import net.cycastic.sigil.application.partition.validation.PartitionPermission;
@@ -15,7 +15,7 @@ import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.TaskPriority;
 
 @Data
-@RetryOnStale
+@Retry(value = Retry.Event.STALE)
 @TransactionalCommand
 @PartitionPermission(ApplicationConstants.PartitionPermissions.WRITE)
 public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
