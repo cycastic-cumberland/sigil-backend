@@ -61,10 +61,10 @@ public class SqsRemoteEmailSender implements DeferredEmailSender, AutoCloseable 
             var tempDirRoot = tempDirRootEnvelop.resolve(ApplicationConstants.REMOTE_SQS_DIRECTORY_ROOT);
             var assetsDirRoot = tempDirRoot.resolve("assets");
 
-            Files.createDirectories(tempDir);
-            Files.createDirectories(tempDirRootEnvelop);
-            Files.createDirectories(tempDirRoot);
-            Files.createDirectories(assetsDirRoot);
+            Files.createDirectory(tempDir);
+            Files.createDirectory(tempDirRootEnvelop);
+            Files.createDirectory(tempDirRoot);
+            Files.createDirectory(assetsDirRoot);
             Files.writeString(tempDirRoot.resolve("index.html"), htmlBody);
 
             var imageEntries = new ArrayList<EmailImageEntryDto>(imageStreamSource == null ? 0 : imageStreamSource.size());

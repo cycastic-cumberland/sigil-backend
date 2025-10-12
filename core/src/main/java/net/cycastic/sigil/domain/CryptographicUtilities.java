@@ -13,6 +13,7 @@ import jakarta.annotation.Nullable;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
+import java.io.InputStream;
 import java.security.*;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
@@ -111,7 +112,6 @@ public class CryptographicUtilities {
         }
     }
 
-    private static final SecureRandom RANDOM = new SecureRandom();
     private static final Map<String, Signer> SUPPORTED_SIGNING_ALGORITHMS = Map.of("SHA256withRSA/PSS", RSASSAPSSSigner.INSTANCE);
     public static final int NONCE_LENGTH = 12; // 96-bit
 
@@ -197,8 +197,9 @@ public class CryptographicUtilities {
         return SlimCryptographicUtilities.digestMd5(data);
     }
 
+    @Deprecated
     public static void generateRandom(byte[] data){
-        RANDOM.nextBytes(data);
+        SlimCryptographicUtilities.generateRandom(data);
     }
 
     public static boolean constantTimeEquals(byte[] a, byte[] b) {

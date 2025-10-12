@@ -8,8 +8,11 @@ import net.cycastic.sigil.service.auth.JwtIssuer;
 import net.cycastic.sigil.service.auth.JwtVerifier;
 import net.cycastic.sigil.service.impl.*;
 import net.cycastic.sigil.service.impl.auth.StandardJwtService;
+import net.cycastic.sigil.service.impl.encryption.AESGCMEncryptor;
+import net.cycastic.sigil.service.impl.encryption.ChaCha20Poly1305Encryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.util.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -179,5 +182,15 @@ public class EncryptionConfigurations {
     @Bean
     public synchronized SymmetricPresigner symmetricPresigner(){
         return symmetricPresigner.get();
+    }
+
+    @Bean
+    public ChaCha20Poly1305Encryptor chaCha20Poly1305Encryptor(TaskExecutor taskScheduler){
+        return new ChaCha20Poly1305Encryptor(taskScheduler);
+    }
+
+    @Bean
+    public AESGCMEncryptor aesgcmEncryptor(TaskExecutor taskScheduler){
+        return new AESGCMEncryptor(taskScheduler);
     }
 }

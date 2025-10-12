@@ -8,6 +8,7 @@ import net.cycastic.sigil.configuration.mail.MailSettings;
 import net.cycastic.sigil.service.email.EmailSender;
 import net.cycastic.sigil.service.impl.SQSNotifierService;
 import net.cycastic.sigil.service.impl.email.EmailSenderImpl;
+import net.cycastic.sigil.service.impl.encryption.ChaCha20Poly1305Encryptor;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
@@ -20,6 +21,11 @@ public class NotifierServiceConfiguration {
 	public static void main(String[] args) {
 		// empty unless using Custom runtime at which point it should include
 		// SpringApplication.run(NotifierServiceConfiguration.class, args);
+	}
+
+	@Bean
+	public ChaCha20Poly1305Encryptor chaCha20Poly1305Encryptor(){
+		return new ChaCha20Poly1305Encryptor(null);
 	}
 
 	@Bean

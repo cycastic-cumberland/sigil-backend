@@ -67,7 +67,7 @@ public class SQSNotifierService {
     @SneakyThrows
     private void processEmailNotification(S3ClientCache clientCache, EmailNotificationRequestDto request){
         var tempDir = FilesUtilities.getTempFile();
-        Files.createDirectories(tempDir);
+        Files.createDirectory(tempDir);
         try {
             String htmlBody;
             Map<String, EmailImage> images;

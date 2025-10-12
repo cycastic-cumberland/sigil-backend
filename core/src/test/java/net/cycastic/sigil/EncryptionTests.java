@@ -1,19 +1,39 @@
 package net.cycastic.sigil;
 
+import jakarta.annotation.Nullable;
+import lombok.SneakyThrows;
+import net.cycastic.sigil.domain.FilesUtilities;
+import net.cycastic.sigil.domain.SlimCryptographicUtilities;
 import net.cycastic.sigil.service.DecryptionProvider;
 import net.cycastic.sigil.service.EncryptionProvider;
+import net.cycastic.sigil.service.encryption.AEADDecryptionContext;
+import net.cycastic.sigil.service.encryption.AEADEncryptionContext;
+import net.cycastic.sigil.service.encryption.AEADEncryptor;
 import net.cycastic.sigil.service.impl.HashicorpVaultEncryptionProvider;
 import net.cycastic.sigil.service.impl.SymmetricEncryptionProvider;
+import net.cycastic.sigil.service.impl.encryption.AESGCMEncryptor;
+import net.cycastic.sigil.service.impl.encryption.ChaCha20Poly1305Encryptor;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class EncryptionTests {
+    @FunctionalInterface
+    private interface CreateEncryptor {
+        AEADEncryptor create(@Nullable Executor executor, long chunkSize);
+    }
     private final HashicorpVaultEncryptionProvider hashicorpVaultEncryptionProvider;
     private final SymmetricEncryptionProvider symmetricEncryptionProvider;
 
@@ -44,5 +64,71 @@ public class EncryptionTests {
     @Test
     public void testSymmetricEncryption(){
         testEncryptDecrypt(symmetricEncryptionProvider, symmetricEncryptionProvider);
+    }
+
+    @SneakyThrows
+    private static void testChaCha20Poly1305Internal(Executor executor, CreateEncryptor createEncryptor){
+        var root = FilesUtilities.getTempFile();
+        Files.createDirectory(root);
+        try {
+            var encryptor = createEncryptor.create(executor, 2048);
+            var key = encryptor.createKey();
+            var plainTextFile = root.resolve("file.bin");
+            try (var outputStream = Files.newOutputStream(plainTextFile, StandardOpenOption.CREATE_NEW)){
+                var chunk = new byte[4096];
+                for (var i = 0; i < 16; i++){
+                    SlimCryptographicUtilities.generateRandom(chunk);
+                    outputStream.write(chunk);
+                }
+
+                SlimCryptographicUtilities.generateRandom(chunk);
+                outputStream.write(chunk, 0, 269); // random prime number
+            }
+
+            var totalLength = 16 * 4096 + 269;
+            assertEquals(totalLength, Files.size(plainTextFile));
+            var chunkCount = totalLength / 2048 + 1;
+
+            var encryptedParts = root.resolve("encrypted");
+            Files.createDirectory(encryptedParts);
+
+            // Encryption
+            var encryptionContext = new AEADEncryptionContext(key, plainTextFile, encryptedParts);
+            encryptor.encrypt(encryptionContext);
+            assertEquals(chunkCount, encryptionContext.getChunks().size());
+            assertNotNull(encryptionContext.getChecksum());
+
+            // Decryption
+            var decrypted = root.resolve("decrypted.bin");
+            try (var decryptionContext = new AEADDecryptionContext(encryptionContext.getChunks(), encryptionContext.getChecksum(), key, decrypted)){
+                encryptor.decrypt(decryptionContext);
+            }
+        } finally {
+            FilesUtilities.deleteRecursively(root);
+        }
+    }
+
+    @RepeatedTest(10)
+    public void testChaCha20Poly1305VirtualThreads(){
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()){
+            testChaCha20Poly1305Internal(executor, ChaCha20Poly1305Encryptor::new);
+        }
+    }
+
+    @Test
+    public void testChaCha20Poly1305SingleThread(){
+        testChaCha20Poly1305Internal(null, ChaCha20Poly1305Encryptor::new);
+    }
+
+    @RepeatedTest(10)
+    public void testAESGCMVirtualThreads(){
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()){
+            testChaCha20Poly1305Internal(executor, AESGCMEncryptor::new);
+        }
+    }
+
+    @Test
+    public void testAESGCMSingleThread(){
+        testChaCha20Poly1305Internal(null, AESGCMEncryptor::new);
     }
 }
