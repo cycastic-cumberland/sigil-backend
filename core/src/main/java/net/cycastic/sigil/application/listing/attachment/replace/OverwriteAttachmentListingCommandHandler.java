@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.listing.attachment.replace;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.listing.delete.DeleteStorageObjectBackgroundJob;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.exception.RequestException;
@@ -9,8 +10,8 @@ import net.cycastic.sigil.domain.model.listing.PartitionType;
 import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.AttachmentListingRepository;
 import net.cycastic.sigil.domain.repository.listing.ListingRepository;
-import net.cycastic.sigil.service.DeferrableStorageProvider;
 import net.cycastic.sigil.service.LoggedUserAccessor;
+import net.cycastic.sigil.service.job.JobScheduler;
 import net.cycastic.sigil.service.storage.StorageProvider;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,7 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
     private final AttachmentListingRepository attachmentListingRepository;
     private final ListingRepository listingRepository;
     private final StorageProvider storageProvider;
-    private final DeferrableStorageProvider deferrableStorageProvider;
+    private final JobScheduler jobScheduler;
     private final PartitionService partitionService;
     private final TenantRepository tenantRepository;
     private final LoggedUserAccessor loggedUserAccessor;
@@ -52,7 +53,10 @@ public class OverwriteAttachmentListingCommandHandler implements Command.Handler
         sourceListing.setListingPath(destinationListing.getListingPath());
         var destSize = storageProvider.getBucket(destination.getBucketName()).getObjectSize(destination.getObjectKey());
         project.setAccumulatedAttachmentStorageUsage(project.getAccumulatedAttachmentStorageUsage() - destSize);
-        deferrableStorageProvider.getBucket(destination.getBucketName()).deleteFile(destination.getObjectKey());
+        jobScheduler.defer(DeleteStorageObjectBackgroundJob.builder()
+                .bucketName(destination.getBucketName())
+                .objectKey(destination.getObjectKey())
+                .build());
 
         tenantRepository.save(project);
         attachmentListingRepository.delete(destination);

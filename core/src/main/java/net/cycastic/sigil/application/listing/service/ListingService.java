@@ -3,6 +3,7 @@ package net.cycastic.sigil.application.listing.service;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.listing.delete.DeleteStorageObjectBackgroundJob;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.configuration.storage.S3Configurations;
 import net.cycastic.sigil.domain.ApplicationConstants;
@@ -13,9 +14,9 @@ import net.cycastic.sigil.domain.repository.tenant.TenantRepository;
 import net.cycastic.sigil.domain.repository.listing.*;
 import net.cycastic.sigil.domain.dto.listing.ListingDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
-import net.cycastic.sigil.service.DeferrableStorageProvider;
 import net.cycastic.sigil.service.LimitProvider;
 import net.cycastic.sigil.service.LoggedUserAccessor;
+import net.cycastic.sigil.service.job.JobScheduler;
 import net.cycastic.sigil.service.storage.StorageProvider;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ public class ListingService {
     private final TenantRepository tenantRepository;
     private final List<ListingResolver> resolvers;
     private final StorageProvider storageProvider;
-    private final DeferrableStorageProvider deferrableStorageProvider;
+    private final JobScheduler jobScheduler;
     private final LimitProvider limitProvider;
 
     private final PartitionService partitionService;
@@ -121,7 +122,10 @@ public class ListingService {
             var size = attachment.getContentLength();
             var project = listing.getPartition().getTenant();
             project.setAccumulatedAttachmentStorageUsage(project.getAccumulatedAttachmentStorageUsage() - size);
-            deferrableStorageProvider.getBucket(attachment.getBucketName()).deleteFile(attachment.getObjectKey());
+            jobScheduler.defer(DeleteStorageObjectBackgroundJob.builder()
+                            .bucketName(attachment.getBucketName())
+                            .objectKey(attachment.getObjectKey())
+                    .build());
             tenantRepository.save(project);
         }
 
