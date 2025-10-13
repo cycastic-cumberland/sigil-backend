@@ -3,10 +3,7 @@ package net.cycastic.sigil.service.impl.job;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.service.job.BackgroundJobDetails;
-import net.cycastic.sigil.service.job.BackgroundJobHandler;
-import net.cycastic.sigil.service.job.JobActivator;
-import net.cycastic.sigil.service.job.JobScheduler;
+import net.cycastic.sigil.service.job.*;
 import net.cycastic.sigil.service.serializer.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +22,7 @@ public class LocalJobActivator implements JobActivator, JobScheduler {
     private final JsonSerializer jsonSerializer;
     private final TaskExecutor taskExecutor;
 
-    private <T> Supplier<BackgroundJobHandler<T>> getHandlerTyped(Class<T> klass){
+    private <T extends BackgroundJob> Supplier<BackgroundJobHandler<T>> getHandlerTyped(Class<T> klass){
         for (var handler : validators){
             if (!handler.matches(klass)){
                 continue;
@@ -48,7 +45,7 @@ public class LocalJobActivator implements JobActivator, JobScheduler {
         var klass = Class.forName(job.getRequestClass());
         var handler = handlerMap.computeIfAbsent(klass, this::getHandler).get();
 
-        var deserializedData = jsonSerializer.deserialize(job.getData(), klass);
+        var deserializedData = (BackgroundJob) jsonSerializer.deserialize(job.getData(), klass);
 
         logger.debug("Processing job {}", klass.getName());
         handler.process(deserializedData);
@@ -62,13 +59,13 @@ public class LocalJobActivator implements JobActivator, JobScheduler {
      * @param <C> Data payload's class type parameter.
      */
     @Override
-    public <T extends C, C> void defer(T data, Class<C> klass) {
+    public <T extends C, C extends BackgroundJob> void defer(T data, Class<C> klass) {
         var handler = getHandlerTyped(klass).get();
         taskExecutor.execute(() -> handler.process(data));
     }
 
     @Override
-    public <T extends C, C> void deferInfallible(T data, Class<C> klass) {
+    public <T extends C, C extends BackgroundJob> void deferInfallible(T data, Class<C> klass) {
         try {
             defer(data, klass);
         } catch (Exception e){

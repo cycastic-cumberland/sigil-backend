@@ -1,6 +1,7 @@
 package net.cycastic.sigil.service.impl.job.sqs;
 
 import net.cycastic.sigil.configuration.job.SqsJobQueueConfigurations;
+import net.cycastic.sigil.service.job.BackgroundJob;
 import net.cycastic.sigil.service.job.BackgroundJobDetails;
 import net.cycastic.sigil.service.job.JobDetails;
 import net.cycastic.sigil.service.job.JobScheduler;
@@ -42,7 +43,7 @@ public class SqsJobScheduler implements JobScheduler, AutoCloseable {
     }
 
     @Override
-    public <T extends C, C> void defer(T data, Class<C> klass) {
+    public <T extends C, C extends BackgroundJob> void defer(T data, Class<C> klass) {
         queueItem(BackgroundJobDetails.builder()
                 .id(UUID.randomUUID())
                 .scheduledAt(OffsetDateTime.now())
@@ -52,7 +53,7 @@ public class SqsJobScheduler implements JobScheduler, AutoCloseable {
     }
 
     @Override
-    public <T extends C, C> void deferInfallible(T data, Class<C> klass) {
+    public <T extends C, C extends BackgroundJob> void deferInfallible(T data, Class<C> klass) {
         try {
             defer(data, klass);
         } catch (Exception e){
