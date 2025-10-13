@@ -1,10 +1,8 @@
 package net.cycastic.sigil.domain.dto.auth;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import net.cycastic.sigil.service.impl.Argon2idPasswordHasher;
 
 @Data
 @SuperBuilder
@@ -12,5 +10,5 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Argon2idKdfDetailsDto extends KdfDetailsDto{
-    private Argon2idKeyDerivationSettings parameters;
+    private Argon2idPasswordHasher.CipherConfigurations parameters;
 }

@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    public static long SIGNATURE_VERIFICATION_WINDOW = 10;
+    public static final long SIGNATURE_VERIFICATION_WINDOW = 10;
 
     private final LoggedUserAccessor loggedUserAccessor;
     private final WebAuthnCredentialRepository webAuthnCredentialRepository;

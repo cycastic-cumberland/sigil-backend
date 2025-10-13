@@ -66,4 +66,13 @@ public class LocalJobActivator implements JobActivator, JobScheduler {
         var handler = getHandlerTyped(klass).get();
         taskExecutor.execute(() -> handler.process(data));
     }
+
+    @Override
+    public <T extends C, C> void deferInfallible(T data, Class<C> klass) {
+        try {
+            defer(data, klass);
+        } catch (Exception e){
+            logger.error("Failed to dispatch job {}", klass.getName(), e);
+        }
+    }
 }

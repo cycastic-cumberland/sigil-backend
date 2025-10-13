@@ -52,6 +52,15 @@ public class SqsJobScheduler implements JobScheduler, AutoCloseable {
     }
 
     @Override
+    public <T extends C, C> void deferInfallible(T data, Class<C> klass) {
+        try {
+            defer(data, klass);
+        } catch (Exception e){
+            logger.error("Failed to dispatch job {}", klass.getName(), e);
+        }
+    }
+
+    @Override
     public void close() {
         sqsClient.close();
     }

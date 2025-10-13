@@ -173,7 +173,7 @@ public class GetKdfSettingsCommandHandler implements Command.Handler<GetKdfSetti
 
         var detailsBuilder = Argon2idKdfDetailsDto.builder()
                 .algorithm(keyDerivationFunction.getIdentifier())
-                .parameters(parameters)
+                .parameters(parameters.getParameters())
                 .salt(Base64.getEncoder().encodeToString(parameters.getSalt()))
                 .signatureVerificationWindow(UserService.SIGNATURE_VERIFICATION_WINDOW);
         switch (method){
