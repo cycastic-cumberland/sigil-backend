@@ -45,7 +45,7 @@ public class PageRequestDto {
         return selector.isDescending() ? sort.descending() : sort.ascending();
     }
 
-    protected @Nullable Sort getOrders(@NonNull String orderBy){
+    private @Nullable Sort getOrders(@NonNull String orderBy){
         return Arrays.stream(orderBy.split(","))
                 .map(String::trim)
                 .map(PageRequestDto::toSelector)

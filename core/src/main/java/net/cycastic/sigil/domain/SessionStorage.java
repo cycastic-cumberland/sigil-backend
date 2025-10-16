@@ -1,5 +1,6 @@
 package net.cycastic.sigil.domain;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.annotation.Scope;
@@ -9,10 +10,13 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class SessionStorage implements DisposableBean {
+    @Getter
+    private final UUID correlationId = UUID.randomUUID();
     private final Map<String,Object> data = new HashMap<>();
 
     public void put(String key, Object value) {

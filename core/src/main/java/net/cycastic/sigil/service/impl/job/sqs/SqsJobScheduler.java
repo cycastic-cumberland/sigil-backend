@@ -1,6 +1,7 @@
 package net.cycastic.sigil.service.impl.job.sqs;
 
 import net.cycastic.sigil.configuration.job.SqsJobQueueConfigurations;
+import net.cycastic.sigil.service.CorrelationIdProvider;
 import net.cycastic.sigil.service.job.BackgroundJob;
 import net.cycastic.sigil.service.job.BackgroundJobDetails;
 import net.cycastic.sigil.service.job.JobDetails;
@@ -21,11 +22,14 @@ public class SqsJobScheduler implements JobScheduler, AutoCloseable {
     private final JsonSerializer jsonSerializer;
     private final SqsClient sqsClient;
     private final String queueUrl;
+    private final CorrelationIdProvider correlationIdProvider;
 
     public SqsJobScheduler(JsonSerializer jsonSerializer,
-                            SqsJobQueueConfigurations sqsJobQueueConfigurations,
-                            AwsCredentialsProvider awsCredentialsProvider){
+                           SqsJobQueueConfigurations sqsJobQueueConfigurations,
+                           AwsCredentialsProvider awsCredentialsProvider,
+                           CorrelationIdProvider correlationIdProvider){
         this.jsonSerializer = jsonSerializer;
+        this.correlationIdProvider = correlationIdProvider;
         sqsClient = SqsClient.builder()
                 .region(Region.of(sqsJobQueueConfigurations.getRegionName()))
                 .credentialsProvider(awsCredentialsProvider)
@@ -46,6 +50,7 @@ public class SqsJobScheduler implements JobScheduler, AutoCloseable {
     public <T extends C, C extends BackgroundJob> void defer(T data, Class<C> klass) {
         queueItem(BackgroundJobDetails.builder()
                 .id(UUID.randomUUID())
+                .correlationId(correlationIdProvider.getCorrelationId())
                 .scheduledAt(OffsetDateTime.now())
                 .requestClass(klass.getName())
                 .data(jsonSerializer.serialize(data))

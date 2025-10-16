@@ -12,6 +12,8 @@ import net.cycastic.sigil.domain.repository.pm.TaskSubscriberRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTaskCommand, Void> {
@@ -77,6 +79,7 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
         }
         subscribersDiff.apply();
         task.setPriority(command.getTaskPriority());
+        task.setUpdatedAt(OffsetDateTime.now());
         taskRepository.save(task);
 
         return null;

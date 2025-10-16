@@ -2,6 +2,7 @@ package net.cycastic.sigil.domain.model.tenant;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.WebAuthnCredential;
 import net.cycastic.sigil.domain.model.notification.NotificationToken;
@@ -23,6 +24,10 @@ import jakarta.persistence.*;
         @Index(name = "users_normalized_email_uindex", columnList = "normalized_email", unique = true),
 })
 public class User implements UserDetails {
+    public static class Authorities {
+        public static final GrantedAuthority ADMIN = new SimpleGrantedAuthority(ApplicationConstants.Roles.ADMIN);
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

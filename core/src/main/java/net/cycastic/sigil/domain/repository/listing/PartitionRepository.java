@@ -1,6 +1,7 @@
 package net.cycastic.sigil.domain.repository.listing;
 
 import net.cycastic.sigil.domain.model.listing.Partition;
+import net.cycastic.sigil.domain.model.pm.Task;
 import net.cycastic.sigil.domain.model.tenant.Tenant;
 import net.cycastic.sigil.domain.model.tenant.User;
 import net.cycastic.sigil.domain.model.listing.AttachmentListing;
@@ -33,6 +34,9 @@ public interface PartitionRepository extends JpaRepository<Partition, Integer> {
 
     @Query("SELECT al.listing.partition FROM AttachmentListing al WHERE al = :attachmentListing")
     Partition findByAttachmentListing(@Param("attachmentListing")AttachmentListing attachmentListing);
+
+    @Query("SELECT t.kanbanBoard.projectPartition.partition FROM Task t WHERE t = :task")
+    Partition findByTask(@Param("task") Task task);
 
     @Query(value = """
                    SELECT DISTINCT

@@ -15,6 +15,8 @@ import java.util.UUID;
 public class BackgroundJobDetails implements JobDetails {
     private UUID id;
 
+    private UUID correlationId;
+
     private OffsetDateTime scheduledAt;
 
     private String requestClass;

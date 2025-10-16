@@ -1,5 +1,7 @@
 package net.cycastic.sigil.configuration.job;
 
+import net.cycastic.sigil.service.CorrelationIdProvider;
+import net.cycastic.sigil.service.impl.CorrelationIdProviderImpl;
 import net.cycastic.sigil.service.impl.job.LocalJobActivator;
 import net.cycastic.sigil.service.impl.job.sqs.SqsJobScheduler;
 import net.cycastic.sigil.service.job.BackgroundJobHandler;
@@ -23,14 +25,18 @@ public class SchedulingConfigurations {
     @Bean
     public static SqsJobScheduler sqsJobScheduler(JsonSerializer jsonSerializer,
                                                   SqsJobQueueConfigurations sqsJobQueueConfigurations,
-                                                  AwsCredentialsProvider awsCredentialsProvider) {
-        return new SqsJobScheduler(jsonSerializer, sqsJobQueueConfigurations, awsCredentialsProvider);
+                                                  AwsCredentialsProvider awsCredentialsProvider,
+                                                  CorrelationIdProvider correlationIdProvider) {
+        return new SqsJobScheduler(jsonSerializer, sqsJobQueueConfigurations, awsCredentialsProvider, correlationIdProvider);
     }
 
     @Lazy
     @Bean
-    public static LocalJobActivator localJobActivator(ObjectProvider<BackgroundJobHandler> validators, JsonSerializer jsonSerializer, TaskExecutor taskScheduler){
-        return new LocalJobActivator(validators, jsonSerializer, taskScheduler);
+    public static LocalJobActivator localJobActivator(ObjectProvider<BackgroundJobHandler> validators,
+                                                      JsonSerializer jsonSerializer,
+                                                      TaskExecutor taskScheduler,
+                                                      CorrelationIdProviderImpl correlationIdProvider){
+        return new LocalJobActivator(validators, correlationIdProvider, jsonSerializer, taskScheduler);
     }
 
     @Bean
