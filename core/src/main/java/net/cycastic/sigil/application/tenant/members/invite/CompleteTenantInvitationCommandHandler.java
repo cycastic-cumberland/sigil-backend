@@ -2,20 +2,14 @@ package net.cycastic.sigil.application.tenant.members.invite;
 
 
 import an.awesome.pipelinr.Command;
-import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.user.UserService;
 import net.cycastic.sigil.application.validation.JakartaValidationHelper;
-import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.tenant.UserStatus;
 import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -40,6 +34,7 @@ public class CompleteTenantInvitationCommandHandler implements Command.Handler<C
 
         tenantUser.setLastInvited(null);
         tenantUserRepository.save(tenantUser);
+        userService.invalidateAllUserAuthCache(user);
         return null;
     }
 }

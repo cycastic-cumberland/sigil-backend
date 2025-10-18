@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.user.webauthn.enroll;
+package net.cycastic.sigil.application.user.password.enroll;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;
@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class EnrollWebAuthnEnvelopCommandHandler implements Command.Handler<EnrollWebAuthnEnvelopCommand, Void> {
+public class EnrollPasswordEnvelopCommandHandler implements Command.Handler<EnrollPasswordEnvelopCommand, Void> {
     private final UserService userService;
 
     @Override
-    public Void handle(EnrollWebAuthnEnvelopCommand command) {
+    public Void handle(EnrollPasswordEnvelopCommand command) {
         var user = userService.getUser();
-        userService.enrollWebAuthnNoTransaction(user, command);
-        userService.invalidateUserKdfCache(user, AuthenticationMethod.WEBAUTHN);
+        userService.enrollPasswordNoTransaction(user, command);
+        userService.invalidateUserKdfCache(user, AuthenticationMethod.PASSWORD);
         userService.invalidateUserEnvelop(user);
         return null;
     }

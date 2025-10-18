@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.user.validation;
+package net.cycastic.sigil.application.user.validation.admin;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

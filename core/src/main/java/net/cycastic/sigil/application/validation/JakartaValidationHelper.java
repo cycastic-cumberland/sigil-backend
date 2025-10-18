@@ -8,7 +8,9 @@ import net.cycastic.sigil.domain.exception.ValidationException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.method.MethodValidationResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +25,15 @@ public class JakartaValidationHelper {
         }
 
         return new ValidationError("*", messageSourceResolvable.getDefaultMessage());
+    }
+
+    private static ValidationError toValidationError(String formattedMessage){
+        var index = formattedMessage.indexOf(':');
+        if (index < 0 || index == formattedMessage.length() - 1){
+            return new ValidationError("*", formattedMessage);
+        }
+
+        return new ValidationError(formattedMessage.substring(0, index), formattedMessage.substring(index + 1).trim());
     }
 
     private static <T> Map<String, List<String>> groupViolationsByProperty(
@@ -55,6 +66,20 @@ public class JakartaValidationHelper {
     public static Map<String, List<String>> toValidationMap(@NotNull MethodValidationResult result) {
         return result.getParameterValidationResults().stream()
                 .flatMap(r -> r.getResolvableErrors().stream())
+                .map(JakartaValidationHelper::toValidationError)
+                .collect(Collectors.groupingBy(
+                        ValidationError::field,
+                        Collectors.mapping(
+                                ValidationError::message,
+                                Collectors.toList()
+                        )
+                ));
+    }
+
+    public static Map<String, List<String>> toValidationMap(@NotNull MethodArgumentNotValidException ex){
+        return Arrays.stream(ex.getDetailMessageArguments())
+                .map(Object::toString)
+                .filter(s -> !s.isBlank())
                 .map(JakartaValidationHelper::toValidationError)
                 .collect(Collectors.groupingBy(
                         ValidationError::field,

@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.user.validation;
+package net.cycastic.sigil.application.user.validation.admin;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;

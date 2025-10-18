@@ -9,7 +9,7 @@ import net.cycastic.sigil.domain.model.tenant.User;
 
 @Data
 @Entity
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "webauthn_credentials")

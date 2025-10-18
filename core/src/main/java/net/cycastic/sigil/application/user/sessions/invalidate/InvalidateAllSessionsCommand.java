@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.user.invalidatesessions;
+package net.cycastic.sigil.application.user.sessions.invalidate;
 
 import an.awesome.pipelinr.Command;
 import lombok.AllArgsConstructor;

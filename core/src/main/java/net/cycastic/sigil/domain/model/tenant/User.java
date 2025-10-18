@@ -108,8 +108,4 @@ public class User implements UserDetails {
     public String getUsername() {
         return email;
     }
-
-    public OptionalInt getWebAuthnCredentialId() {
-        return webAuthnCredential != null ? OptionalInt.of(webAuthnCredential.getId()) : OptionalInt.empty();
-    }
 }

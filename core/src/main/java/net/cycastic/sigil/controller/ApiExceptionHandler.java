@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.security.SignatureException;
 import java.sql.DataTruncation;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.OffsetDateTime;
@@ -109,7 +110,8 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        return handleGeneric(RequestException.withExceptionCode("C400T010", ex), request);
+        var map = JakartaValidationHelper.toValidationMap(ex);
+        return handleGeneric(new ValidationException(ex, map), request);
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
@@ -120,6 +122,11 @@ public class ApiExceptionHandler {
         }
 
         return handleOtherExceptions(ex, request);
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    public ResponseEntity<ExceptionResponse> handleSignatureException(SignatureException ex, HttpServletRequest request){
+        return handleGeneric(RequestException.withExceptionCode("C403T002", ex), request);
     }
 
     @ExceptionHandler(Exception.class)

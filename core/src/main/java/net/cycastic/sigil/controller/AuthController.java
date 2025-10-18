@@ -8,8 +8,9 @@ import net.cycastic.sigil.application.user.ephemeral.GetEphemeralPublicKeyComman
 import net.cycastic.sigil.application.user.get.GetEnvelopCommand;
 import net.cycastic.sigil.application.user.get.GetKdfSettingsCommand;
 import net.cycastic.sigil.application.user.get.GetUserCommand;
-import net.cycastic.sigil.application.user.invalidatesessions.InvalidateAllSessionsCommand;
+import net.cycastic.sigil.application.user.sessions.invalidate.InvalidateAllSessionsCommand;
 import net.cycastic.sigil.application.user.keyring.QueryKeyringCommand;
+import net.cycastic.sigil.application.user.password.enroll.EnrollPasswordEnvelopCommand;
 import net.cycastic.sigil.application.user.refresh.RefreshTokenCommand;
 import net.cycastic.sigil.application.user.register.CompleteUserRegistrationCommand;
 import net.cycastic.sigil.application.user.register.ProbeRegistrationInvitationCommand;
@@ -24,7 +25,6 @@ import net.cycastic.sigil.domain.dto.auth.*;
 import net.cycastic.sigil.domain.dto.auth.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.dto.keyring.KeyringDto;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,14 +75,18 @@ public class AuthController {
     }
 
     @GetMapping("self")
-    @CachePut(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
-            key = "'self'+ '?email=' + #result.email")
     public UserDto getSelf(){
         return pipelinr.send(GetSelfCommand.INSTANCE);
     }
 
     @PostMapping("webauthn/enroll")
     public void enrollWebAuthnKey(@Valid @RequestBody EnrollWebAuthnEnvelopCommand command){
+        pipelinr.send(command);
+    }
+
+
+    @PostMapping("password/enroll")
+    public void enrollPassword(@Valid @RequestBody EnrollPasswordEnvelopCommand command){
         pipelinr.send(command);
     }
 
@@ -94,9 +98,10 @@ public class AuthController {
     }
 
     @GetMapping("envelop")
-    @Deprecated
-    public EnvelopDto getEnvelop(){
-        return pipelinr.send(GetEnvelopCommand.INSTANCE);
+    @Cacheable(value = CacheConfigurations.Presets.LONG_LIVE_CACHE, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
+            key = "'AuthController::getEnvelop'+ '?command=' + #command")
+    public EnvelopDto getEnvelop(@Valid GetEnvelopCommand command){
+        return pipelinr.send(command);
     }
 
     @GetMapping("keyring")
@@ -106,8 +111,6 @@ public class AuthController {
 
     @GetMapping
     @RequireTenantId
-    @Cacheable(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
-            key = "'self'+ '?command=' + #command")
     public UserDto getUser(@Valid GetUserCommand command){
         return pipelinr.send(command);
     }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.dto.auth.EnvelopDto;
 import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
+import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
 import net.cycastic.sigil.domain.repository.tenant.UserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
@@ -20,7 +21,12 @@ public class GetEnvelopCommandHandler implements Command.Handler<GetEnvelopComma
 
     @Override
     public EnvelopDto handle(GetEnvelopCommand command) {
-        var password = userRepository.getPasswordBasedKdfDetails(loggedUserAccessor.getUserId())
+        var user = userRepository.getByEmail(command.getUserEmail())
+                .orElseThrow(RequestException::forbidden);
+        if (!loggedUserAccessor.isAdmin() && loggedUserAccessor.getUserId() != user.getId()){
+            throw RequestException.forbidden();
+        }
+        var password = userRepository.getPasswordBasedKdfDetails(user.getId())
                 .stream()
                 .map(details -> CipherDto.builder()
                         .decryptionMethod(CipherDecryptionMethod.USER_PASSWORD)
@@ -29,7 +35,7 @@ public class GetEnvelopCommandHandler implements Command.Handler<GetEnvelopComma
                         .build())
                 .findFirst()
                 .orElse(null);
-        var webAuthn = userRepository.getWebAuthnBasedKdfDetails(loggedUserAccessor.getUserId())
+        var webAuthn = userRepository.getWebAuthnBasedKdfDetails(user.getId())
                 .stream()
                 .map(details -> {
                     var webAuthnCipher = CipherDto.builder()

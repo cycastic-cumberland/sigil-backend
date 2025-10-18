@@ -17,6 +17,8 @@ import java.util.*;
 
 @Getter
 public class RequestException extends RuntimeException {
+    private static final Object[] EMPTY = new Object[0];
+
     @Data
     private static class ExceptionData {
         private String exceptionCode;
@@ -116,6 +118,10 @@ public class RequestException extends RuntimeException {
                 data.exceptionCode,
                 throwable,
                 args.length == 0 ? template : String.format(template, args));
+    }
+
+    public static RequestException withExceptionCode(String exceptionCode, Throwable throwable){
+        return withExceptionCode(exceptionCode, throwable, EMPTY);
     }
 
     public static RequestException withExceptionCode(String exceptionCode, Object... args){

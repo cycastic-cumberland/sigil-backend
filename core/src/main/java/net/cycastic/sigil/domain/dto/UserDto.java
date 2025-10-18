@@ -23,6 +23,7 @@ public class UserDto {
     private String[] roles;
     private String publicRsaKey;
     private int tenantOwnerCount;
+    private boolean hasPasswordCredential;
     private boolean hasWebAuthnCredential;
     private UUID notificationToken;
     private OffsetDateTime joinedAt;
@@ -36,7 +37,8 @@ public class UserDto {
                 .lastName(user.getLastName())
                 .roles(user.getRoles().split(","))
                 .publicRsaKey(user.getPublicRsaKey() == null ? null : Base64.getEncoder().encodeToString(user.getPublicRsaKey()))
-                .hasWebAuthnCredential(user.getWebAuthnCredentialId().isPresent())
+                .hasPasswordCredential(user.getWrappedUserKey() != null)
+                .hasWebAuthnCredential(user.getWebAuthnCredential() != null)
                 .notificationToken(user.getNotificationToken().getToken())
                 .joinedAt(user.getJoinedAt())
                 .updatedAt(user.getUpdatedAt())

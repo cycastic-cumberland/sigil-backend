@@ -61,11 +61,12 @@ public class Cipher {
     }
 
     public boolean copyFrom(@NotNull Cipher other){
+        var isUpdated = !equals(other);
         setDecryptionMethod(other.getDecryptionMethod());
         setIv(other.getIv());
         setCipher(other.getCipher());
 
-        return !equals(other);
+        return isUpdated;
     }
 
     @Override

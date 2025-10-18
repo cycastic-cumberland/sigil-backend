@@ -4,7 +4,7 @@ import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import net.cycastic.sigil.application.user.validation.RequireAdmin;
+import net.cycastic.sigil.application.user.validation.admin.RequireAdmin;
 
 import java.util.Map;
 

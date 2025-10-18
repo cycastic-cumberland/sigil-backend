@@ -4,17 +4,19 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import net.cycastic.sigil.application.cache.EvictCacheBackgroundJob;
+import net.cycastic.sigil.application.user.get.GetEnvelopCommand;
+import net.cycastic.sigil.application.user.get.GetKdfSettingsCommand;
 import net.cycastic.sigil.configuration.RegistrationConfigurations;
 import net.cycastic.sigil.configuration.auth.KdfConfiguration;
+import net.cycastic.sigil.configuration.cache.CacheConfigurations;
 import net.cycastic.sigil.domain.ApplicationAssets;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
+import net.cycastic.sigil.domain.dto.auth.*;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
-import net.cycastic.sigil.domain.dto.auth.CompleteUserRegistrationForm;
-import net.cycastic.sigil.domain.dto.auth.CredentialDto;
 import net.cycastic.sigil.domain.dto.UserDto;
-import net.cycastic.sigil.domain.dto.auth.WebAuthnCredentialDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.*;
 import net.cycastic.sigil.domain.model.notification.NotificationToken;
@@ -57,6 +59,15 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     public static final long SIGNATURE_VERIFICATION_WINDOW = 10;
+    private static final AuthenticationMethod[] AUTHENTICATION_METHODS;
+
+    static {
+        var authMethods = AuthenticationMethod.values();
+        var methods = new AuthenticationMethod[authMethods.length + 1];
+        methods[0] = null;
+        System.arraycopy(authMethods, 0, methods, 1, authMethods.length);
+        AUTHENTICATION_METHODS = methods;
+    }
 
     private final LoggedUserAccessor loggedUserAccessor;
     private final WebAuthnCredentialRepository webAuthnCredentialRepository;
@@ -344,8 +355,23 @@ public class UserService {
         if (webAuthnCredential.getWrappedUserKey().getDecryptionMethod() != CipherDecryptionMethod.WEBAUTHN_KEY){
             throw RequestException.withExceptionCode("C400T012");
         }
-        if (webAuthnCredentialRepository.existsByUser(user)){
-            throw RequestException.withExceptionCode("C409T000");
+
+        WebAuthnCredential.WebAuthnCredentialBuilder builder;
+        var cipher = new Cipher(CipherDecryptionMethod.WEBAUTHN_KEY,
+                Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getIv()),
+                Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getCipher()));
+        var existingCred = user.getWebAuthnCredential();
+        if (existingCred != null){
+            builder = existingCred.toBuilder();
+            var existingCipher = existingCred.getWrappedUserKey();
+            if (existingCipher.copyFrom(cipher)){
+                cipherRepository.save(existingCipher);
+            }
+        } else {
+            builder = WebAuthnCredential.builder()
+                    .user(user)
+                    .wrappedUserKey(cipher);
+            cipherRepository.save(cipher);
         }
         var transports = Arrays.stream(webAuthnCredential.getTransports())
                 .map(String::trim)
@@ -356,24 +382,38 @@ public class UserService {
             throw new RequestException(400, "Invalid transport");
         }
 
-        var cipher = new Cipher(CipherDecryptionMethod.WEBAUTHN_KEY,
-                Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getIv()),
-                Base64.getDecoder().decode(webAuthnCredential.getWrappedUserKey().getCipher()));
-        cipherRepository.save(cipher);
-
-        var existingCred = user.getWebAuthnCredential();
-        if (existingCred != null){
-            webAuthnCredentialRepository.delete(existingCred);
-            user.setWebAuthnCredential(null);
-        }
-        var cred = WebAuthnCredential.builder()
-                .user(user)
-                .credentialId(Base64.getDecoder().decode(webAuthnCredential.getCredentialId()))
+        var cred = builder.credentialId(Base64.getDecoder().decode(webAuthnCredential.getCredentialId()))
                 .salt(Base64.getDecoder().decode(webAuthnCredential.getSalt()))
                 .transports(String.join(",", transports))
-                .wrappedUserKey(cipher)
                 .build();
         webAuthnCredentialRepository.save(cred);
+    }
+
+    public void enrollPasswordNoTransaction(User user, CompletePasswordBasedCipher passwordCredential){
+        if (!CipherDecryptionMethod.USER_PASSWORD.equals(passwordCredential.getCipher().getDecryptionMethod())){
+            throw RequestException.withExceptionCode("C400T012");
+        }
+        var settings = keyDerivationFunction.decodeSettings(passwordCredential.getKeyDerivationSettings());
+        if (!settings.getParameters().isMinimallyViable()){
+            throw new RequestException(400, "Password cipher does not achieve minimum viability");
+        }
+
+        user.setKdfSalt(settings.getSalt());
+        user.setKdfSettings(settings.getParameters().encode());
+        var passwordCipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD,
+                Base64.getDecoder().decode(passwordCredential.getCipher().getIv()),
+                Base64.getDecoder().decode(passwordCredential.getCipher().getCipher()));
+        var existingCred = user.getWrappedUserKey();
+        if (existingCred != null){
+            if (existingCred.copyFrom(passwordCipher)){
+                cipherRepository.save(existingCred);
+            }
+        } else {
+            cipherRepository.save(passwordCipher);
+            user.setWrappedUserKey(passwordCipher);
+        }
+
+        userRepository.save(user);
     }
 
     public void completeRegistrationNoTransaction(User user, CompleteUserRegistrationForm form){
@@ -384,20 +424,7 @@ public class UserService {
             throw RequestException.withExceptionCode("C400T010");
         }
         if (form.getPasswordCredential() != null){
-            if (form.getPasswordCredential().getCipher().getDecryptionMethod() != CipherDecryptionMethod.USER_PASSWORD){
-                throw RequestException.withExceptionCode("C400T012");
-            }
-            var settings = keyDerivationFunction.decodeSettings(form.getPasswordCredential().getKeyDerivationSettings());
-            if (!settings.getParameters().isMinimallyViable()){
-                throw new RequestException(400, "Password cipher does not achieve minimum viability");
-            }
-            user.setKdfSalt(settings.getSalt());
-            user.setKdfSettings(settings.getParameters().encode());
-            var passwordCipher = new Cipher(CipherDecryptionMethod.USER_PASSWORD,
-                    Base64.getDecoder().decode(form.getPasswordCredential().getCipher().getIv()),
-                    Base64.getDecoder().decode(form.getPasswordCredential().getCipher().getCipher()));
-            cipherRepository.save(passwordCipher);
-            user.setWrappedUserKey(passwordCipher);
+            enrollPasswordNoTransaction(user, form.getPasswordCredential());
         } else {
             enrollWebAuthnNoTransaction(user, form.getWebAuthnCredential());
         }
@@ -406,6 +433,32 @@ public class UserService {
         user.setEmailVerified(true);
         user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
+    }
+
+    public void invalidateUserKdfCache(User user, AuthenticationMethod method){
+        jobScheduler.deferInfallible(EvictCacheBackgroundJob.builder()
+                .cacheName(CacheConfigurations.Presets.LONG_LIVE_CACHE)
+                .cacheKey(String.format("AuthController::getKdfSettings?command=%s", GetKdfSettingsCommand.builder()
+                        .userEmail(user.getNormalizedEmail())
+                        .method(method)
+                        .build()))
+                .build());
+    }
+
+    public void invalidateUserEnvelop(User user){
+        jobScheduler.deferInfallible(EvictCacheBackgroundJob.builder()
+                .cacheName(CacheConfigurations.Presets.LONG_LIVE_CACHE)
+                .cacheKey(String.format("AuthController::getEnvelop?command=%s", GetEnvelopCommand.builder()
+                        .userEmail(user.getNormalizedEmail())
+                        .build()))
+                .build());
+    }
+
+    public void invalidateAllUserAuthCache(User user){
+        invalidateUserEnvelop(user);
+        for (var method : AUTHENTICATION_METHODS){
+            invalidateUserKdfCache(user, method);
+        }
     }
 
     public User getUser(){
