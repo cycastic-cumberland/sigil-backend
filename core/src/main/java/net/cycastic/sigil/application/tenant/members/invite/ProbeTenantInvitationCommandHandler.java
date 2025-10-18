@@ -22,7 +22,7 @@ public class ProbeTenantInvitationCommandHandler implements Command.Handler<Prob
                 .orElseThrow(() -> RequestException.withExceptionCode( "C404T000"));
         return TenantInvitationProbeResultDto.builder()
                 .email(user.getEmail())
-                .isActive(user.getStatus().equals(UserStatus.ACTIVE))
+                .isActive(UserStatus.ACTIVE.equals(user.getStatus()))
                 .build();
     }
 }

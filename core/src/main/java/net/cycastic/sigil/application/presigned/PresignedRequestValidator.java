@@ -6,6 +6,8 @@ import net.cycastic.sigil.application.validation.CommandValidator;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.impl.UriPresigner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -16,6 +18,7 @@ import java.time.ZoneOffset;
 @Component
 @RequiredArgsConstructor
 public class PresignedRequestValidator implements CommandValidator {
+    private static final Logger logger = LoggerFactory.getLogger(PresignedRequestValidator.class);
     private final UriPresigner uriPresigner;
     private final LoggedUserAccessor loggedUserAccessor;
 
@@ -30,6 +33,7 @@ public class PresignedRequestValidator implements CommandValidator {
 
         var url = loggedUserAccessor.getRequestPath();
         if (!uriPresigner.verifyUri(URI.create(url))){
+            logger.error("Request signature validation failed for URL {}", url);
             throw RequestException.withExceptionCode("C403T002");
         }
 
@@ -37,11 +41,11 @@ public class PresignedRequestValidator implements CommandValidator {
         var nvb = OffsetDateTime.ofInstant(Instant.ofEpochSecond(request.getNotValidBefore()), ZoneOffset.UTC);
         var nva = OffsetDateTime.ofInstant(Instant.ofEpochSecond(request.getNotValidAfter()), ZoneOffset.UTC);
         if (now.isBefore(nvb)){
-            throw RequestException.forbidden();
+            throw RequestException.withExceptionCode("C403T004");
         }
 
         if (now.isAfter(nva)){
-            throw RequestException.forbidden();
+            throw RequestException.withExceptionCode("C403T004");
         }
     }
 }
