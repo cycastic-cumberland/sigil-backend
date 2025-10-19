@@ -10,7 +10,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -22,6 +22,7 @@ import picocli.CommandLine;
 
 @SpringBootApplication(exclude = FreeMarkerAutoConfiguration.class)
 @EnableAspectJAutoProxy
+@EnableFeignClients
 @RequiredArgsConstructor
 public class SigilApplication implements CommandLineRunner {
     private final CommandLine.IFactory picocliFactory;

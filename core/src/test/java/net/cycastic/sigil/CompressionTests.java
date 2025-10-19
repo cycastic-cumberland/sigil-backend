@@ -19,6 +19,7 @@ public class CompressionTests {
     private static void testCompressionFull(CompressUtility compressUtility){
         try {
             var tempDir = FilesUtilities.getTempFile();
+            Files.createDirectories(tempDir);
             createRandomFiles(tempDir);
             var originalChecksums = collectChecksums(tempDir);
             var outputStream = new ByteArrayOutputStream();
@@ -45,8 +46,8 @@ public class CompressionTests {
 
     private static void createRandomFiles(Path baseDir) throws IOException {
         var rnd = new Random(42);
-        Files.createDirectory(baseDir.resolve("sub1/sub2"));
-        Files.createDirectory(baseDir.resolve("emptydir"));
+        Files.createDirectories(baseDir.resolve("sub1/sub2"));
+        Files.createDirectories(baseDir.resolve("emptydir"));
         Files.write(baseDir.resolve("file1.txt"), "Hello, world!\n".getBytes());
         byte[] buf2 = new byte[1024];
         rnd.nextBytes(buf2);
