@@ -76,6 +76,17 @@
             <artifactId>aws-serverless-java-container-springboot3</artifactId>
             <version>2.1.4</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/ssm -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>ssm</artifactId>
+            <version>2.32.33</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sizovs</groupId>
+            <artifactId>pipelinr</artifactId>
+            <version>0.9</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

@@ -142,6 +142,14 @@ public class RequestException extends RuntimeException {
         return withExceptionCode(exceptionCode, null, args);
     }
 
+    public static RequestException unauthorized(Throwable t){
+        return withExceptionCode("C401T001", t);
+    }
+
+    public static RequestException unauthorized(){
+        return unauthorized(null);
+    }
+
     public static RequestException forbidden(){
         return withExceptionCode("C403T000");
     }

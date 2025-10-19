@@ -8,6 +8,8 @@ import lombok.*;
 import net.cycastic.sigil.service.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
+
 @Component
 public class JacksonJsonSerializer implements JsonSerializer {
     private final ObjectMapper mapper;
@@ -29,5 +31,11 @@ public class JacksonJsonSerializer implements JsonSerializer {
     @SneakyThrows
     public <T> T deserialize(String content, Class<T> klass) {
         return mapper.readValue(content, klass);
+    }
+
+    @Override
+    @SneakyThrows
+    public <T> T deserialize(InputStream inputStream, Class<T> klass) {
+        return mapper.readValue(inputStream, klass);
     }
 }

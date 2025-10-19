@@ -3,12 +3,14 @@ package net.cycastic.sigil.service.impl;
 import jakarta.validation.constraints.NotNull;
 import lombok.SneakyThrows;
 import net.cycastic.sigil.configuration.security.HashicorpVaultConfiguration;
-import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.CryptographicUtilities;
+import net.cycastic.sigil.domain.UrlUtilities;
 import net.cycastic.sigil.domain.dto.auth.PemDto;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.service.AsymmetricDecryptionProvider;
 import net.cycastic.sigil.service.AsymmetricEncryptionProvider;
+import net.cycastic.sigil.service.AsymmetricSignatureProvider;
+import net.cycastic.sigil.service.AsymmetricSignatureVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +21,12 @@ import java.util.Base64;
 import java.util.Map;
 
 
-public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends HashicorpVaultEncryptionProvider implements AsymmetricEncryptionProvider, AsymmetricDecryptionProvider {
+public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends HashicorpVaultEncryptionProvider
+        implements AsymmetricEncryptionProvider,
+        AsymmetricDecryptionProvider,
+        AsymmetricSignatureProvider,
+        AsymmetricSignatureVerifier {
+    private static final String ALGORITHM = "SHA256withRSA/PSS";
     private static final Logger logger = LoggerFactory.getLogger(HashicorpVaultEphemeralAsymmetricEncryptionProvider.class);
     private final int latestVersion;
     private final String publicKeyPem;
@@ -29,7 +36,7 @@ public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends Hashico
     public HashicorpVaultEphemeralAsymmetricEncryptionProvider(HashicorpVaultConfiguration configuration){
         super(buildConfig(configuration), configuration.getEphemeralKeyName());
 
-        var resp = vault.logical().read(String.format("transit/keys/%s", ApplicationUtilities.encodeURIComponent(keyName)));
+        var resp = vault.logical().read(String.format("transit/keys/%s", UrlUtilities.encodeURIComponent(keyName)));
         var allKeys = resp.getDataObject().get("keys").asObject();
         latestVersion = allKeys.names().stream()
                 .mapToInt(Integer::parseInt)
@@ -58,7 +65,7 @@ public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends Hashico
         Map<String, Object> decryptData = Map.of("ciphertext", encryptedData,
                 "padding_scheme", "oaep");
         var decResp = vault.logical()
-                .write(String.format("transit/decrypt/%s", ApplicationUtilities.encodeURIComponent(keyName)), decryptData);
+                .write(String.format("transit/decrypt/%s", UrlUtilities.encodeURIComponent(keyName)), decryptData);
         var b64Decoded = decResp.getData().get("plaintext");
         if (b64Decoded == null){
             logger.error("Failed to decrypt password. Rest response: {}",
@@ -70,5 +77,31 @@ public class HashicorpVaultEphemeralAsymmetricEncryptionProvider extends Hashico
 
     public PemDto getPublicKey(){
         return new PemDto(publicKeyPem, latestVersion);
+    }
+
+    @Override
+    @SneakyThrows
+    public byte[] sign(byte[] data){
+        Map<String, Object> signData = Map.of("hash_algorithm", "sha2-256",
+                "signature_algorithm", "pss",
+                "input", Base64.getEncoder().encodeToString(data));
+        var decResp = vault.logical()
+                .write(String.format("transit/sign/%s", UrlUtilities.encodeURIComponent(keyName)), signData);
+        var signatureParts = decResp.getData().get("signature").split(":");
+        if (signatureParts.length != 3){
+            throw new IllegalStateException("Malformed signature");
+        }
+
+        return Base64.getDecoder().decode(signatureParts[2]);
+    }
+
+    @Override
+    public String getAlgorithm() {
+        return ALGORITHM;
+    }
+
+    @Override
+    public boolean verify(byte[] data, byte[] signature) {
+        return CryptographicUtilities.verifySignature(data, signature, ALGORITHM, publicKey);
     }
 }

@@ -44,19 +44,12 @@ public class CryptographicUtilities {
 
     private static class RSASSAPSSSigner implements Signer<RSAPublicKey, RSAPrivateKey>{
         public static final RSASSAPSSSigner INSTANCE = new RSASSAPSSSigner();
-        private static final PSSParameterSpec STANDARD_PSS_SPEC = new PSSParameterSpec(
-                "SHA-256",
-                "MGF1",
-                MGF1ParameterSpec.SHA256,
-                32,
-                PSSParameterSpec.TRAILER_FIELD_BC
-        );
 
         @Override
         @SneakyThrows
         public byte[] sign(RSAPrivateKey key, byte[] data) {
             var signer = Signature.getInstance("SHA256withRSA/PSS", "BC");
-            signer.setParameter(STANDARD_PSS_SPEC);
+            signer.setParameter(SlimCryptographicUtilities.getStandardPssSpec());
 
             signer.initSign(key);
             signer.update(data);
@@ -68,7 +61,7 @@ public class CryptographicUtilities {
         @SneakyThrows
         public boolean verify(RSAPublicKey key, byte[] data, byte[] signature) {
             var verifier = Signature.getInstance("RSASSA-PSS", "BC");
-            verifier.setParameter(STANDARD_PSS_SPEC);
+            verifier.setParameter(SlimCryptographicUtilities.getStandardPssSpec());
             verifier.initVerify(key);
             verifier.update(data);
             return verifier.verify(signature);

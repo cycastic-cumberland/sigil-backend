@@ -1,2 +1,3 @@
 exceptionCode,statusCode,en,vi
 C401T000,401,Incorrect credential,
+C401T001,401,Unauthorized,

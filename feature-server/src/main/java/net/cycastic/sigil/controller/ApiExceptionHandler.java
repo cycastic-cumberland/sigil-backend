@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -37,6 +38,11 @@ public class ApiExceptionHandler {
 
         var error = errorBuilder.build();
         return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getResponseCode()));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleNoResourceFoundException(NoResourceFoundException ex, HttpServletRequest request) {
+        return handleGeneric(new RequestException(404, ex, "Handler not found"), request);
     }
 
     @ExceptionHandler(Exception.class)

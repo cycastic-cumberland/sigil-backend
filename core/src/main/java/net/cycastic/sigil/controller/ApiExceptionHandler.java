@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.validation.JakartaValidationHelper;
 import net.cycastic.sigil.configuration.application.ExceptionHandlerConfigurations;
+import net.cycastic.sigil.domain.exception.ApiRequestException;
 import net.cycastic.sigil.domain.exception.ExceptionResponse;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.exception.ValidationException;
@@ -129,8 +130,22 @@ public class ApiExceptionHandler {
         return handleGeneric(RequestException.withExceptionCode("C403T002", ex), request);
     }
 
+    private static ResponseEntity<ExceptionResponse> handleApiRequestException(ApiRequestException ex){
+        logger.error("API exception encountered", ex);
+        var error = ex.getResponse();
+        return new ResponseEntity<>(error.toBuilder()
+                .message("Error encountered while calling external services")
+                .stackTrace(null)
+                .validationMessages(null)
+                .build(),
+                HttpStatus.valueOf(error.getStatus()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleOtherExceptions(Exception ex, HttpServletRequest request) {
+        if (ex.getCause() instanceof ApiRequestException apiRequestException){
+            return handleApiRequestException(apiRequestException);
+        }
         return handleGeneric(new RequestException(500, ex, "Internal server error"), request);
     }
 }
