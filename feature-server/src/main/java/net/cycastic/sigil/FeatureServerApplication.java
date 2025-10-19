@@ -5,9 +5,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class FeatureServerApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(FeatureServerApplication.class, args);
+    static {
+        LambdaHandler.loadClass();
     }
 
+    public static void main(String[] args) {
+        if (System.getenv("AWS_EXECUTION_ENV") != null){
+            return;
+        }
+
+        SpringApplication.run(FeatureServerApplication.class, args);
+    }
 }
