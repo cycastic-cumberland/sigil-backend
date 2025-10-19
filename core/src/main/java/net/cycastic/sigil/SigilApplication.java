@@ -18,6 +18,8 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import picocli.CommandLine;
 
 @SpringBootApplication(exclude = FreeMarkerAutoConfiguration.class)
@@ -63,6 +65,16 @@ public class SigilApplication implements CommandLineRunner {
             authProvider.setPasswordEncoder(passwordEncoder);
             return authProvider;
         }
+    }
+
+    static {
+        RequestException.setLocaleProvider(() -> {
+            if (RequestContextHolder.currentRequestAttributes() instanceof ServletRequestAttributes attr){
+                return attr.getRequest().getLocale();
+            }
+
+            return null;
+        });
     }
 
     public static void main(String[] args) {

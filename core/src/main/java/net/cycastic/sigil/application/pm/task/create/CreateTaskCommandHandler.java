@@ -20,7 +20,6 @@ import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
-import java.util.Base64;
 import java.util.Objects;
 
 @Component

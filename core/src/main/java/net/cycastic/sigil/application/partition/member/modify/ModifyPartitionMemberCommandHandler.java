@@ -1,7 +1,6 @@
 package net.cycastic.sigil.application.partition.member.modify;
 
 import an.awesome.pipelinr.Command;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.partition.PartitionService;
 import net.cycastic.sigil.domain.ApplicationConstants;

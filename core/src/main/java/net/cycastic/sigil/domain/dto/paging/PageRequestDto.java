@@ -3,7 +3,6 @@ package net.cycastic.sigil.domain.dto.paging;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import net.cycastic.sigil.domain.exception.RequestException;
 import org.springframework.data.domain.PageRequest;

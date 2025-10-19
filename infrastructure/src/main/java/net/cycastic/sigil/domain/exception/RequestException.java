@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import jakarta.annotation.Nullable;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,6 +16,11 @@ import java.util.*;
 @Getter
 public class RequestException extends RuntimeException {
     private static final Object[] EMPTY = new Object[0];
+
+    @FunctionalInterface
+    public interface LocaleProvider {
+        @Nullable Locale getLocale();
+    }
 
     @Data
     private static class ExceptionData {
@@ -28,6 +31,8 @@ public class RequestException extends RuntimeException {
         private String vi;
     }
 
+    private static LocaleProvider LOCALE_PROVIDER;
+
     private static final Map<String, ExceptionData> EXCEPTION_MAP;
 
     private final int responseCode;
@@ -37,7 +42,13 @@ public class RequestException extends RuntimeException {
 
     static {
         EXCEPTION_MAP = loadExceptionData();
+        LOCALE_PROVIDER = () -> null;
     }
+
+    public static void setLocaleProvider(LocaleProvider localeProvider){
+        LOCALE_PROVIDER = Objects.requireNonNull(localeProvider);
+    }
+
     public RequestException(int responseCode, @Nullable String exceptionCode, Throwable exception, @NotNull String message){
         super(message, exception);
         this.responseCode = responseCode;
@@ -86,26 +97,19 @@ public class RequestException extends RuntimeException {
         return Map.copyOf(map);
     }
 
-    public static RequestException withExceptionCode(String exceptionCode, Throwable throwable, Object... args){
-        var data = EXCEPTION_MAP.get(exceptionCode);
-        if (data == null){
-            throw new IllegalArgumentException("Could not find exception with code: " + exceptionCode);
-        }
-
+    private static String getTemplate(ExceptionData data) {
         String template = null;
         try {
-            if (RequestContextHolder.currentRequestAttributes() instanceof ServletRequestAttributes attr) {
-                var locale = attr.getRequest().getLocale();
-                if (locale == null){
-                    locale = Locale.ENGLISH;
-                }
-
-                var language = locale.getLanguage();
-                template = switch (language){
-                    case "vi" -> data.vi;
-                    default -> data.en;
-                };
+            var locale = LOCALE_PROVIDER.getLocale();
+            if (locale == null){
+                locale = Locale.ENGLISH;
             }
+
+            var language = locale.getLanguage();
+            template = switch (language){
+                case "vi" -> data.vi;
+                default -> data.en;
+            };
         } catch (IllegalStateException ignored){
 
         } finally {
@@ -113,6 +117,16 @@ public class RequestException extends RuntimeException {
                 template = data.en;
             }
         }
+        return template;
+    }
+
+    public static RequestException withExceptionCode(String exceptionCode, Throwable throwable, Object... args){
+        var data = EXCEPTION_MAP.get(exceptionCode);
+        if (data == null){
+            throw new IllegalArgumentException("Could not find exception with code: " + exceptionCode);
+        }
+
+        var template = getTemplate(data);
 
         return new RequestException(data.statusCode,
                 data.exceptionCode,

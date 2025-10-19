@@ -1,7 +1,6 @@
 package net.cycastic.sigil.application.tenant.save;
 
 import an.awesome.pipelinr.Command;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.exception.RequestException;

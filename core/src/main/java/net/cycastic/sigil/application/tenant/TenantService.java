@@ -22,7 +22,6 @@ import net.cycastic.sigil.service.email.EmailTemplateEngine;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.UrlAccessor;
 import net.cycastic.sigil.service.email.EmailTemplates;
-import net.cycastic.sigil.service.impl.ApplicationEmailSender;
 import net.cycastic.sigil.service.impl.UriPresigner;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
