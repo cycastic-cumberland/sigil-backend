@@ -9,4 +9,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "application.m2m")
 public class Machine2MachineConfiguration {
     private String publicRsaKey;
+    private Boolean disableAuthentication;
 }

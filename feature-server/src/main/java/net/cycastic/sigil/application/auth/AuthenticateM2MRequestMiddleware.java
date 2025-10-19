@@ -25,12 +25,14 @@ import java.util.Objects;
 public class AuthenticateM2MRequestMiddleware implements Command.Middleware {
     private static final Logger logger = LoggerFactory.getLogger(AuthenticateM2MRequestMiddleware.class);
     private final PublicKey publicKey;
+    private final boolean disabled;
 
     @SneakyThrows
     public AuthenticateM2MRequestMiddleware(Machine2MachineConfiguration machine2MachineConfiguration){
         var keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(machine2MachineConfiguration.getPublicRsaKey()));
         var kf = KeyFactory.getInstance("RSA");
         publicKey = kf.generatePublic(keySpec);
+        disabled = Objects.requireNonNullElse(machine2MachineConfiguration.getDisableAuthentication(), false);
     }
 
     private static @NonNull ServletRequestAttributes getAttributes(){
@@ -43,6 +45,10 @@ public class AuthenticateM2MRequestMiddleware implements Command.Middleware {
     @Override
     @SneakyThrows
     public <R, C extends Command<R>> R invoke(C command, Next<R> next) {
+        if (disabled){
+            return next.invoke();
+        }
+
         var request = getAttributes().getRequest();
 
         var signatureHeader = request.getHeader(M2MConfigurations.SIGNATURE_HEADER);
