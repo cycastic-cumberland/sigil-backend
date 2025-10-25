@@ -57,7 +57,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers(new RequestMatcher[]{
                         new AntPathRequestMatcher("/api/auth/**"),
-                        new AntPathRequestMatcher("/api/features/**"),
+                        new AntPathRequestMatcher("/api/features/**"), // TODO: Remove
                         new AntPathRequestMatcher("/api/public/**"),
                         new AntPathRequestMatcher("/api/storage/**"),
                         new AntPathRequestMatcher("/.well-known/**"),
