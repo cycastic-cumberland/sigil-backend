@@ -20,7 +20,9 @@ public class NotifierServiceConfiguration {
 	 * in the POM to ensure boot plug-in makes the correct entry
 	 */
 	public static void main(String[] args) {
-		// empty unless using Custom runtime at which point it should include
+		if (System.getenv("AWS_LAMBDA_RUNTIME_API") != null){
+			return;
+		}
 		 SpringApplication.run(NotifierServiceConfiguration.class, args);
 	}
 

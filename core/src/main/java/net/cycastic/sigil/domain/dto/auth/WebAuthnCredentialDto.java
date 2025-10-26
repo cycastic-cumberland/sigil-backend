@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.cycastic.sigil.application.misc.annotation.Base64String;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.WebAuthnCredential;
 
@@ -17,9 +18,11 @@ import java.util.Base64;
 @AllArgsConstructor
 public class WebAuthnCredentialDto {
     @NotEmpty
+    @Base64String
     private String credentialId;
 
     @NotEmpty
+    @Base64String
     private String salt;
 
     @NotNull
@@ -33,6 +36,7 @@ public class WebAuthnCredentialDto {
                 .credentialId(Base64.getEncoder().encodeToString(credential.getCredentialId()))
                 .salt(Base64.getEncoder().encodeToString(credential.getSalt()))
                 .transports(credential.getTransports().split(","))
+                .wrappedUserKey(CipherDto.fromDomain(credential.getWrappedUserKey()))
                 .build();
     }
 }
