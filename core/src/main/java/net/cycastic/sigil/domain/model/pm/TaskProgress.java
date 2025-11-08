@@ -17,13 +17,16 @@ import lombok.experimental.SuperBuilder;
 public class TaskProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "from_status_id", nullable = false)
+    @JoinColumn(name = "from_status_id")
     private TaskStatus fromStatus;
 
     @ManyToOne
     @JoinColumn(name = "next_status_id", nullable = false)
     private TaskStatus nextStatus;
+
+    @Column(nullable = false)
+    private String progressionName;
 }

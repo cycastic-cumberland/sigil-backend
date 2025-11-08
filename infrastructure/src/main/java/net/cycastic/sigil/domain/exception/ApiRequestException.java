@@ -3,7 +3,7 @@ package net.cycastic.sigil.domain.exception;
 import lombok.Getter;
 
 @Getter
-public class ApiRequestException extends Exception{
+public class ApiRequestException extends RuntimeException{
     private final ExceptionResponse response;
 
     public ApiRequestException(ExceptionResponse response){

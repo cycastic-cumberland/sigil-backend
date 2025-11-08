@@ -66,6 +66,10 @@ public class ApplicationConstants {
         }
     }
 
+    public enum Entitlements {
+        PROJECT_PARTITION,
+    }
+
     public static final String TENANT_ID_HEADER = "X-Tenant-Id";
     public static final String PARTITION_ID_HEADER = "X-Partition-Id";
     public static final String ENCRYPTION_KEY_HEADER = "X-Encryption-Key";

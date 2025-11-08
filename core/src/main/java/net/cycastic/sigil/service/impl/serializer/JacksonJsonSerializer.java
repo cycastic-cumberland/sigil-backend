@@ -1,6 +1,7 @@
 package net.cycastic.sigil.service.impl.serializer;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -37,5 +38,11 @@ public class JacksonJsonSerializer implements JsonSerializer {
     @SneakyThrows
     public <T> T deserialize(InputStream inputStream, Class<T> klass) {
         return mapper.readValue(inputStream, klass);
+    }
+
+    @Override
+    @SneakyThrows
+    public <T> T deserialize(JsonNode jsonNode, Class<T> klass) {
+        return mapper.treeToValue(jsonNode, klass);
     }
 }

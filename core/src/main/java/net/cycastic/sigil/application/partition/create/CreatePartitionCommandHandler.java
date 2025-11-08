@@ -9,6 +9,8 @@ import net.cycastic.sigil.application.tenant.TenantService;
 import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.CryptographicUtilities;
 import net.cycastic.sigil.domain.dto.IdDto;
+import net.cycastic.sigil.domain.dto.entitlement.ProjectPartitionEntitlement;
+import net.cycastic.sigil.domain.exception.ApiRequestException;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.Cipher;
 import net.cycastic.sigil.domain.model.CipherDecryptionMethod;
@@ -20,6 +22,9 @@ import net.cycastic.sigil.domain.repository.CipherRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionRepository;
 import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
 import net.cycastic.sigil.domain.repository.pm.ProjectPartitionRepository;
+import net.cycastic.sigil.service.LoggedUserAccessor;
+import net.cycastic.sigil.service.feign.feature.EntitlementClient;
+import net.cycastic.sigil.service.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -38,6 +43,9 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
     private final ProjectPartitionRepository projectPartitionRepository;
     private final CipherRepository cipherRepository;
     private final UserService userService;
+    private final EntitlementClient entitlementClient;
+    private final LoggedUserAccessor loggedUserAccessor;
+    private final JsonSerializer jsonSerializer;
 
     @Override
     @SneakyThrows
@@ -57,6 +65,21 @@ public class CreatePartitionCommandHandler implements Command.Handler<CreatePart
         var tenant = tenantService.getTenant();
 
         var partitionType = Objects.requireNonNullElse(command.getPartitionType(), PartitionType.GENERIC);
+        if (partitionType.equals(PartitionType.PROJECT)){
+            try {
+                var entitlement = entitlementClient.getEntitlement(ApplicationConstants.Entitlements.PROJECT_PARTITION.name(), loggedUserAccessor.getTenantId());
+                var projectPartitionEntitlement = jsonSerializer.deserialize(entitlement.getData(), ProjectPartitionEntitlement.class);
+                if (!projectPartitionEntitlement.isCanCreate()){
+                    throw RequestException.withExceptionCode("C403T005");
+                }
+            } catch (ApiRequestException e){
+                if (e.getResponse().getStatus() == 404){
+                    throw RequestException.withExceptionCode("C403T005", e);
+                }
+
+                throw e;
+            }
+        }
         var partition = Partition.builder()
                 .tenant(tenant)
                 .partitionPath(command.getPartitionPath())

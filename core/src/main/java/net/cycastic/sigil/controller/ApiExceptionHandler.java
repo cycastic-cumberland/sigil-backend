@@ -130,7 +130,8 @@ public class ApiExceptionHandler {
         return handleGeneric(RequestException.withExceptionCode("C403T002", ex), request);
     }
 
-    private static ResponseEntity<ExceptionResponse> handleApiRequestException(ApiRequestException ex, HttpServletRequest request){
+    @ExceptionHandler(ApiRequestException.class)
+    public static ResponseEntity<ExceptionResponse> handleApiRequestException(ApiRequestException ex, HttpServletRequest request){
         logger.error("API exception encountered", ex);
         var error = ex.getResponse();
         return new ResponseEntity<>(error.toBuilder()
@@ -144,9 +145,6 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleOtherExceptions(Exception ex, HttpServletRequest request) {
-        if (ex.getCause() instanceof ApiRequestException apiRequestException){
-            return handleApiRequestException(apiRequestException, request);
-        }
         return handleGeneric(new RequestException(500, ex, "Internal server error"), request);
     }
 }
