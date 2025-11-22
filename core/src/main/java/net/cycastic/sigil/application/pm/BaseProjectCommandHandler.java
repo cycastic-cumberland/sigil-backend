@@ -14,7 +14,6 @@ public abstract class BaseProjectCommandHandler<C extends Command<R>, R> impleme
     @Autowired
     private LoggedUserAccessor loggedUserAccessor;
 
-
     protected abstract R handleInternal(C command, ProjectPartition projectPartition);
 
     @Override

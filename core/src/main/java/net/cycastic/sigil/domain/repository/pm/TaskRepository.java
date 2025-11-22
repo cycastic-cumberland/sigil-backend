@@ -9,11 +9,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Integer> {
     Optional<Task> findByTenant_IdAndTaskIdentifier(int tenantId, String taskIdentifier);
+
+    List<Task> findByTenant_IdAndTaskIdentifierIn(int tenantId, Collection<String> taskIdentifiers);
 
     @Query("SELECT t FROM Task t WHERE t.kanbanBoard.projectPartition = :projectPartition AND t.taskIdentifier = :taskIdentifier")
     Optional<Task> findByProjectPartitionAndTaskIdentifier(@Param("projectPartition") ProjectPartition projectPartition, @Param("taskIdentifier") String taskIdentifier);

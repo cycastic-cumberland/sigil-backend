@@ -1,26 +1,29 @@
 package net.cycastic.sigil.application.pm.task.transit;
 
 import an.awesome.pipelinr.Command;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.cycastic.sigil.application.misc.transaction.Retry;
 import net.cycastic.sigil.application.misc.transaction.TransactionalCommand;
 import net.cycastic.sigil.application.partition.validation.PartitionPermission;
 import net.cycastic.sigil.domain.ApplicationConstants;
 
+import java.util.Map;
+
 @Data
-@Retry(value = Retry.Event.STALE)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TransactionalCommand
+@Retry(value = Retry.Event.STALE)
 @PartitionPermission(ApplicationConstants.PartitionPermissions.WRITE)
-public class MoveTaskCommand implements Command<Void> {
+public class MoveTasksCommand implements Command<Void> {
     @NotNull
-    private String taskId;
+    private Map<String, Long> tasks;
 
-    @Nullable
+    @NotNull
     private Integer kanbanBoardId;
-
-    @Min(1)
-    private long statusId;
 }

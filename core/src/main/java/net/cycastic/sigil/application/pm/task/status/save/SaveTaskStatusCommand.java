@@ -11,8 +11,8 @@ import net.cycastic.sigil.domain.ApplicationConstants;
 import net.cycastic.sigil.domain.dto.IdDto;
 
 @Data
-@Retry(value = Retry.Event.STALE)
 @TransactionalCommand
+@Retry(value = Retry.Event.STALE)
 @PartitionPermission(ApplicationConstants.PartitionPermissions.WRITE)
 public class SaveTaskStatusCommand implements Command<IdDto> {
     @Nullable

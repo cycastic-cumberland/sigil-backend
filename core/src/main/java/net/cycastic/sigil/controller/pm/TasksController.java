@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.pm.task.create.CreateTaskCommand;
 import net.cycastic.sigil.application.pm.task.query.board.QueryTasksByKanbanBoardCommand;
 import net.cycastic.sigil.application.pm.task.query.id.GetTaskByIdentifierCommand;
-import net.cycastic.sigil.application.pm.task.transit.MoveTaskCommand;
+import net.cycastic.sigil.application.pm.task.transit.MoveTasksCommand;
 import net.cycastic.sigil.application.pm.task.update.UpdateTaskCommand;
 import net.cycastic.sigil.configuration.cache.CacheConfigurations;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
@@ -58,7 +58,7 @@ public class TasksController {
     @CacheEvict(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
             key = "'queryTasksByBoard'+ '?kanbanBoardId=' + #command.kanbanBoardId",
             condition = "#command.kanbanBoardId != null")
-    public void moveTask(@Valid @RequestBody MoveTaskCommand command){
+    public void moveTask(@Valid @RequestBody MoveTasksCommand command){
         pipelinr.send(command);
     }
 
