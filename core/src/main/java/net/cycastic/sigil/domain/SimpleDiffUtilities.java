@@ -1,21 +1,22 @@
 package net.cycastic.sigil.domain;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Builder
+@SuperBuilder
 @RequiredArgsConstructor
 public class SimpleDiffUtilities<T, K> {
     public interface KeySelector<T, K>{
         K getKey(T entity);
     }
 
-    public interface Comparator<T>{
-        boolean isDifferent(T lhs, T rhs);
+    public interface EqualityComparator<T>{
+        boolean isEquals(T lhs, T rhs);
     }
 
     public record UpdatedEntity<T>(T original, T updated){}
@@ -30,7 +31,7 @@ public class SimpleDiffUtilities<T, K> {
     }
 
     private final KeySelector<T, K> keySelector;
-    private final Comparator<T> comparator;
+    private final EqualityComparator<T> comparator;
 
     private Map<K, T> buildMap(Collection<T> collection){
         return collection.stream()
@@ -48,7 +49,7 @@ public class SimpleDiffUtilities<T, K> {
             var rhs = newMap.get(originalPair.getKey());
             if (rhs != null){
                 newMap.remove(originalPair.getKey());
-                if (comparator.isDifferent(originalPair.getValue(), rhs)){
+                if (comparator != null && !comparator.isEquals(originalPair.getValue(), rhs)){
                     updatedEntities.add((new UpdatedEntity<>(originalPair.getValue(), rhs)));
                 }
                 continue;

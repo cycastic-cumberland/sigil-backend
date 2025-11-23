@@ -20,7 +20,7 @@ public class TaskProgress {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "from_status_id")
+    @JoinColumn(name = "from_status_id", nullable = false)
     private TaskStatus fromStatus;
 
     @ManyToOne
@@ -29,4 +29,7 @@ public class TaskProgress {
 
     @Column(nullable = false)
     private String progressionName;
+
+    @Version
+    private long version;
 }
