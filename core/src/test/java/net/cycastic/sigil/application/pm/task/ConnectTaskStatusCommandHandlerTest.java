@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.pm.task;
 
 import net.cycastic.sigil.application.pm.task.status.transit.connect.ConnectTaskStatusCommand;
 import net.cycastic.sigil.application.pm.task.status.transit.connect.ConnectTaskStatusCommandHandler;
+import net.cycastic.sigil.application.pm.task.status.transit.connect.Connection;
 import net.cycastic.sigil.domain.exception.RequestException;
 import net.cycastic.sigil.domain.model.pm.ProjectPartition;
 import net.cycastic.sigil.domain.model.pm.TaskProgress;
@@ -18,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -55,12 +57,14 @@ public class ConnectTaskStatusCommandHandlerTest {
 
         var command = ConnectTaskStatusCommand.builder()
                 .kanbanBoardId(10)
-                .fromStatusId(1)
-                .toStatusId(2)
-                .statusName("Updated")
+                .connections(List.of(Connection.builder()
+                        .fromStatusId(1)
+                        .toStatusId(2)
+                        .statusName("Updated")
+                        .build()))
                 .build();
 
-        when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(10, List.of(1L, 2L)))
+        when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(10, Set.of(1L, 2L)))
                 .thenReturn(List.of(from, to));
 
         var existing = new TaskProgress();
@@ -83,12 +87,14 @@ public class ConnectTaskStatusCommandHandlerTest {
 
         var command = ConnectTaskStatusCommand.builder()
                 .kanbanBoardId(10)
-                .fromStatusId(1)
-                .toStatusId(2)
-                .statusName("NewName")
+                .connections(List.of(Connection.builder()
+                        .fromStatusId(1)
+                        .toStatusId(2)
+                        .statusName("NewName")
+                        .build()))
                 .build();
 
-        when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(10, List.of(1L, 2L)))
+        when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(10, Set.of(1L, 2L)))
                 .thenReturn(List.of(from, to));
 
         when(taskProgressRepository.findByFromStatusAndNextStatus(from, to))
@@ -109,9 +115,11 @@ public class ConnectTaskStatusCommandHandlerTest {
     void handleInternal_missingStatuses_throws() {
         var command = ConnectTaskStatusCommand.builder()
                 .kanbanBoardId(10)
-                .fromStatusId(1)
-                .toStatusId(2)
-                .statusName("X")
+                .connections(List.of(Connection.builder()
+                        .fromStatusId(1)
+                        .toStatusId(2)
+                        .statusName("X")
+                        .build()))
                 .build();
 
         when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(10, List.of(1L, 2L)))

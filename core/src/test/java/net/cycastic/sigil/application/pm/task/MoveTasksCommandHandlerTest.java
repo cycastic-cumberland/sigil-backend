@@ -5,15 +5,14 @@ import net.cycastic.sigil.application.pm.task.transit.MoveTasksCommand;
 import net.cycastic.sigil.application.pm.task.transit.MoveTasksCommandHandler;
 import net.cycastic.sigil.domain.dto.pm.TaskProgressDto;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.model.pm.Task;
-import net.cycastic.sigil.domain.model.pm.TaskStatus;
-import net.cycastic.sigil.domain.repository.pm.TaskRepository;
-import net.cycastic.sigil.domain.repository.pm.TaskStatusRepository;
+import net.cycastic.sigil.domain.model.pm.*;
+import net.cycastic.sigil.domain.repository.pm.*;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
@@ -21,33 +20,43 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class MoveTasksCommandHandlerTest {
+    private static final int PARTITION_ID = 67;
     private TaskRepository taskRepository;
-    private LoggedUserAccessor loggedUserAccessor;
     private TaskStatusRepository taskStatusRepository;
     private TaskStatusService taskStatusService;
+    private TaskUniqueStatusRepository taskUniqueStatusRepository;
+    private KanbanBoardRepository kanbanBoardRepository;
     private MoveTasksCommandHandler handler;
 
     @BeforeEach
     void setup() {
         taskRepository = mock(TaskRepository.class);
-        loggedUserAccessor = mock(LoggedUserAccessor.class);
         taskStatusRepository = mock(TaskStatusRepository.class);
         taskStatusService = mock(TaskStatusService.class);
+        taskUniqueStatusRepository = mock(TaskUniqueStatusRepository.class);
+        kanbanBoardRepository = mock(KanbanBoardRepository.class);
+        var projectPartitionRepository = mock(ProjectPartitionRepository.class);
+        var loggedUserAccessor = mock(LoggedUserAccessor.class);
 
         handler = new MoveTasksCommandHandler(
                 taskRepository,
-                loggedUserAccessor,
                 taskStatusRepository,
-                taskStatusService
+                taskStatusService,
+                taskUniqueStatusRepository,
+                kanbanBoardRepository
         );
+
+        ReflectionTestUtils.setField(handler, "projectPartitionRepository", projectPartitionRepository);
+        ReflectionTestUtils.setField(handler, "loggedUserAccessor", loggedUserAccessor);
+        when(loggedUserAccessor.tryGetPartitionId())
+                .thenReturn(OptionalInt.of(PARTITION_ID));
+        when(projectPartitionRepository.findById(PARTITION_ID))
+                .thenReturn(Optional.of(new ProjectPartition() {{ setId(PARTITION_ID); }}));
     }
 
     @Test
     void handle_movesNextTaskSuccessfully() {
-        final var tenantId = 10;
         final var boardId = 99;
-
-        when(loggedUserAccessor.getTenantId()).thenReturn(tenantId);
 
         var cmd = MoveTasksCommand.builder()
                 .kanbanBoardId(boardId)
@@ -67,8 +76,17 @@ public class MoveTasksCommandHandlerTest {
         task.setTaskIdentifier("T-1");
         task.setTaskStatus(currentStatus);
 
-        when(taskRepository.findByTenant_IdAndTaskIdentifierIn(
-                tenantId, cmd.getTasks().keySet()))
+        var board = KanbanBoard.builder()
+                .id(boardId)
+                .build();
+
+        when(kanbanBoardRepository.findByIdAndProjectPartition_Id(boardId, PARTITION_ID))
+                .thenReturn(Optional.of(board));
+
+        when(taskUniqueStatusRepository.findByKanbanBoardAndTaskUniqueStereotype(board, TaskUniqueStereotype.BACKLOG))
+                .thenReturn(Optional.empty());
+
+        when(taskRepository.findByKanbanBoardAndTaskIdentifierIn(board, cmd.getTasks().keySet()))
                 .thenReturn(List.of(task));
 
         when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(Mockito.anyInt(), Mockito.anyCollection()))
@@ -103,10 +121,8 @@ public class MoveTasksCommandHandlerTest {
 
     @Test
     void handle_movesPrevTaskSuccessfully() {
-        final var tenantId = 10;
         final var boardId = 99;
 
-        when(loggedUserAccessor.getTenantId()).thenReturn(tenantId);
 
         var cmd = MoveTasksCommand.builder()
                 .kanbanBoardId(boardId)
@@ -126,8 +142,17 @@ public class MoveTasksCommandHandlerTest {
         task.setTaskIdentifier("T-1");
         task.setTaskStatus(currentStatus);
 
-        when(taskRepository.findByTenant_IdAndTaskIdentifierIn(
-                tenantId, cmd.getTasks().keySet()))
+        var board = KanbanBoard.builder()
+                .id(boardId)
+                .build();
+
+        when(kanbanBoardRepository.findByIdAndProjectPartition_Id(boardId, PARTITION_ID))
+                .thenReturn(Optional.of(board));
+
+        when(taskUniqueStatusRepository.findByKanbanBoardAndTaskUniqueStereotype(board, TaskUniqueStereotype.BACKLOG))
+                .thenReturn(Optional.empty());
+
+        when(taskRepository.findByKanbanBoardAndTaskIdentifierIn(board, cmd.getTasks().keySet()))
                 .thenReturn(List.of(task));
 
         when(taskStatusRepository.findByKanbanBoard_IdAndIdIn(Mockito.anyInt(), Mockito.anyCollection()))
@@ -164,8 +189,6 @@ public class MoveTasksCommandHandlerTest {
     void handle_throws_whenStatusNotAllowed() {
         final var tenantId = 10;
         final var boardId = 99;
-
-        when(loggedUserAccessor.getTenantId()).thenReturn(tenantId);
 
         var cmd = MoveTasksCommand.builder()
                 .kanbanBoardId(boardId)

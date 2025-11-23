@@ -13,7 +13,10 @@ public class DisconnectTaskStatusCommandHandler extends BaseProjectCommandHandle
 
     @Override
     protected Void handleInternal(DisconnectTaskStatusCommand command, ProjectPartition projectPartition) {
-        taskProgressRepository.deleteByFromStatus_IdAndNextStatus_Id(command.getFromStatusId(), command.getToStatusId());
+        for (var connection : command.getConnections()){
+            taskProgressRepository.deleteByFromStatus_IdAndNextStatus_Id(connection.getFromStatusId(), connection.getToStatusId());
+        }
+
         return null;
     }
 }

@@ -21,6 +21,8 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     @Query("SELECT t FROM Task t WHERE t.kanbanBoard.projectPartition = :projectPartition AND t.taskIdentifier = :taskIdentifier")
     Optional<Task> findByProjectPartitionAndTaskIdentifier(@Param("projectPartition") ProjectPartition projectPartition, @Param("taskIdentifier") String taskIdentifier);
 
+    List<Task> findByKanbanBoardAndTaskIdentifierIn(KanbanBoard kanbanBoard, Collection<String> taskIdentifiers);
+
     Page<Task> findByKanbanBoard_ProjectPartition_IdAndTaskStatus_Id(int kanbanBoardProjectPartitionId, Long taskStatusId, Pageable pageable);
 
     List<Task> findByKanbanBoard(KanbanBoard kanbanBoard);

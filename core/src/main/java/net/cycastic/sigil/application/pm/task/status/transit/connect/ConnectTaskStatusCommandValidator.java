@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 public class ConnectTaskStatusCommandValidator implements CommandValidator<ConnectTaskStatusCommand, Void> {
     @Override
     public void validate(ConnectTaskStatusCommand command) {
-        if (command.getFromStatusId() == command.getToStatusId()){
-            throw new RequestException(400, "From ID must not be To ID");
+        for (var connection : command.getConnections()){
+            if (connection.getFromStatusId() == connection.getToStatusId()){
+                throw new RequestException(400, "From ID must not be To ID");
+            }
         }
     }
 }

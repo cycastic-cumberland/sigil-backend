@@ -5,6 +5,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.pm.task.status.get.GetTaskStatusesByBoardIdCommand;
 import net.cycastic.sigil.application.pm.task.status.save.SaveTaskStatusCommand;
+import net.cycastic.sigil.application.pm.task.status.transit.connect.ConnectTaskStatusCommand;
+import net.cycastic.sigil.application.pm.task.status.transit.disconnect.DisconnectTaskStatusCommand;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.IdDto;
@@ -27,5 +29,15 @@ public class TaskStatusesController {
     @GetMapping
     public TaskStatusesDto getStatuses(@Valid GetTaskStatusesByBoardIdCommand command){
         return pipelinr.send(command);
+    }
+
+    @PostMapping("connect")
+    public void connectStatuses(@Valid @RequestBody ConnectTaskStatusCommand command){
+        pipelinr.send(command);
+    }
+
+    @PostMapping("disconnect")
+    public void disconnectStatuses(@Valid @RequestBody DisconnectTaskStatusCommand command){
+        pipelinr.send(command);
     }
 }

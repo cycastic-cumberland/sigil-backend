@@ -10,6 +10,7 @@ import net.cycastic.sigil.domain.repository.pm.TaskProgressRepository;
 import net.cycastic.sigil.domain.repository.pm.TaskStatusRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,28 +22,36 @@ public class ConnectTaskStatusCommandHandler extends BaseProjectCommandHandler<C
 
     @Override
     protected Void handleInternal(ConnectTaskStatusCommand command, ProjectPartition projectPartition) {
-        var statuses = taskStatusRepository.findByKanbanBoard_IdAndIdIn(command.getKanbanBoardId(), List.of(
-                command.getFromStatusId(), command.getToStatusId()
-        ));
+        var statusIds = command.getConnections().stream()
+                .map(c -> List.of(c.getFromStatusId(), c.getToStatusId()))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        var statuses = taskStatusRepository.findByKanbanBoard_IdAndIdIn(command.getKanbanBoardId(), statusIds);
 
-        if (statuses.size() != 2){
+        if (statuses.size() != statusIds.size()){
             throw new RequestException(404, "Some statuses could not be found");
         }
 
         var statusMap = statuses.stream()
                 .collect(Collectors.toMap(TaskStatus::getId, t -> t));
-        var progressOpt = taskProgressRepository.findByFromStatusAndNextStatus(statusMap.get(command.getFromStatusId()),
-                statusMap.get(command.getToStatusId()));
-        if (progressOpt.isPresent()){
-            var progress = progressOpt.get();
-            progress.setProgressionName(command.getStatusName());
-            taskProgressRepository.save(progress);
-        } else {
-            var progress = TaskProgress.builder()
-                    .fromStatus(statusMap.get(command.getFromStatusId()))
-                    .nextStatus(statusMap.get(command.getToStatusId()))
-                    .progressionName(command.getStatusName())
-                    .build();
+
+        for (var connection : command.getConnections()){
+            var progressOpt = taskProgressRepository.findByFromStatusAndNextStatus(statusMap.get(connection.getFromStatusId()),
+                    statusMap.get(connection.getToStatusId()));
+            TaskProgress progress;
+            if (progressOpt.isPresent()){
+                progress = progressOpt.get();
+                if (progress.getProgressionName().equals(connection.getStatusName())){
+                    continue;
+                }
+                progress.setProgressionName(connection.getStatusName());
+            } else {
+                progress = TaskProgress.builder()
+                        .fromStatus(statusMap.get(connection.getFromStatusId()))
+                        .nextStatus(statusMap.get(connection.getToStatusId()))
+                        .progressionName(connection.getStatusName())
+                        .build();
+            }
             taskProgressRepository.save(progress);
         }
         return null;
