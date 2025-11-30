@@ -1,7 +1,7 @@
 package net.cycastic.sigil.application.pm.task.status.transit.connect;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +18,6 @@ public class Connection {
     @Min(1)
     private long toStatusId;
 
-    @NotEmpty
+    @NotBlank
     private String statusName;
 }

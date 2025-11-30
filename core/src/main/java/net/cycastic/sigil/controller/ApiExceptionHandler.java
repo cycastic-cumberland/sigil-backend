@@ -53,9 +53,7 @@ public class ApiExceptionHandler {
         return sb.toString();
     }
 
-    @ExceptionHandler(RequestException.class)
-    public ResponseEntity<ExceptionResponse> handleGeneric(RequestException ex, HttpServletRequest request) {
-        logger.error("Exception occurred while resolving HTTP request", ex);
+    public ExceptionResponse toExceptionResponse(RequestException ex, HttpServletRequest request) {
         var currentDateTime = OffsetDateTime.now(ZoneId.of("UTC"));
         var includeStackTrace = configurations.isShowStackTrace();
         var errorBuilder = ExceptionResponse.builder()
@@ -72,8 +70,14 @@ public class ApiExceptionHandler {
             errorBuilder.validationMessages(validationException.getValidationMessages());
         }
 
-        var error = errorBuilder.build();
-        return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getResponseCode()));
+        return errorBuilder.build();
+    }
+
+    @ExceptionHandler(RequestException.class)
+    public ResponseEntity<ExceptionResponse> handleGeneric(RequestException ex, HttpServletRequest request) {
+        logger.error("Exception occurred while resolving HTTP request", ex);
+
+        return new ResponseEntity<>(toExceptionResponse(ex, request), HttpStatus.valueOf(ex.getResponseCode()));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)

@@ -33,7 +33,7 @@ public class TaskStatusService {
         return new TaskStatusMappingPair(fromToMap, toFromMap);
     }
 
-    public Collection<TaskStatusDto> toDto(Collection<TaskStatus> taskStatuses){
+    public List<TaskStatusDto> toDto(Collection<TaskStatus> taskStatuses){
         var pair = toMappingPair(taskStatuses);
         var fromToMap = pair.fromToMap();
         var toFromMap = pair.toFromMap();

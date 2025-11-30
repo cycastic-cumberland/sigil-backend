@@ -10,6 +10,7 @@ import net.cycastic.sigil.service.serializer.JsonSerializer;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 
 @Component
 public class JacksonJsonSerializer implements JsonSerializer {
@@ -26,6 +27,12 @@ public class JacksonJsonSerializer implements JsonSerializer {
     @SneakyThrows
     public String serialize(Object object) {
         return mapper.writeValueAsString(object);
+    }
+
+    @Override
+    @SneakyThrows
+    public <T> void serialize(T value, OutputStream outputStream, Class<T> klass) {
+        mapper.writeValue(outputStream, value);
     }
 
     @Override

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.configuration.application.CrossOriginConfiguration;
 import net.cycastic.sigil.controller.filter.JwtAuthenticationFilter;
 import net.cycastic.sigil.controller.filter.PerfFilter;
+import net.cycastic.sigil.controller.filter.TenantFilter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class SecurityConfiguration {
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, TenantFilter tenantFilter) throws Exception {
         http
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         // any AccessDeniedException (normally 403) → log and return 500
@@ -80,7 +81,8 @@ public class SecurityConfiguration {
                 .and()
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(perfFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthFilter, PerfFilter.class);
+                .addFilterAfter(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(tenantFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 

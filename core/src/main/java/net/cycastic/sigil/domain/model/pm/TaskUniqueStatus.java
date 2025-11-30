@@ -19,11 +19,11 @@ public class TaskUniqueStatus {
     private Long id;
 
     @MapsId
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     @JoinColumn(name = "id", referencedColumnName = "id")
     private TaskStatus taskStatus;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "kanban_board_id", nullable = false)
     private KanbanBoard kanbanBoard;
 

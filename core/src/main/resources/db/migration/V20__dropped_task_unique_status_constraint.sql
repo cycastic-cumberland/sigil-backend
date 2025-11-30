@@ -1,0 +1,1 @@
+DROP INDEX uc_task_unique_statuses_kanban_board ON sigil.task_unique_statuses;

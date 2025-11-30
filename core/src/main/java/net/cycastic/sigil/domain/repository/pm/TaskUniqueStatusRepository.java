@@ -9,4 +9,6 @@ import java.util.Optional;
 
 public interface TaskUniqueStatusRepository extends JpaRepository<TaskUniqueStatus, Long> {
     Optional<TaskUniqueStatus> findByKanbanBoardAndTaskUniqueStereotype(KanbanBoard kanbanBoard, TaskUniqueStereotype taskUniqueStereotype);
+
+    void deleteByKanbanBoardAndTaskUniqueStereotype(KanbanBoard kanbanBoard, TaskUniqueStereotype taskUniqueStereotype);
 }
