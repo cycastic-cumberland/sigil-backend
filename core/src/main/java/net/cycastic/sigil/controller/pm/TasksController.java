@@ -42,7 +42,7 @@ public class TasksController {
     @RequirePartitionId
     @Caching(evict = {
             @CacheEvict(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
-                    key = "'queryTasksByBoard'+ '?kanbanBoardId=' + #command.kanbanBoardId",
+                    key = "'queryTasksByBoard' + '?tenantId' + #tenantId + '&kanbanBoardId=' + #command.kanbanBoardId",
                     condition = "#command.kanbanBoardId != null"),
             @CacheEvict(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
                     key = "'getExactTask' + '?tenantId' + #tenantId + '&taskId=' + #command.taskId")
@@ -56,9 +56,11 @@ public class TasksController {
     @PatchMapping("move")
     @RequirePartitionId
     @CacheEvict(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
-            key = "'queryTasksByBoard'+ '?kanbanBoardId=' + #command.kanbanBoardId",
+            key = "'queryTasksByBoard' + '?tenantId' + #tenantId + '&kanbanBoardId=' + #command.kanbanBoardId",
             condition = "#command.kanbanBoardId != null")
-    public void moveTask(@Valid @RequestBody MoveTasksCommand command){
+    public void moveTask(@RequestHeader(ApplicationConstants.TENANT_ID_HEADER) String tenantId,
+                         @Valid @RequestBody MoveTasksCommand command){
+        ApplicationUtilities.deoptimize(tenantId);
         pipelinr.send(command);
     }
 
@@ -74,8 +76,10 @@ public class TasksController {
     @GetMapping("by-board")
     @RequirePartitionId
     @Cacheable(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
-            key = "'queryTasksByBoard'+ '?kanbanBoardId=' + #command.kanbanBoardId")
-    public TaskCardsDto queryTasksByBoard(@Valid QueryTasksByKanbanBoardCommand command){
+            key = "'queryTasksByBoard' + '?tenantId' + #tenantId + '&kanbanBoardId=' + #command.kanbanBoardId")
+    public TaskCardsDto queryTasksByBoard(@RequestHeader(ApplicationConstants.TENANT_ID_HEADER) String tenantId,
+                                          @Valid QueryTasksByKanbanBoardCommand command){
+        ApplicationUtilities.deoptimize(tenantId);
         return pipelinr.send(command);
     }
 }

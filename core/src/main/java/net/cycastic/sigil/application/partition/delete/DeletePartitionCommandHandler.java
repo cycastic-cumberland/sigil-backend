@@ -30,13 +30,13 @@ public class DeletePartitionCommandHandler implements Command.Handler<DeletePart
         partition.setRemovedAt(OffsetDateTime.now());
         partitionRepository.save(partition);
 
-        jobScheduler.defer(EvictCacheBackgroundJob.builder()
+        jobScheduler.deferInfallible(EvictCacheBackgroundJob.builder()
                 .cacheKey(PartitionsController.CACHE_KEY)
                 .cacheName("getPartition?tenantId=%d&userId=%d&partitionPath=%s".formatted(loggedUserAccessor.getTenantId(),
                         loggedUserAccessor.getUserId(),
                         partition.getPartitionPath()))
                 .build());
-        jobScheduler.defer(EvictCacheBackgroundJob.builder()
+        jobScheduler.deferInfallible(EvictCacheBackgroundJob.builder()
                 .cacheKey(PartitionsController.CACHE_KEY)
                 .cacheName("getPartition?tenantId=%d&userId=%d&id=%d".formatted(loggedUserAccessor.getTenantId(),
                         loggedUserAccessor.getUserId(),
