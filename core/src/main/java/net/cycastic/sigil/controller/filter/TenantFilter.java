@@ -6,11 +6,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.tenant.CachedTenantService;
 import net.cycastic.sigil.controller.ApiExceptionHandler;
 import net.cycastic.sigil.domain.exception.ExceptionResponse;
 import net.cycastic.sigil.domain.exception.RequestException;
-import net.cycastic.sigil.domain.repository.listing.PartitionUserRepository;
-import net.cycastic.sigil.domain.repository.tenant.TenantUserRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import net.cycastic.sigil.service.serializer.JsonSerializer;
 import org.springframework.http.MediaType;
@@ -23,15 +22,19 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class TenantFilter extends OncePerRequestFilter {
     private final LoggedUserAccessor loggedUserAccessor;
-    private final TenantUserRepository tenantUserRepository;
-    private final PartitionUserRepository partitionUserRepository;
     private final ApiExceptionHandler apiExceptionHandler;
     private final JsonSerializer jsonSerializer;
+    private final CachedTenantService cachedTenantService;
 
     private void filter(){
         if (loggedUserAccessor.tryGetUserId().isEmpty()){
             return;
         }
+
+        if (loggedUserAccessor.isAdmin()){
+            return;
+        }
+
         var tenantIdOpt = loggedUserAccessor.tryGetTenantId();
         var partitionIdOpt = loggedUserAccessor.tryGetPartitionId();
         if (tenantIdOpt.isEmpty()){
@@ -41,8 +44,7 @@ public class TenantFilter extends OncePerRequestFilter {
             return;
         }
 
-        var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
-                .orElseThrow(RequestException::forbidden);
+        var tenantUser = cachedTenantService.getTenantUserSlim(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId());
         if (tenantUser.getLastInvited() != null){
             throw RequestException.forbidden();
         }
@@ -50,9 +52,10 @@ public class TenantFilter extends OncePerRequestFilter {
         if (partitionIdOpt.isEmpty()){
             return;
         }
-        if (!partitionUserRepository.existsByPartition_Tenant_IdAndPartition_IdAndUser_Id(tenantIdOpt.getAsInt(),
-                partitionIdOpt.getAsInt(),
-                loggedUserAccessor.getUserId())){
+        if (!cachedTenantService.isUserInPartition(tenantIdOpt.getAsInt(),
+                        partitionIdOpt.getAsInt(),
+                        loggedUserAccessor.getUserId())
+                .isValue()){
             throw RequestException.forbidden();
         }
     }

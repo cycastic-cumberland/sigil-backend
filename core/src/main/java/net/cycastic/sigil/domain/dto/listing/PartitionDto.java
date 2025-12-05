@@ -1,6 +1,8 @@
 package net.cycastic.sigil.domain.dto.listing;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.listing.Partition;
@@ -11,6 +13,8 @@ import java.util.List;
 
 @Data
 @SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PartitionDto {
     private int id;
     private String partitionPath;

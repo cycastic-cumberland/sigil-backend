@@ -13,13 +13,18 @@ import net.cycastic.sigil.application.partition.member.query.QueryPartitionMembe
 import net.cycastic.sigil.application.partition.member.remove.RemovePartitionMemberCommand;
 import net.cycastic.sigil.application.partition.member.self.GetSelfPartitionUserCommand;
 import net.cycastic.sigil.application.partition.query.QueryPartitionSingleLevelCommand;
+import net.cycastic.sigil.configuration.cache.CacheConfigurations;
 import net.cycastic.sigil.controller.annotation.RequirePartitionId;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
+import net.cycastic.sigil.domain.ApplicationConstants;
+import net.cycastic.sigil.domain.ApplicationUtilities;
 import net.cycastic.sigil.domain.dto.FolderItemDto;
 import net.cycastic.sigil.domain.dto.IdDto;
 import net.cycastic.sigil.domain.dto.listing.PartitionDto;
 import net.cycastic.sigil.domain.dto.PartitionUserDto;
 import net.cycastic.sigil.domain.dto.paging.PageResponseDto;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,10 +32,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("api/partitions")
 public class PartitionsController {
+    public static final String CACHE_KEY = "PartitionsController";
+
     private final Pipelinr pipelinr;
 
     @GetMapping("partition")
-    public PartitionDto getPartition(GetPartitionCommand command){
+    public PartitionDto getPartition(@RequestHeader(ApplicationConstants.TENANT_ID_HEADER) String tenantId,
+                                     GetPartitionCommand command){
+        ApplicationUtilities.deoptimize(tenantId);
         return pipelinr.send(command);
     }
 

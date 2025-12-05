@@ -2,6 +2,7 @@ package net.cycastic.sigil.application.misc.transaction;
 
 import an.awesome.pipelinr.Command;
 import lombok.SneakyThrows;
+import net.cycastic.sigil.application.misc.OncePerRequestMiddleware;
 import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Order(2)
 @Component
-public class RetryMiddleware implements Command.Middleware {
+public class RetryMiddleware extends OncePerRequestMiddleware {
     private static final Logger logger = LoggerFactory.getLogger(RetryMiddleware.class);
 
     private static void matchException(Set<Retry.Event> onEvents, RuntimeException e){
@@ -42,7 +43,7 @@ public class RetryMiddleware implements Command.Middleware {
     }
 
     @Override
-    public <R, C extends Command<R>> R invoke(C command, Command.Middleware.Next<R> next) {
+    public <R, C extends Command<R>> R invokeInternal(C command, Command.Middleware.Next<R> next) {
         var retryAnn = AnnotatedElementUtils.findMergedAnnotation(command.getClass(), Retry.class);
         if (retryAnn == null) {
             return next.invoke();

@@ -15,8 +15,8 @@ import net.cycastic.sigil.domain.dto.keyring.CipherDto;
 import net.cycastic.sigil.domain.model.pm.TaskPriority;
 
 @Data
-@Retry(value = {Retry.Event.STALE, Retry.Event.INTEGRITY_VIOLATION})
 @TransactionalCommand
+@Retry(value = {Retry.Event.STALE, Retry.Event.INTEGRITY_VIOLATION})
 @PartitionPermission(ApplicationConstants.PartitionPermissions.WRITE)
 public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
     @NotNull
