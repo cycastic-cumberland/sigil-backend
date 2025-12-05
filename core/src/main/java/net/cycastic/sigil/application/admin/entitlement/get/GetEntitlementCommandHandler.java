@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.feature.entitlement.get;
+package net.cycastic.sigil.application.admin.entitlement.get;
 
 import an.awesome.pipelinr.Command;
 import lombok.RequiredArgsConstructor;

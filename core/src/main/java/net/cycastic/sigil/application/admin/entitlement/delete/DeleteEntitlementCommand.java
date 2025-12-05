@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.feature.entitlement.delete;
+package net.cycastic.sigil.application.admin.entitlement.delete;
 
 import an.awesome.pipelinr.Command;
 import jakarta.validation.constraints.Min;

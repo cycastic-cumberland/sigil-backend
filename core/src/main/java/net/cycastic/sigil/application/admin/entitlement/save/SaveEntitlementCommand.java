@@ -1,4 +1,4 @@
-package net.cycastic.sigil.application.feature.entitlement.save;
+package net.cycastic.sigil.application.admin.entitlement.save;
 
 import an.awesome.pipelinr.Command;
 import net.cycastic.sigil.application.user.validation.admin.RequireAdmin;

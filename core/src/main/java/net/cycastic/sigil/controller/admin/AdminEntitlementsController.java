@@ -1,18 +1,18 @@
-package net.cycastic.sigil.controller;
+package net.cycastic.sigil.controller.admin;
 
 import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import net.cycastic.sigil.application.feature.entitlement.delete.DeleteEntitlementCommand;
-import net.cycastic.sigil.application.feature.entitlement.get.GetEntitlementCommand;
-import net.cycastic.sigil.application.feature.entitlement.save.SaveEntitlementCommand;
+import net.cycastic.sigil.application.admin.entitlement.delete.DeleteEntitlementCommand;
+import net.cycastic.sigil.application.admin.entitlement.get.GetEntitlementCommand;
+import net.cycastic.sigil.application.admin.entitlement.save.SaveEntitlementCommand;
 import net.cycastic.sigil.domain.dto.EntitlementDto;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/entitlements")
-public class EntitlementsController {
+@RequestMapping("api/admin/entitlements")
+public class AdminEntitlementsController {
     private final Pipelinr pipelinr;
 
     @GetMapping("entitlement")

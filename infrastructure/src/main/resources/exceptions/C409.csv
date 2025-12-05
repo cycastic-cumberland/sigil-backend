@@ -1,3 +1,4 @@
 exceptionCode,statusCode,en,vi
 C409T000,409,Data conflict detected,
 C409T001,409,Data duplication detected,
+C409T002,409,User with provided email already registered,
