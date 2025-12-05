@@ -34,6 +34,9 @@ public class UpdateTaskCommand implements Command<Void>, PartitionChecksum {
     @NotNull
     private TaskPriority taskPriority;
 
+    @Nullable
+    private Long taskStatusId;
+
     @NotNull
     private CipherDto encryptedName;
 

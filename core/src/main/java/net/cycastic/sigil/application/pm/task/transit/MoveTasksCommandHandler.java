@@ -24,8 +24,7 @@ public class MoveTasksCommandHandler extends BaseProjectCommandHandler<MoveTasks
     private final TaskUniqueStatusRepository taskUniqueStatusRepository;
     private final KanbanBoardRepository kanbanBoardRepository;
 
-    @Override
-    protected Void handleInternal(MoveTasksCommand command, ProjectPartition projectPartition) {
+    public void moveTasksNoTransaction(MoveTasksCommand command, ProjectPartition projectPartition){
         var kanbanBoard = kanbanBoardRepository.findByIdAndProjectPartition_Id(command.getKanbanBoardId(), projectPartition.getId())
                 .orElseThrow(() -> new RequestException(404, "Board not found"));
         var tasks = taskRepository.findByKanbanBoardAndTaskIdentifierIn(kanbanBoard, command.getTasks().keySet());
@@ -66,7 +65,7 @@ public class MoveTasksCommandHandler extends BaseProjectCommandHandler<MoveTasks
                 if (optNext.isPresent()) {
                     var desiredStatus = statusMap.get(optNext.get().getToStatusId());
                     if (desiredStatus == null){
-                        throw new RequestException(404, "Task status not found");
+                        throw new RequestException(400, "Predefined progress restrict moving to this status");
                     }
 
                     task.setTaskStatus(desiredStatus);
@@ -74,7 +73,7 @@ public class MoveTasksCommandHandler extends BaseProjectCommandHandler<MoveTasks
                     continue;
                 }
             }
-            var eligiblePrevStatus = pair.toFromMap().get(task.getTaskStatus().getId());
+            var eligiblePrevStatus = pair.toFromMap().get(currentStatus.getId());
             if (eligiblePrevStatus != null) {
                 var optPrev = eligiblePrevStatus.stream()
                         .filter(t -> t.getFromStatusId() == desiredStatusId)
@@ -82,7 +81,7 @@ public class MoveTasksCommandHandler extends BaseProjectCommandHandler<MoveTasks
                 if (optPrev.isPresent()){
                     var desiredStatus = statusMap.get(optPrev.get().getFromStatusId());
                     if (desiredStatus == null){
-                        throw new RequestException(404, "Task status not found");
+                        throw new RequestException(400, "Predefined progress restrict moving to this status");
                     }
 
                     task.setTaskStatus(desiredStatus);
@@ -91,9 +90,13 @@ public class MoveTasksCommandHandler extends BaseProjectCommandHandler<MoveTasks
                 }
             }
 
-            throw new RequestException(404, "Task status not found");
+            throw new RequestException(400, "Predefined progress restrict moving to this status");
         }
+    }
 
+    @Override
+    protected Void handleInternal(MoveTasksCommand command, ProjectPartition projectPartition) {
+        moveTasksNoTransaction(command, projectPartition);
         return null;
     }
 }
