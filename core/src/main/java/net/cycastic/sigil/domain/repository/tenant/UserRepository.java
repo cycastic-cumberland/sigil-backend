@@ -1,10 +1,13 @@
 package net.cycastic.sigil.domain.repository.tenant;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.LockModeType;
 import jakarta.validation.constraints.NotNull;
 import net.cycastic.sigil.domain.dto.keyring.interfaces.CipherBasedKdfDetails;
 import net.cycastic.sigil.domain.dto.keyring.interfaces.WebAuthnBasedKdfDetails;
 import net.cycastic.sigil.domain.model.tenant.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
@@ -47,4 +50,11 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
                   FROM User u WHERE u.id = :userId
            """)
     Optional<WebAuthnBasedKdfDetails> getWebAuthnBasedKdfDetails(@Param("userId") int userId);
+
+    @Query(value = """
+            SELECT u FROM User u WHERE (:contentTerm IS NULL) OR (:contentTerm IS NOT NULL AND u.normalizedEmail LIKE CONCAT(UPPER(:contentTerm) , '%') ESCAPE '\\')
+""", countQuery = """
+            SELECT COUNT(1) FROM User u WHERE (:contentTerm IS NULL) OR (:contentTerm IS NOT NULL AND u.normalizedEmail LIKE CONCAT(UPPER(:contentTerm), '%') ESCAPE '\\')
+""")
+    Page<User> findUsersByContentTerm(@Nullable @Param("contentTerm") String contentTerm, Pageable pageable);
 }

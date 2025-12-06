@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import jakarta.annotation.Nullable;
+import net.cycastic.sigil.application.misc.annotation.Base64String;
 
 @Data
 public class CompleteUserRegistrationForm {
@@ -14,6 +15,7 @@ public class CompleteUserRegistrationForm {
     private String lastName;
 
     @NotBlank
+    @Base64String
     private String publicRsaKey;
 
     @Nullable

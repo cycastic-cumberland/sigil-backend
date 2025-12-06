@@ -36,6 +36,7 @@ public class ForceCreateUserCommandHandler implements Command.Handler<ForceCreat
                 Stream.concat(Objects.requireNonNullElseGet(command.getRoles(), ForceCreateUserCommandHandler::getDefaultRoles).stream(),
                         Stream.of(ApplicationConstants.Roles.COMMON))
                         .distinct()
+                        .sorted()
                         .toList(),
                 UserStatus.INVITED,
                 false);

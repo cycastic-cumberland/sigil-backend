@@ -247,7 +247,7 @@ public class UserService {
 
         var user = userOpt.get();
         if (!user.isEnabled()){
-            return wasteComputePower(user.getNormalizedEmail(), signatureAlgorithm, submittedSignature);
+            return wasteComputePower(user.getNormalizedEmail() + ":1", signatureAlgorithm, submittedSignature);
         }
         var publicKey = CryptographicUtilities.Keys.decodeRSAPublicKey(user.getPublicRsaKey());
         if (user.getStatus() != UserStatus.ACTIVE ||

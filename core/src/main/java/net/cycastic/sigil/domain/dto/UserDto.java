@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.cycastic.sigil.domain.model.tenant.User;
+import net.cycastic.sigil.domain.model.tenant.UserStatus;
 
 import java.time.OffsetDateTime;
 import java.util.Base64;
@@ -26,6 +27,8 @@ public class UserDto {
     private boolean hasPasswordCredential;
     private boolean hasWebAuthnCredential;
     private UUID notificationToken;
+    private boolean emailVerified;
+    private UserStatus status;
     private OffsetDateTime joinedAt;
     private OffsetDateTime updatedAt;
 
@@ -40,6 +43,8 @@ public class UserDto {
                 .hasPasswordCredential(user.getWrappedUserKey() != null)
                 .hasWebAuthnCredential(user.getWebAuthnCredential() != null)
                 .notificationToken(user.getNotificationToken().getToken())
+                .emailVerified(user.isEmailVerified())
+                .status(user.getStatus())
                 .joinedAt(user.getJoinedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
