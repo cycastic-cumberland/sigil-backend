@@ -53,8 +53,16 @@ public class TenantService {
     private final DeferredEmailSender deferredEmailSender;
 
     public int getTenantUserPermissions() {
-        var tenantUser = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId())
-                .orElseThrow(RequestException::forbidden);
+        var tenantUserOpt = tenantUserRepository.findByTenant_IdAndUser_Id(loggedUserAccessor.getTenantId(), loggedUserAccessor.getUserId());
+        if (tenantUserOpt.isEmpty()){
+            if (!loggedUserAccessor.isAdmin()){
+                throw RequestException.forbidden();
+            }
+
+            return ApplicationConstants.TenantPermissions.MODERATE;
+        }
+
+        var tenantUser = tenantUserOpt.get();
         if (tenantUser.getLastInvited() != null){
             throw RequestException.forbidden();
         }

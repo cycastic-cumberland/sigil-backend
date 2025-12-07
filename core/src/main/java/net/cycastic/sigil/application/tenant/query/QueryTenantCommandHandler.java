@@ -20,18 +20,20 @@ public class QueryTenantCommandHandler implements Command.Handler<QueryTenantCom
     @Override
     public PageResponseDto<TenantDto> handle(QueryTenantCommand command) {
         var userId = command.getUserId();
-        if (userId != null &&
-                !loggedUserAccessor.isAdmin() &&
-                !userId.equals(loggedUserAccessor.getUserId())){
+        if (userId == null){
+            if (!loggedUserAccessor.isAdmin()){
+                throw RequestException.forbidden();
+            }
+            var tenants = tenantRepository.findAll(command.toPageable());
+            return PageResponseDto.fromDomain(tenants, TenantDto::fromDomain);
+        }
+        if (!loggedUserAccessor.isAdmin() && !userId.equals(loggedUserAccessor.getUserId())){
             throw RequestException.forbidden();
         }
 
-        if (userId == null){
-            userId = loggedUserAccessor.getUserId();
-        }
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new RequestException(404, "Could not find user"));
-        var projects = tenantRepository.findByUser(user, command.toPageable());
-        return PageResponseDto.fromDomain(projects, TenantDto::fromDomain);
+        var tenants = tenantRepository.findByUser(user, command.toPageable());
+        return PageResponseDto.fromDomain(tenants, TenantDto::fromDomain);
     }
 }

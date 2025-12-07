@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 @Data
@@ -15,7 +16,7 @@ import java.util.function.Function;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PageResponseDto<T> {
-    private Collection<T> items;
+    private List<T> items;
     private int page;
     private int pageSize;
     private int totalPages;
@@ -33,6 +34,6 @@ public class PageResponseDto<T> {
     }
 
     public static <T> PageResponseDto<T> empty(int page) {
-        return new PageResponseDto<>(Collections.emptySet(), page, 0, 0, 0);
+        return new PageResponseDto<>(List.of(), page, 0, 0, 0);
     }
 }

@@ -5,8 +5,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.admin.entitlement.delete.DeleteEntitlementCommand;
 import net.cycastic.sigil.application.admin.entitlement.get.GetEntitlementCommand;
+import net.cycastic.sigil.application.admin.entitlement.list.ListEntitlementsCommand;
 import net.cycastic.sigil.application.admin.entitlement.save.SaveEntitlementCommand;
+import net.cycastic.sigil.controller.annotation.RequireTenantId;
 import net.cycastic.sigil.domain.dto.EntitlementDto;
+import net.cycastic.sigil.domain.dto.paging.EnumerablePage;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +20,12 @@ public class AdminEntitlementsController {
 
     @GetMapping("entitlement")
     public EntitlementDto getEntitlement(@Valid GetEntitlementCommand command){
+        return pipelinr.send(command);
+    }
+
+    @GetMapping
+    @RequireTenantId
+    public EnumerablePage<EntitlementDto> listEntitlements(@Valid ListEntitlementsCommand command){
         return pipelinr.send(command);
     }
 
