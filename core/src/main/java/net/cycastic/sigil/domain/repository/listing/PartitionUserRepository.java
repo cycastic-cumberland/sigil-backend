@@ -18,6 +18,7 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
         String getFirstName();
         String getLastName();
         String getEmail();
+        String getAvatarToken();
         int getPermissions();
     }
 
@@ -39,6 +40,7 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
                    SELECT pu.user.firstName AS firstName,
                    pu.user.lastName AS lastName,
                    pu.user.email AS email,
+                   pu.user.avatarToken AS avatarToken,
                    pu.permissions AS permissions
                    FROM PartitionUser pu WHERE pu.partition.id = :partitionId
                    """,
@@ -49,6 +51,7 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
                    SELECT pu.user.firstName AS firstName,
                    pu.user.lastName AS lastName,
                    pu.user.email AS email,
+                   pu.user.avatarToken AS avatarToken,
                    pu.permissions AS permissions
                    FROM PartitionUser pu
                    WHERE pu.partition.id = :partitionId AND

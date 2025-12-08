@@ -13,6 +13,7 @@ public class PartitionUserDto {
     private String email;
     private String firstName;
     private String lastName;
+    private String avatarToken;
     private List<String> permissions;
 
     public static PartitionUserDto fromDomain(PartitionUserRepository.PartitionUserResult p){
@@ -20,6 +21,7 @@ public class PartitionUserDto {
                 .firstName(p.getFirstName())
                 .lastName(p.getLastName())
                 .email(p.getEmail())
+                .avatarToken(p.getAvatarToken())
                 .permissions(ApplicationConstants.PartitionPermissions.toReadablePermissions(p.getPermissions()))
                 .build();
     }

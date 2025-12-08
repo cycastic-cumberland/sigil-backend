@@ -15,12 +15,14 @@ public class TenantUserDto {
     private String email;
     private TenantMembership membership;
     private List<String> permissions;
+    private String avatarToken;
 
     public static TenantUserDto fromDomain(TenantUserRepository.TenantUserItem domain){
         return TenantUserDto.builder()
                 .firstName(domain.getFirstName())
                 .lastName(domain.getLastName())
                 .email(domain.getEmail())
+                .avatarToken(domain.getAvatarToken())
                 .membership(switch (domain.getMembership()){
                     case 0 -> TenantMembership.OWNER;
                     case 1 -> TenantMembership.MODERATOR;

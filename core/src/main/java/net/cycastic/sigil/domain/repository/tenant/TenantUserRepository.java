@@ -15,6 +15,7 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
         String getFirstName();
         String getLastName();
         String getEmail();
+        String getAvatarToken();
         int getMembership();
         int getPermissions();
     }
@@ -30,6 +31,7 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
     @Query(value = """
                    SELECT tu.user.email AS email,
                           tu.user.lastName AS lastName,
+                          tu.user.avatarToken AS avatarToken,
                           tu.user.firstName AS firstName,
                           CASE WHEN tu.tenant.owner = tu.user THEN 0 WHEN tu.isModerator THEN 1 ELSE 2 END AS membership,
                           tu.permissions AS permissions
@@ -42,7 +44,6 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
                             tu.user.lastName ILIKE CONCAT(:contentTerm, '%') ESCAPE '\\')
                    """,
             countQuery = """
-
                     SELECT COUNT(tu) FROM TenantUser tu WHERE tu.lastInvited IS NULL AND
                                                               tu.tenant.id = :tenantId AND
                                                               tu.user.id <> :excludeUserId AND
@@ -60,6 +61,7 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Integer>
                    SELECT tu.user.email AS email,
                           tu.user.lastName AS lastName,
                           tu.user.firstName AS firstName,
+                          tu.user.avatarToken AS avatarToken,
                           CASE WHEN tu.tenant.owner = tu.user THEN 0 WHEN tu.isModerator THEN 1 ELSE 2 END AS membership,
                           tu.permissions AS permissions
                    FROM TenantUser tu
