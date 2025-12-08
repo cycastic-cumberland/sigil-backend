@@ -143,6 +143,7 @@ public class UserService {
                 .lastInvitationSent(null)
                 .emailVerified(emailVerified)
                 .notificationToken(notificationToken)
+                .avatarToken(UUID.randomUUID())
                 .build();
         refreshSecurityStamp(user);
         notificationTokenRepository.save(notificationToken);

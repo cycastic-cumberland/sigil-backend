@@ -27,6 +27,7 @@ public class UserDto {
     private boolean hasPasswordCredential;
     private boolean hasWebAuthnCredential;
     private UUID notificationToken;
+    private UUID avatarToken;
     private boolean emailVerified;
     private UserStatus status;
     private OffsetDateTime joinedAt;
@@ -43,6 +44,7 @@ public class UserDto {
                 .hasPasswordCredential(user.getWrappedUserKey() != null)
                 .hasWebAuthnCredential(user.getWebAuthnCredential() != null)
                 .notificationToken(user.getNotificationToken().getToken())
+                .avatarToken(user.getAvatarToken())
                 .emailVerified(user.isEmailVerified())
                 .status(user.getStatus())
                 .joinedAt(user.getJoinedAt())

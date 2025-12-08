@@ -14,6 +14,7 @@ import net.cycastic.sigil.domain.repository.pm.TaskSubscriberRepository;
 import net.cycastic.sigil.service.LoggedUserAccessor;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Component
@@ -83,6 +84,8 @@ public class UpdateTaskCommandHandler extends BaseProjectCommandHandler<UpdateTa
 
         subscribersDiff.apply();
         task.setPriority(command.getTaskPriority());
+        // Deliberately bump version
+        task.setUpdatedAt(OffsetDateTime.now());
         taskRepository.save(task);
 
         var oldStatus = task.getTaskStatus();

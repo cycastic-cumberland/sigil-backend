@@ -4,6 +4,7 @@ import an.awesome.pipelinr.Pipelinr;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import net.cycastic.sigil.application.user.avatar.get.GetUserAvatarCommand;
 import net.cycastic.sigil.application.user.ephemeral.GetEphemeralPublicKeyCommand;
 import net.cycastic.sigil.application.user.get.GetEnvelopCommand;
 import net.cycastic.sigil.application.user.get.GetKdfSettingsCommand;
@@ -21,12 +22,17 @@ import net.cycastic.sigil.application.user.signin.SignInCommand;
 import net.cycastic.sigil.application.user.webauthn.enroll.EnrollWebAuthnEnvelopCommand;
 import net.cycastic.sigil.configuration.cache.CacheConfigurations;
 import net.cycastic.sigil.controller.annotation.RequireTenantId;
+import net.cycastic.sigil.domain.WebUtilities;
 import net.cycastic.sigil.domain.dto.auth.*;
 import net.cycastic.sigil.domain.dto.auth.KdfDetailsDto;
 import net.cycastic.sigil.domain.dto.UserDto;
 import net.cycastic.sigil.domain.dto.keyring.KeyringDto;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
@@ -118,5 +124,11 @@ public class AuthController {
     @GetMapping("public-key")
     public PemDto getEphemeralPublicKey(){
         return pipelinr.send(GetEphemeralPublicKeyCommand.INSTANCE);
+    }
+
+    @GetMapping("avatar")
+    public ResponseEntity<InputStreamResource> getAvatar(@Valid GetUserAvatarCommand command){
+        var response = pipelinr.send(command);
+        return WebUtilities.toResponse(response, Duration.ofHours(6));
     }
 }

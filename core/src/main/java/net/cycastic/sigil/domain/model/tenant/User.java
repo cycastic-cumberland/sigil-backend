@@ -22,6 +22,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "users_normalized_email_uindex", columnList = "normalized_email", unique = true),
+        @Index(name = "users_avatar_token_uindex", columnList = "avatar_token", unique = true),
 })
 public class User implements UserDetails {
     public static class Authorities {
@@ -86,6 +87,9 @@ public class User implements UserDetails {
     @OneToOne
     @JoinColumn(name = "notification_token_id", nullable = false)
     private NotificationToken notificationToken;
+
+    @Column(nullable = false)
+    private UUID avatarToken;
 
     @Override
     public boolean isEnabled() {

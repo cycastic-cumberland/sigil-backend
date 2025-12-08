@@ -11,8 +11,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
     Optional<User> findByNormalizedEmail(@NotNull String normalizedEmail);
@@ -23,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT u FROM User u WHERE u.id = :id")
     Optional<User> findByIdForUpdate(@Param("id") Integer id);
+
+    Optional<User> findByAvatarToken(UUID avatarToken);
 
     default Optional<User> getByEmail(@NotNull String email){
         return findByNormalizedEmail(email.toUpperCase(Locale.ROOT));
