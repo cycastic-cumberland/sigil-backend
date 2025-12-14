@@ -36,6 +36,8 @@ public interface PartitionUserRepository extends JpaRepository<PartitionUser, In
 
     void removeByPartitionAndUser(Partition partition, User user);
 
+    void removeByPartition_Tenant_IdAndUser_Id(int partitionTenantId, int userId);
+
     @Query(value = """
                    SELECT pu.user.firstName AS firstName,
                    pu.user.lastName AS lastName,

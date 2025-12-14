@@ -2,7 +2,6 @@ package net.cycastic.sigil.configuration.feign;
 
 import feign.RequestInterceptor;
 import feign.codec.ErrorDecoder;
-import lombok.SneakyThrows;
 import net.cycastic.sigil.domain.SlimCryptographicUtilities;
 import net.cycastic.sigil.domain.exception.ApiRequestException;
 import net.cycastic.sigil.domain.exception.ExceptionResponse;
@@ -14,21 +13,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Base64;
 import java.util.UUID;
 
 @Configuration
 public class FeignClientConfigurations {
     private static final String CALLER = "sigil-core";
-
-    @SneakyThrows
-    private static String getUri(String targetUrl, String relativePath){
-        var targetPath = URI.create(targetUrl).getRawPath();
-        return Path.of(targetPath, relativePath).toString();
-    }
 
     @Bean
     public RequestInterceptor requestInterceptor(@Qualifier("m2MRSASignatureProvider") AsymmetricSignatureProvider asymmetricSignatureProvider){

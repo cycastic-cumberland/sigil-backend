@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import net.cycastic.sigil.application.tenant.delete.DeleteTenantCommand;
 import net.cycastic.sigil.application.tenant.get.GetTenantCommand;
 import net.cycastic.sigil.application.tenant.members.invite.InviteUserToTenantCommand;
+import net.cycastic.sigil.application.tenant.members.remove.RemoveTenantMemberCommand;
 import net.cycastic.sigil.application.tenant.members.search.SearchTenantMemberCommand;
 import net.cycastic.sigil.application.tenant.query.QueryTenantCommand;
 import net.cycastic.sigil.application.tenant.save.SaveTenantCommand;
@@ -46,6 +47,12 @@ public class TenantsController {
     @RequireTenantId
     public PageResponseDto<TenantUserDto> queryTenantMembers(SearchTenantMemberCommand command){
         return pipelinr.send(command);
+    }
+
+    @DeleteMapping("members")
+    @RequireTenantId
+    public void removeTenantMember(@Valid RemoveTenantMemberCommand command){
+        pipelinr.send(command);
     }
 
     @PostMapping("members/invite")

@@ -147,6 +147,15 @@ public class ApiExceptionHandler {
                 HttpStatus.valueOf(error.getStatus()));
     }
 
+
+    @ExceptionHandler(feign.RetryableException.class)
+    public ResponseEntity<ExceptionResponse> handleFeignRetryableException(feign.RetryableException ex, HttpServletRequest request) {
+        if (ex.getCause() instanceof java.net.ConnectException){
+            return handleGeneric(new RequestException(503, ex, "This service is currently unavailable"), request);
+        }
+        return handleGeneric(new RequestException(500, ex, "Internal server error"), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleOtherExceptions(Exception ex, HttpServletRequest request) {
         return handleGeneric(new RequestException(500, ex, "Internal server error"), request);
