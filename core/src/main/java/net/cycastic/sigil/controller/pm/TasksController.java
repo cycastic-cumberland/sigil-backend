@@ -32,9 +32,11 @@ public class TasksController {
     @PostMapping
     @RequirePartitionId
     @CacheEvict(value = CACHE_KEY, cacheManager = CacheConfigurations.CACHE_MANAGER_BEAN_NAME,
-            key = "'queryTasksByBoard'+ '?kanbanBoardId=' + #command.kanbanBoardId",
+            key = "'queryTasksByBoard' + '?tenantId' + #tenantId + '&kanbanBoardId=' + #command.kanbanBoardId",
             condition = "#command.kanbanBoardId != null")
-    public IdDto createTask(@Valid @RequestBody CreateTaskCommand command){
+    public IdDto createTask(@RequestHeader(ApplicationConstants.TENANT_ID_HEADER) String tenantId,
+                            @Valid @RequestBody CreateTaskCommand command){
+        ApplicationUtilities.deoptimize(tenantId);
         return pipelinr.send(command);
     }
 
